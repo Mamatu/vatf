@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/product.schema.json",
+  "title": "Test framework config for voice assistance",
+  "description": "Test framework",
+  "type": "object",
+  "properties": {
+    "assets" : {
+      "type" : "object",
+      "properties" : {
+        "audio" : {
+          "description" : "object which contains information about audio files used in project",
+          "type" : "object",
+          "properties": {
+            "path" : {
+              "description" : "path to audio files directory",
+              "type" : "string"
+            },
+            "files" : {
+              "description" : "array of files objects",
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "name" : {
+                    "type" : "string",
+                    "description" : "name of audio file"
+                  },
+                  "tags" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                },
+                "required" : ["name"]
+              }
+            }
+          },
+          "required" : ["path"]
+        }
+      }
+    }
+  },
+  "va_log" : {
+    "description" : "voice assitance debug log configuration",
+    "type" : "object",
+    "properties" : {
+      "path" : {
+        "description" : "path to log file",
+        "type" : "string"
+      },
+      "timedelta" : {
+        "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
+        "type" : "object",
+        "properties" : {
+          "days" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "seconds" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "microseconds" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "milliseconds" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "minutes" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "hours" : {
+            "type" : "number",
+            "default" : 0
+          },
+          "weeks" : {
+            "type" : "number",
+            "default" : 0
+          }
+        }
+      }
+    },
+    "required" : ["path", "strformat"]
+  },
+  "utterance_to_va" : {
+    "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
+    "type" : "object",
+    "properties" : {
+      "regexes" : {
+        "type" : "array",
+        "description" : "array of regexes",
+        "items" : {
+          "type" : "object",
+          "properties" : {
+            "begin" : {
+              "type" : "string",
+              "description" : "regex defines begin of utterance"
+            },
+            "end" : {
+              "type" : "string",
+              "description" : "regex defines end of utterance"
+            }
+          }
+        },
+        "minItems" : 1,
+        "maxItems" : 1
+      }
+    }
+  },
+  "utterance_from_va" : {
+    "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
+    "type" : "object",
+    "properties" : {
+      "regexes" : {
+        "type" : "array",
+        "description" : "array of regexes",
+        "items" : {
+          "type" : "object",
+          "properties" : {
+            "begin" : {
+              "type" : "string",
+              "description" : "regex defines begin of utterance"
+            },
+            "end" : {
+              "type" : "string",
+              "description" : "regex defines end of utterance"
+            }
+          }
+        },
+        "minItems" : 1,
+        "maxItems" : 1
+      }
+    }
+  }
+}

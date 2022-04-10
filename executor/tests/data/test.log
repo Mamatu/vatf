@@ -1,0 +1,608 @@
+configFile /home/mmatula/my_project/build/Integration/AlexaClientSDKConfig.json
+Running app with log level: DEBUG1
+2022-02-03 17:31:54.216 [  1] I AlexaClientSdkInit:initialize:sdkversion=1.26.0
+2022-02-03 17:31:54.217 [  1] I AlexaClientSdkInit:initialize:curlVersion=7.67.0
+2022-02-03 17:31:54.218 [  1] 0 ConfigurationNode:initializeSuccess
+2022-02-03 17:31:54.221 [  1] I DeviceInfo:create:result=skipDeviceType,key=deviceType
+2022-02-03 17:31:54.221 [  1] I DeviceInfo:create:result=skipFriendlyName,key=friendlyName
+2022-02-03 17:31:54.221 [  1] I DeviceInfo:create:result=skipRegistrationKey,key=registrationKey
+2022-02-03 17:31:54.221 [  1] I DeviceInfo:create:result=skipProductIdKey,key=productIdKey
+2022-02-03 17:31:54.221 [  1] E ConfigurationNode:getArrayFailed:reason=notAnArray
+2022-02-03 17:31:54.221 [  1] I LocaleAssetsManager:initialize:supportedWakeWords=NONE
+2022-02-03 17:31:54.222 [  1] 0 LWAAuthorizationStorage:createLWAAuthorizationStorageInterface
+2022-02-03 17:31:54.222 [  1] W LWAAuthorizationStorage:createLWAAuthorizationStorageInterface::encryptionAtRestDisabled:reason=keyStoreNull
+2022-02-03 17:31:54.224 [  1] 0 SQLiteDatabase:tableExistsFailed:reason=table doesn't exist or there was an error checking,table=refreshToken
+2022-02-03 17:31:54.224 [  1] 0 SQLiteDatabase:tableExistsFailed:reason=table doesn't exist or there was an error checking,table=userId
+2022-02-03 17:31:54.225 [  1] E ConfigurationNode:getArrayFailed:reason=notAnArray
+2022-02-03 17:31:54.226 [  1] 0 SimpleMiscStorageUriMapper:extractComponentAndTableNameSuccess:configUri=config/LWAAuthorizationStorage,componentName=config,tableName=LWAAuthorizationStorage
+2022-02-03 17:31:54.226 [  1] 0 MiscStorageProperties:initSuccess:configUri=config/LWAAuthorizationStorage
+2022-02-03 17:31:54.226 [  1] 0 MiscStorageProperties:createSuccess:configUri=config/LWAAuthorizationStorage
+2022-02-03 17:31:54.227 [  1] 1 InMemoryEqualizerConfiguration:validateConfiguration::Validating Equalizer configuration
+2022-02-03 17:31:54.227 [  1] 1 InMemoryEqualizerConfiguration:validateConfiguration::Validating default Equalizer state
+2022-02-03 17:31:54.227 [  2] 0 MiscStorageProperties:getStringSuccess:configUri=config/LWAAuthorizationStorage,key=refreshToken
+2022-02-03 17:31:54.227 [  2] 0 MiscStorageProperties:getStringSuccess:configUri=config/LWAAuthorizationStorage,key=refreshToken
+2022-02-03 17:31:54.227 [  1] 1 InMemoryEqualizerConfiguration:validateConfiguration::Validating Equalizer configuration
+2022-02-03 17:31:54.227 [  1] 1 InMemoryEqualizerConfiguration:validateConfiguration::Validating default Equalizer state
+2022-02-03 17:31:54.227 [  2] 0 CurlEasyHandleWrapper:initializeNetworkInterfaceName:m_interfaceName=
+2022-02-03 17:31:54.271 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.271 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.285 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.286 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.286 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.286 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.286 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.286 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.289 [  1] I Setting:handleSetValue:value=false6142509188972423790
+2022-02-03 17:31:54.291 [  1] I Setting:handleSetValue:value="NONE"6142509188972423790
+2022-02-03 17:31:54.292 [  1] I Setting:handleSetValue:value="NONE"6142509188972423790
+2022-02-03 17:31:54.293 [  1] I Setting:handleSetValue:value="NONE"6142509188972423790
+2022-02-03 17:31:54.293 [  1] I Setting:handleSetValue:value="America/Vancouver"6142509188972423790
+2022-02-03 17:31:54.294 [  1] I Setting:handleSetValue:value={}6142509188972423790
+2022-02-03 17:31:54.294 [  4] I LocaleAssetsManager:changeAssets:Locale=["en-US"],WakeWords=[]
+2022-02-03 17:31:54.298 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.298 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.299 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_ALERTS_VOLUME,sizeOfSpeakerSet=1
+2022-02-03 17:31:54.299 [  5] 0 MediaPlayer:handleAddObserverCalled:name=AlertsMediaPlayer
+2022-02-03 17:31:54.301 [  1] I AlertScheduler:executeScheduleNextAlertForRendering::no work to do.
+2022-02-03 17:31:54.302 [  7] I ContextManager:updateCapabilityState
+2022-02-03 17:31:54.303 [  8] 1 AlertsCapabilityAgent:executeOnConnectionStatusChanged:status=DISCONNECTED,reason=ACL_CLIENT_REQUEST
+2022-02-03 17:31:54.311 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.311 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_ALERTS_VOLUME,sizeOfSpeakerSet=2
+2022-02-03 17:31:54.311 [  9] 0 MediaPlayer:handleAddObserverCalled:name=NotificationsMediaPlayer
+2022-02-03 17:31:54.314 [  7] I ContextManager:updateCapabilityState
+2022-02-03 17:31:54.314 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.314 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_SPEAKER_VOLUME,sizeOfSpeakerSet=1
+2022-02-03 17:31:54.314 [  7] I ContextManager:updateCapabilityState
+2022-02-03 17:31:54.314 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_SPEAKER_VOLUME,sizeOfSpeakerSet=2
+2022-02-03 17:31:54.314 [  1] I ExternalMediaPlayer:startup
+2022-02-03 17:31:54.316 [  1] 0 DialogUXStateAggregator:onConnectionStatusChanged:engineAggregatedStatus=DISCONNECTED
+2022-02-03 17:31:54.316 [  1] 0 DialogUXStateAggregator:onConnectionStatusChanged:status=DISCONNECTED:deprecated method. Nothing done.
+2022-02-03 17:31:54.318 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:engineType=1,engineStatus=DISCONNECTED
+2022-02-03 17:31:54.318 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:isConnected=false
+2022-02-03 17:31:54.318 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda::Setting state to idle
+2022-02-03 17:31:54.318 [  b] 0 DialogUXStateAggregator:executeSetState:from=IDLE,to=IDLE,validTransition=false
+2022-02-03 17:31:54.320 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.320 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_SPEAKER_VOLUME,sizeOfSpeakerSet=3
+2022-02-03 17:31:54.320 [  d] 0 MediaPlayer:handleAddObserverCalled:name=SystemSoundMediaPlayer
+2022-02-03 17:31:54.322 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.322 [  e] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=IDLE
+2022-02-03 17:31:54.322 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_SPEAKER_VOLUME,sizeOfSpeakerSet=4
+2022-02-03 17:31:54.323 [  f] 0 MediaPlayer:handleAddObserverCalled:name=SpeakMediaPlayer
+2022-02-03 17:31:54.324 [  1] 0 ChannelVolumeManager:getSpeakerSettings
+2022-02-03 17:31:54.324 [  1] 0 SpeakerManager:addChannelVolumeInterfaceIntoSpeakerMap:type=AVS_SPEAKER_VOLUME,sizeOfSpeakerSet=5
+2022-02-03 17:31:54.325 [  1] E PowerResource:create:error=nullPowerManager
+2022-02-03 17:31:54.325 [  1] 1 AudioPlayer:setObserver
+2022-02-03 17:31:54.330 [  7] I ContextManager:updateCapabilityState
+2022-02-03 17:31:54.333 [  1] 0 DefaultClient:initialize::Diagnostics Not Enabled
+#################################################
+#       NOTIFICATION INDICATOR STATE: OFF       #
+#################################################
+
+2022-02-03 17:31:54.472 [  1] I MessageRouter:setAVSGateway:avsGateway=https\://alexa.na.gateway.devices.a2z.com
+2022-02-03 17:31:54.472 [  1] I MessageRouter:enable
+2022-02-03 17:31:54.472 [  1] I MessageRouter:setConnectionStatusLocked:status=PENDING,reason=ACL_CLIENT_REQUEST
+2022-02-03 17:31:54.472 [  1] 0 MessageRouter:connectionStatusChanged:reason=ACL_CLIENT_REQUEST,newStatus=PENDING
+2022-02-03 17:31:54.473 [  1] I MessageRouter:createActiveTransportLocked:transport=0x55c452521000,sizeOf m_transports=0
+2022-02-03 17:31:54.473 [  1] I HTTP2Transport:connect:this=0x55c452521000
+2022-02-03 17:31:54.473 [  1] I HTTP2Transport:setStateLocked:this=0x55c452521000,currentState=INIT,newState=AUTHORIZING,changedReason=ACL_CLIENT_REQUEST
+2022-02-03 17:31:54.473 [  1] I MessageRouter:setAsActiveTransport:transport=0x55c452521000,sizeOf m_transports=1
+2022-02-03 17:31:54.473 [ 15] 0 AVSConnectionManager:onConnectionStatusChanged:this=0x55c452519800,status=PENDING,engine_count=1
+2022-02-03 17:31:54.473 [ 16] I HTTP2Transport:handleAuthorizing:this=0x55c452521000
+2022-02-03 17:31:54.473 [ 15] 0 DialogUXStateAggregator:onConnectionStatusChanged:engineAggregatedStatus=PENDING
+2022-02-03 17:31:54.473 [ 16] I HTTP2Transport:onAuthStateChange:this=0x55c452521000,newState=UNINITIALIZED,error=SUCCESS
+2022-02-03 17:31:54.473 [ 15] 0 DialogUXStateAggregator:onConnectionStatusChanged:status=PENDING:deprecated method. Nothing done.
+2022-02-03 17:31:54.473 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:engineType=1,engineStatus=PENDING
+2022-02-03 17:31:54.473 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:isConnected=false
+2022-02-03 17:31:54.473 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda::Setting state to idle
+2022-02-03 17:31:54.473 [  b] 0 DialogUXStateAggregator:executeSetState:from=IDLE,to=IDLE,validTransition=false
+2022-02-03 17:31:54.473 [  8] 1 AlertsCapabilityAgent:executeOnConnectionStatusChanged:status=PENDING,reason=ACL_CLIENT_REQUEST
+#############################
+#       Connecting...       #
+#############################
+
+                  #    #     #  #####      #####  ######  #    #              
+                 # #   #     # #     #    #     # #     # #   #               
+                #   #  #     # #          #       #     # #  #                
+               #     # #     #  #####      #####  #     # ###                 
+               #######  #   #        #          # #     # #  #                
+               #     #   # #   #     #    #     # #     # #   #               
+               #     #    #     #####      #####  ######  #    #              
+                                                                              
+       #####                                           #                      
+      #     #   ##   #    # #####  #      ######      # #   #####  #####      
+      #        #  #  ##  ## #    # #      #          #   #  #    # #    #     
+       #####  #    # # ## # #    # #      #####     #     # #    # #    #     
+            # ###### #    # #####  #      #         ####### #####  #####      
+      #     # #    # #    # #      #      #         #     # #      #          
+       #####  #    # #    # #      ###### ######    #     # #      #          
+
+       SDK Version 1.26.0
+
+       WARNING! THIS DEVICE HAS BEEN COMPILED IN DEBUG MODE.
+
+       RELEASING A PRODUCTION DEVICE IN DEBUG MODE MAY IMPACT DEVICE PERFORMANCE,
+       DOES NOT COMPLY WITH THE AVS SECURITY REQUIREMENTS,
+       AND COULD RESULT IN SUSPENSION OR TERMINATION OF THE ALEXA SERVICE ON YOUR DEVICES.
+
+
++----------------------------------------------------------------------------+
+|                                  Options:                                  |
+| Tap to talk:                                                               |
+|       Press 't' and Enter followed by your query (no need for the 'Alexa').|
+| Hold to talk:                                                              |
+|       Press 'h' followed by Enter to simulate holding a button.            |
+|       Then say your query (no need for the 'Alexa').                       |
+|       Press 'h' followed by Enter to simulate releasing a button.          |
+| Stop an interaction:                                                       |
+|       Press 's' and Enter to stop an ongoing interaction.                  |
+| Playback Controls:                                                         |
+|       Press '1' for a 'PLAY' button press.                                 |
+|       Press '2' for a 'PAUSE' button press.                                |
+|       Press '3' for a 'NEXT' button press.                                 |
+|       Press '4' for a 'PREVIOUS' button press.                             |
+| Settings:                                                                  |
+|       Press 'c' followed by Enter at any time to see the settings screen.  |
+| Speaker Control:                                                           |
+|       Press 'p' followed by Enter at any time to adjust speaker settings.  |
+| Firmware Version:                                                          |
+|       Press 'f' followed by Enter at any time to report a different        |
+|       firmware version.                                                    |
+| Info:                                                                      |
+|       Press 'i' followed by Enter at any time to see the help screen.      |
+| Reset device:                                                              |
+|       Press 'k' followed by Enter at any time to reset your device. This   |
+|       will erase any data stored in the device and you will have to        |
+|       re-register your device.                                             |
+|       This option will also exit the application.                          |
+| Reauthorize device:                                                        |
+|       Press 'z' followed by Enter at any time to re-authorize your device. |
+|       This will erase any data stored in the device and initiate           |
+|       re-authorization.                                                    |
+| Device Setup Complete:                                                     |
+|       Press 'v' followed by Enter at any time to indicate that device      |
+|       setup is complete.                                                   |
+|                                                                            |
+| Quit:                                                                      |
+|       Press 'q' followed by Enter at any time to quit the application.     |
++----------------------------------------------------------------------------+
+
+2022-02-03 17:31:54.813 [ 17] I MessageRouter:onWakeConnectionRetry
+2022-02-03 17:31:54.813 [ 17] I MessageRouter:onWakeConnectionRetry:m_activeTransport=0x55c452521000
+2022-02-03 17:31:54.814 [ 17] I HTTP2Transport:onWakeConnectionRetry:this=0x55c452521000
+2022-02-03 17:31:55.048 [  2] 0 MiscStorageProperties:putStringSuccess:configUri=config/LWAAuthorizationStorage,key=refreshToken
+2022-02-03 17:31:55.048 [  2] 0 MiscStorageProperties:putStringSuccess:configUri=config/LWAAuthorizationStorage,key=refreshToken
+2022-02-03 17:31:55.048 [  2] I HTTP2Transport:onAuthStateChange:this=0x55c452521000,newState=REFRESHED,error=SUCCESS
+2022-02-03 17:31:55.048 [  2] I HTTP2Transport:setStateLocked:this=0x55c452521000,currentState=AUTHORIZING,newState=CONNECTING,changedReason=SUCCESS
+###########################
+#       Authorized!       #
+###########################
+
+2022-02-03 17:31:55.048 [ 16] I HTTP2Transport:handleConnecting:this=0x55c452521000
+2022-02-03 17:31:55.818 [ 18] I HTTP2Transport:onDownchannelConnected:this=0x55c452521000
+2022-02-03 17:31:55.819 [ 18] I HTTP2Transport:setStateLocked:this=0x55c452521000,currentState=CONNECTING,newState=POST_CONNECTING,changedReason=SUCCESS
+2022-02-03 17:31:55.819 [ 16] I HTTP2Transport:handlePostConnecting:this=0x55c452521000
+2022-02-03 17:31:55.819 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 
+#######################################################
+#       Successfully registered 1 endpoint(s).        #
+#######################################################
+
+2022-02-03 17:31:55.821 [ 10] 0 AudioPlayer:provideState:stateRequestToken=1
+2022-02-03 17:31:55.821 [  6] 0 AudioPlayer:executeProvideState:sendToken=true,stateRequestToken=1
+2022-02-03 17:31:55.822 [  6] E AudioPlayer:attachPlaybackAttributesIfAvailableFailed::playerMissing
+2022-02-03 17:31:55.822 [  7] 0 SpeechSynthesizer:executeProvideState:stateRequestToken=1,state=FINISHED
+2022-02-03 17:31:55.822 [ 12] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=1
+2022-02-03 17:31:55.822 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.823 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.823 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.823 [ 12] 0 ExternalMediaPlayer:executeProvideState:providePlaybackState={"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}
+2022-02-03 17:31:55.823 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.823 [ 12] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=1
+2022-02-03 17:31:55.823 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.823 [ 12] 0 ExternalMediaPlayer:executeProvideState:provideSessionState={"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}
+2022-02-03 17:31:55.823 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:31:55.824 [ 19] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:31:55.825 [ 19] 0 EventBuilder:buildJsonEventString:messageId=4fcf7ed7-b1e7-4750-b725-94daf4d33d61,namespace=System,name=SynchronizeState
+2022-02-03 17:31:55.825 [ 19] 0 EventBuilder:buildJsonEventString:event={"context"\:{"properties"\:[{"namespace"\:"Alerts"\,"name"\:"AlertsState"\,"value"\:{"allAlerts"\:[]\,"activeAlerts"\:[]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.302Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Alexa.PlaybackStateReporter"\,"name"\:"playbackState"\,"value"\:{"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:31\:55.823Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"AudioPlayer"\,"name"\:"PlaybackState"\,"value"\:{"token"\:""\,"offsetInMilliseconds"\:0\,"playerActivity"\:"IDLE"}\,"timeOfSample"\:"2022-02-03T17\:31\:55.822Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"EqualizerController"\,"name"\:"EqualizerState"\,"value"\:{"bands"\:[{"name"\:"TREBLE"\,"level"\:0}\,{"name"\:"MIDRANGE"\,"level"\:0}\,{"name"\:"BASS"\,"level"\:0}]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.330Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"ExternalMediaPlayer"\,"name"\:"ExternalMediaPlayerState"\,"value"\:{"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:31\:55.823Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Notifications"\,"name"\:"IndicatorState"\,"value"\:{"isEnabled"\:false\,"isVisualIndicatorPersisted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Speaker"\,"name"\:"VolumeState"\,"value"\:{"volume"\:100\,"muted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechState"\,"value"\:{"token"\:""\,"offsetInMilliseconds"\:0\,"playerActivity"\:"FINISHED"}\,"timeOfSample"\:"2022-02-03T17\:31\:55.823Z"\,"uncertaintyInMilliseconds"\:0}]}\,"event"\:{"header"\:{"namespace"\:"System"\,"name"\:"SynchronizeState"\,"messageId"\:"4fcf7ed7-b1e7-4750-b725-94daf4d33d61"}\,"payload"\:{}}}
+2022-02-03 17:31:55.825 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:31:56.231 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: b0906fdc-7946-47d5-b156-407dff4946ae
+2022-02-03 17:31:56.231 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-3
+2022-02-03 17:31:56.231 [ 19] I HTTP2Transport:onPostConnected:this=0x55c452521000
+2022-02-03 17:31:56.231 [ 19] I HTTP2Transport:setStateLocked:this=0x55c452521000,currentState=POST_CONNECTING,newState=CONNECTED,changedReason=SUCCESS
+2022-02-03 17:31:56.231 [ 16] I HTTP2Transport:handleConnected:this=0x55c452521000
+2022-02-03 17:31:56.231 [ 16] I MessageRouter:onConnected:transport=0x55c452521000,m_activeTransport=0x55c452521000
+2022-02-03 17:31:56.231 [ 16] I MessageRouter:setConnectionStatusLocked:status=CONNECTED,reason=ACL_CLIENT_REQUEST
+2022-02-03 17:31:56.231 [ 16] 0 MessageRouter:connectionStatusChanged:reason=ACL_CLIENT_REQUEST,newStatus=CONNECTED
+2022-02-03 17:31:56.231 [  c] 0 AVSConnectionManager:onConnectionStatusChanged:this=0x55c452519800,status=CONNECTED,engine_count=1
+2022-02-03 17:31:56.232 [  c] 0 DialogUXStateAggregator:onConnectionStatusChanged:engineAggregatedStatus=CONNECTED
+2022-02-03 17:31:56.232 [  c] 0 DialogUXStateAggregator:onConnectionStatusChanged:status=CONNECTED:deprecated method. Nothing done.
+2022-02-03 17:31:56.232 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:engineType=1,engineStatus=CONNECTED
+2022-02-03 17:31:56.232 [  b] 0 DialogUXStateAggregator:onConnectionStatusChangedLambda:isConnected=true
+2022-02-03 17:31:56.233 [  8] 1 AlertsCapabilityAgent:executeOnConnectionStatusChanged:status=CONNECTED,reason=ACL_CLIENT_REQUEST
+2022-02-03 17:31:56.233 [ 20] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:31:56.233 [ 20] 0 EventBuilder:buildJsonEventString:messageId=7e3bbf8d-dcba-4ec7-8f0f-e3cb304d35e9,namespace=Alexa.DoNotDisturb,name=ReportDoNotDisturb
+2022-02-03 17:31:56.233 [ 20] 0 EventBuilder:buildJsonEventString:event={"event"\:{"header"\:{"namespace"\:"Alexa.DoNotDisturb"\,"name"\:"ReportDoNotDisturb"\,"messageId"\:"7e3bbf8d-dcba-4ec7-8f0f-e3cb304d35e9"}\,"payload"\:{"enabled"\:false}}}
+2022-02-03 17:31:56.233 [ 16] 0 MessageRequestHandler:EventSent
+########################################
+#       Alexa is currently idle!       #
+########################################
+
+2022-02-03 17:31:56.507 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 945e8b63-84c6-4a26-aeb4-0b4e715b1d2f
+2022-02-03 17:31:56.507 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-5
+2022-02-03 17:32:07.829 [  6] 0 AudioInputProcessor:notEncodingAudio
+2022-02-03 17:32:07.830 [  6] 0 AudioInputProcessor:Create audio reader:format=LPCM,offset=0,encodingOffset=0
+2022-02-03 17:32:07.830 [  6] I AudioInputProcessor:Create audio attachment reader success:resolveKey=DEFAULT_RESOLVE_KEY,format=AUDIO_L16_RATE_16000_CHANNELS_1
+2022-02-03 17:32:07.831 [  6] W MetricEventBuilder:addDataPointFailed:reason=invalidDataPoint
+2022-02-03 17:32:07.831 [  6] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:07.832 [  6] 0 AudioInputProcessor:setState:from=IDLE,to=RECOGNIZING
+2022-02-03 17:32:07.832 [  6] I MessageRouter:onWakeConnectionRetry
+2022-02-03 17:32:07.832 [  6] I MessageRouter:onWakeConnectionRetry:m_activeTransport=0x55c452521000
+2022-02-03 17:32:07.832 [  6] I HTTP2Transport:onWakeConnectionRetry:this=0x55c452521000
+2022-02-03 17:32:07.832 [  6] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=RECOGNIZING
+2022-02-03 17:32:07.832 [  a] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=RECOGNIZING
+2022-02-03 17:32:07.832 [  a] 0 DialogUXStateAggregator:executeSetState:from=IDLE,to=LISTENING,validTransition=true
+############################
+#       Listening...       #
+############################
+
+2022-02-03 17:32:07.834 [ 13] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=2
+2022-02-03 17:32:07.834 [ 13] 0 ExternalMediaPlayer:executeProvideState:providePlaybackState={"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}
+2022-02-03 17:32:07.834 [ 13] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=2
+2022-02-03 17:32:07.834 [ 13] 0 ExternalMediaPlayer:executeProvideState:provideSessionState={"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}
+2022-02-03 17:32:07.835 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:07.835 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:07.835 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:07.835 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:07.836 [  e] I PortAudioMicrophoneWrapper:startStreamingMicrophoneData
+2022-02-03 17:32:07.836 [  6] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=LISTENING
+2022-02-03 17:32:07.836 [  6] 0 AudioInputProcessor:executeOnContextAvailable
+2022-02-03 17:32:07.837 [  6] 1 FocusManager:acquireChannel:channelName=Dialog,interface=SpeechRecognizer
+2022-02-03 17:32:07.837 [  6] I DirectiveProcessor:setDialogRequestIdLocked:oldValue=,newValue=30faf21e-b09b-407c-988a-46f229692535
+2022-02-03 17:32:07.837 [  6] 0 DirectiveProcessor:scrubDialogRequestIdLocked:reason=emptyDialogRequestId
+2022-02-03 17:32:07.837 [ 1e] 0 Channel:addToChannelUpdatesLocked:interface=SpeechRecognizer,focusState=FOREGROUND
+2022-02-03 17:32:07.837 [  6] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:07.838 [  6] 0 EventBuilder:buildJsonEventString:messageId=444f5e03-b2e4-4740-ab06-4587fae2af0a,namespace=SpeechRecognizer,name=Recognize
+2022-02-03 17:32:07.838 [  6] 0 EventBuilder:buildJsonEventString:event={"context"\:{"properties"\:[{"namespace"\:"Alerts"\,"name"\:"AlertsState"\,"value"\:{"allAlerts"\:[]\,"activeAlerts"\:[]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.302Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Alexa.PlaybackStateReporter"\,"name"\:"playbackState"\,"value"\:{"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:32\:07.835Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"AudioPlayer"\,"name"\:"PlaybackState"\,"value"\:{"token"\:""\,"offsetInMilliseconds"\:0\,"playerActivity"\:"IDLE"}\,"timeOfSample"\:"2022-02-03T17\:31\:55.822Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"EqualizerController"\,"name"\:"EqualizerState"\,"value"\:{"bands"\:[{"name"\:"TREBLE"\,"level"\:0}\,{"name"\:"MIDRANGE"\,"level"\:0}\,{"name"\:"BASS"\,"level"\:0}]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.330Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"ExternalMediaPlayer"\,"name"\:"ExternalMediaPlayerState"\,"value"\:{"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:32\:07.835Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Notifications"\,"name"\:"IndicatorState"\,"value"\:{"isEnabled"\:false\,"isVisualIndicatorPersisted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Speaker"\,"name"\:"VolumeState"\,"value"\:{"volume"\:100\,"muted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechState"\,"value"\:{"token"\:""\,"offsetInMilliseconds"\:0\,"playerActivity"\:"FINISHED"}\,"timeOfSample"\:"2022-02-03T17\:31\:55.823Z"\,"uncertaintyInMilliseconds"\:0}]}\,"event"\:{"header"\:{"namespace"\:"SpeechRecognizer"\,"name"\:"Recognize"\,"messageId"\:"444f5e03-b2e4-4740-ab06-4587fae2af0a"\,"dialogRequestId"\:"30faf21e-b09b-407c-988a-46f229692535"}\,"payload"\:{"profile"\:"NEAR_FIELD"\,"initiator"\:{"type"\:"TAP"\,"payload"\:{}}\,"startOfSpeechTimestamp"\:"1750208045285"\,"format"\:"AUDIO_L16_RATE_16000_CHANNELS_1"}}}
+2022-02-03 17:32:07.838 [ 1e] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechRecognizer,focusState=FOREGROUND
+2022-02-03 17:32:07.838 [  6] 0 AudioInputProcessor:executeOnFocusChanged:newFocus=FOREGROUND
+2022-02-03 17:32:07.838 [  6] 0 AudioInputProcessor:sendRequestNow
+2022-02-03 17:32:07.838 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:11.539 [ 18] 0 AudioInputProcessor:onResponseStatusReceived:status=SUCCESS
+2022-02-03 17:32:11.540 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 449e1bed-e523-4af7-bef8-de182a1e0acb
+2022-02-03 17:32:11.540 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:11.540 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-7
+2022-02-03 17:32:11.540 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:SpeechRecognizer\,name\:StopCapture\,messageId\:a14f0f2b-239a-4617-9bc9-10d1874f2173\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:11.541 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:11.541 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:SpeechRecognizer\,name\:SetEndOfSpeechOffset\,messageId\:e2b7b18d-96d5-4cc5-8338-956128954726\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:11.541 [ 21] I DirectiveRouter:preHandleDirective:messageId=a14f0f2b-239a-4617-9bc9-10d1874f2173,action=calling
+2022-02-03 17:32:11.541 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:11.541 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=a14f0f2b-239a-4617-9bc9-10d1874f2173
+2022-02-03 17:32:11.541 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:InteractionModel\,name\:RequestProcessingStarted\,messageId\:09942ba9-c5af-44b9-8061-1effdab99e21\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:11.542 [ 21] I DirectiveRouter:preHandleDirective:messageId=e2b7b18d-96d5-4cc5-8338-956128954726,action=calling
+2022-02-03 17:32:11.542 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=e2b7b18d-96d5-4cc5-8338-956128954726
+2022-02-03 17:32:11.542 [ 22] I DirectiveRouter:handleDirective:messageId=a14f0f2b-239a-4617-9bc9-10d1874f2173,action=calling
+2022-02-03 17:32:11.542 [ 21] I DirectiveRouter:preHandleDirective:messageId=09942ba9-c5af-44b9-8061-1effdab99e21,action=calling
+2022-02-03 17:32:11.543 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=09942ba9-c5af-44b9-8061-1effdab99e21
+2022-02-03 17:32:11.543 [  8] 0 AudioInputProcessor:stopCapture:stopImmediately=true
+2022-02-03 17:32:11.543 [ 22] I DirectiveRouter:handleDirective:messageId=e2b7b18d-96d5-4cc5-8338-956128954726,action=calling
+2022-02-03 17:32:11.543 [  8] 0 AudioInputProcessor:setState:from=RECOGNIZING,to=BUSY
+2022-02-03 17:32:11.543 [  8] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=BUSY
+2022-02-03 17:32:11.543 [  c] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=BUSY
+2022-02-03 17:32:11.543 [  8] 0 DirectiveProcessor:onHandlingCompeted:messageId=a14f0f2b-239a-4617-9bc9-10d1874f2173,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:11.544 [  8] 0 CapabilityAgent:removingMessageIdFromMap:messageId=a14f0f2b-239a-4617-9bc9-10d1874f2173
+2022-02-03 17:32:11.543 [ 22] 0 AudioInputProcessor:handleSetEndOfSpeechOffsetDirective:startTimeSpeech(ms)=1750208045285,endTimeSpeech(ms)=1750208047890
+2022-02-03 17:32:11.544 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=e2b7b18d-96d5-4cc5-8338-956128954726,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:11.544 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=e2b7b18d-96d5-4cc5-8338-956128954726
+2022-02-03 17:32:11.544 [ 22] I DirectiveRouter:handleDirective:messageId=09942ba9-c5af-44b9-8061-1effdab99e21,action=calling
+2022-02-03 17:32:11.545 [ 22] 0 DialogUXStateAggregator:onRequestProcessingStarted
+2022-02-03 17:32:11.545 [  c] 0 DialogUXStateAggregator:onRequestProcessingStartedLambda:currentState=LISTENING
+2022-02-03 17:32:11.545 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=09942ba9-c5af-44b9-8061-1effdab99e21,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:11.545 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=09942ba9-c5af-44b9-8061-1effdab99e21
+2022-02-03 17:32:11.545 [  c] 0 DialogUXStateAggregator:executeSetState:from=LISTENING,to=THINKING,validTransition=true
+2022-02-03 17:32:11.545 [ 20] I PortAudioMicrophoneWrapper:stopStreamingMicrophoneData
+###########################
+#       Thinking...       #
+###########################
+
+2022-02-03 17:32:11.546 [  8] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=THINKING
+2022-02-03 17:32:11.550 [ 18] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:12.032 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:12.032 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:SpeechSynthesizer\,name\:Speak\,messageId\:061c1f95-e7d7-4433-96df-d20f2230f5e7\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:12.032 [ 21] I DirectiveRouter:preHandleDirective:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7,action=calling
+2022-02-03 17:32:12.033 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7
+2022-02-03 17:32:12.033 [ 1d] 0 SpeechSynthesizer:executePreHandle:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7
+2022-02-03 17:32:12.033 [ 22] I DirectiveRouter:handleDirective:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7,action=calling
+2022-02-03 17:32:12.034 [ 1d] 0 SpeechSynthesizer:executeHandle:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7
+2022-02-03 17:32:12.034 [ 1d] 1 FocusManager:acquireChannel:channelName=Dialog,interface=SpeechSynthesizer
+2022-02-03 17:32:12.035 [ 1b] 0 Channel:addToChannelUpdatesLocked:interface=SpeechRecognizer,focusState=NONE
+2022-02-03 17:32:12.035 [  8] 0 AudioInputProcessor:executeOnFocusChanged:newFocus=NONE
+2022-02-03 17:32:12.035 [  8] 0 AudioInputProcessor:executeOnFocusChanged:reason=Lost focus
+2022-02-03 17:32:12.035 [  8] 0 AudioInputProcessor:executeResetState
+2022-02-03 17:32:12.035 [ 1b] 0 Channel:addToChannelUpdatesLocked:interface=SpeechSynthesizer,focusState=FOREGROUND
+2022-02-03 17:32:12.035 [ 1b] 0 SpeechSynthesizer:onFocusChanged:newFocus=FOREGROUND,MixingBehavior=PRIMARY
+2022-02-03 17:32:12.035 [  8] 0 AudioInputProcessor:setState:from=BUSY,to=IDLE
+2022-02-03 17:32:12.035 [  8] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=IDLE
+2022-02-03 17:32:12.035 [ 1b] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=GAINING_FOCUS
+2022-02-03 17:32:12.036 [ 1d] 0 SpeechSynthesizer:executeStateChange:newState=PLAYING
+2022-02-03 17:32:12.036 [  c] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=IDLE
+2022-02-03 17:32:12.036 [  f] 0 MediaPlayer:handleSetAttachmentReaderSourceCalled:name=SpeakMediaPlayer
+2022-02-03 17:32:12.036 [  c] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=GAINING_FOCUS
+2022-02-03 17:32:12.404 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:12.404 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:TemplateRuntime\,name\:RenderTemplate\,messageId\:54b08c94-508a-4867-b0a0-de0ceb95af1d\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:12.404 [ 21] I DirectiveRouter:preHandleDirective:messageId=54b08c94-508a-4867-b0a0-de0ceb95af1d,action=calling
+2022-02-03 17:32:12.404 [ 1f] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:12.405 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=54b08c94-508a-4867-b0a0-de0ceb95af1d
+2022-02-03 17:32:12.405 [ 1f] I DirectiveSequencer:onDirective:directive=namespace\:InteractionModel\,name\:RequestProcessingCompleted\,messageId\:50e3e125-063b-445f-a048-c3de8b9b4538\,dialogRequestId\:30faf21e-b09b-407c-988a-46f229692535\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:12.405 [ 22] I DirectiveRouter:handleDirective:messageId=54b08c94-508a-4867-b0a0-de0ceb95af1d,action=calling
+2022-02-03 17:32:12.405 [ 21] I DirectiveRouter:preHandleDirective:messageId=50e3e125-063b-445f-a048-c3de8b9b4538,action=calling
+2022-02-03 17:32:12.405 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=50e3e125-063b-445f-a048-c3de8b9b4538
+2022-02-03 17:32:12.405 [  3] 1 FocusManager:acquireChannel:channelName=Visual,interface=TemplateRuntime
+2022-02-03 17:32:12.405 [ 22] I DirectiveRouter:handleDirective:messageId=50e3e125-063b-445f-a048-c3de8b9b4538,action=calling
+2022-02-03 17:32:12.405 [ 22] 0 DialogUXStateAggregator:onRequestProcessingCompleted
+2022-02-03 17:32:12.405 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=50e3e125-063b-445f-a048-c3de8b9b4538,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:12.405 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=50e3e125-063b-445f-a048-c3de8b9b4538
+2022-02-03 17:32:12.405 [  3] 0 DirectiveProcessor:onHandlingCompeted:messageId=54b08c94-508a-4867-b0a0-de0ceb95af1d,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:12.405 [  b] 0 Channel:addToChannelUpdatesLocked:interface=TemplateRuntime,focusState=FOREGROUND
+2022-02-03 17:32:12.405 [  3] 0 CapabilityAgent:removingMessageIdFromMap:messageId=54b08c94-508a-4867-b0a0-de0ceb95af1d
+2022-02-03 17:32:12.405 [  c] 0 DialogUXStateAggregator:executeTryExitThinkingState
+2022-02-03 17:32:12.405 [  b] 1 FocusManager:notifyActivityTracker:name=Visual,interfaceName=TemplateRuntime,focusState=FOREGROUND
+##############################################################################
+#     RenderTemplateCard                                                      
+#-----------------------------------------------------------------------------
+# Focus State         : FOREGROUND
+# Template Type       : BodyTemplate2
+# Main Title          : ARE YOU THERE
+##############################################################################
+
+2022-02-03 17:32:12.741 [ 1d] 0 MediaPlayer:callingOnBufferingComplete:name=SpeakMediaPlayer,currentId=1
+2022-02-03 17:32:12.742 [  f] 0 MediaPlayer:handlePlayCalled:name=SpeakMediaPlayer,idPassed=1,currentId=1
+2022-02-03 17:32:12.750 [  f] 0 MediaPlayer:handlePlay:name=SpeakMediaPlayer,startingState=PAUSED,stateReturn=ASYNC
+2022-02-03 17:32:12.750 [  f] W MediaPlayer:getCurrentStreamOffsetError:name=SpeakMediaPlayer,reason=getElementGetStateUnsuccessful,stateChangeReturn=ASYNC
+2022-02-03 17:32:12.750 [  f] 0 SpeechSynthesizer:onFirstByteRead:id=1
+2022-02-03 17:32:12.751 [  f] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:12.949 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:12.949 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:12.952 [  f] 0 MediaPlayer:callingOnPlaybackStarted:name=SpeakMediaPlayer,currentId=1
+2022-02-03 17:32:12.952 [ 1d] 0 SpeechSynthesizer:executePlaybackStarted
+2022-02-03 17:32:12.952 [ 1d] 0 SpeechSynthesizer:executeProvideState:stateRequestToken=0,state=PLAYING
+2022-02-03 17:32:12.952 [  7] I ContextManager:updateCapabilityState
+2022-02-03 17:32:12.952 [ 1d] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=PLAYING
+2022-02-03 17:32:12.953 [  c] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=PLAYING
+2022-02-03 17:32:12.953 [  c] 0 DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true
+2022-02-03 17:32:12.953 [ 1d] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+###########################
+#       Speaking...       #
+###########################
+
+2022-02-03 17:32:12.953 [  8] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=SPEAKING
+2022-02-03 17:32:12.953 [ 1d] 0 EventBuilder:buildJsonEventString:messageId=b717b478-838b-4d83-98df-30a84a4224c2,namespace=SpeechSynthesizer,name=SpeechStarted
+2022-02-03 17:32:12.953 [ 1d] 0 EventBuilder:buildJsonEventString:event={"event"\:{"header"\:{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechStarted"\,"messageId"\:"b717b478-838b-4d83-98df-30a84a4224c2"}\,"payload"\:{"token"\:"amzn1.as-ct.v1.ThirdPartySdkSpeechlet#ACRI#ValidatedSpeakDirective_amzn1.ask.skill.03baeacc-1417-4568-adda-661c6afb72a3_ca32b453-4ba2-4ba0-b827-6214d7665fdf_VoiceInitiated#ACRI#[[ENCRYPTED_WITH_AlexaServiceKeyMasterUtil]]AAAAAAAAAACIY6GC168pIOAcJroKr/xXVQAAAAAAAACzxa79k8wufT7HB7yMCDvFjLOaASzBtt0s2/k316QsejLD48iTLLXthWqMu0OmAIoQxNIFVAiGD+BCVhvazed1AB8U/ReWF05MLP4CNY2ILXovMTaO"}}}
+2022-02-03 17:32:12.953 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:12.953 [ 1b] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechRecognizer,focusState=NONE
+2022-02-03 17:32:12.953 [ 1b] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechSynthesizer,focusState=FOREGROUND
+2022-02-03 17:32:12.999 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:13.303 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: eb833ec6-eebd-46a6-b907-306e98d39777
+2022-02-03 17:32:13.303 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-9
+2022-02-03 17:32:13.913 [  f] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:16.185 [  f] 0 MediaPlayer:callingOnPlaybackFinished:name=SpeakMediaPlayer,currentId=1
+2022-02-03 17:32:16.185 [ 13] 0 SpeechSynthesizer:executePlaybackFinished
+2022-02-03 17:32:16.185 [ 13] 0 SpeechSynthesizer:executeProvideState:stateRequestToken=0,state=FINISHED
+2022-02-03 17:32:16.185 [ 13] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=FINISHED
+2022-02-03 17:32:16.186 [ 1e] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=FINISHED
+2022-02-03 17:32:16.186 [ 13] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:16.185 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:16.186 [ 13] 0 EventBuilder:buildJsonEventString:messageId=20337c7d-342f-45d1-9dc3-b428b992bb9c,namespace=SpeechSynthesizer,name=SpeechFinished
+2022-02-03 17:32:16.186 [ 13] 0 EventBuilder:buildJsonEventString:event={"event"\:{"header"\:{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechFinished"\,"messageId"\:"20337c7d-342f-45d1-9dc3-b428b992bb9c"}\,"payload"\:{"token"\:"amzn1.as-ct.v1.ThirdPartySdkSpeechlet#ACRI#ValidatedSpeakDirective_amzn1.ask.skill.03baeacc-1417-4568-adda-661c6afb72a3_ca32b453-4ba2-4ba0-b827-6214d7665fdf_VoiceInitiated#ACRI#[[ENCRYPTED_WITH_AlexaServiceKeyMasterUtil]]AAAAAAAAAACIY6GC168pIOAcJroKr/xXVQAAAAAAAACzxa79k8wufT7HB7yMCDvFjLOaASzBtt0s2/k316QsejLD48iTLLXthWqMu0OmAIoQxNIFVAiGD+BCVhvazed1AB8U/ReWF05MLP4CNY2ILXovMTaO"}}}
+2022-02-03 17:32:16.186 [ 13] 0 DirectiveProcessor:onHandlingCompeted:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:16.186 [ 13] 0 CapabilityAgent:removingMessageIdFromMap:messageId=061c1f95-e7d7-4433-96df-d20f2230f5e7
+2022-02-03 17:32:16.187 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:16.387 [ 1e] 0 DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true
+2022-02-03 17:32:16.387 [ 13] 1 FocusManager:releaseChannel:channelName=Dialog
+2022-02-03 17:32:16.387 [  e] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=IDLE
+2022-02-03 17:32:16.387 [  e] 0 AudioInputProcessor:executeResetState
+########################################
+#       Alexa is currently idle!       #
+########################################
+
+2022-02-03 17:32:16.387 [ 20] 0 Channel:addToChannelUpdatesLocked:interface=SpeechSynthesizer,focusState=NONE
+2022-02-03 17:32:16.388 [ 20] 0 SpeechSynthesizer:onFocusChanged:newFocus=NONE,result=skip,state=FINISHED
+2022-02-03 17:32:16.388 [ 20] W Channel:notifyActivitiesFailed::No Associated Activities Found
+2022-02-03 17:32:16.388 [ 20] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechSynthesizer,focusState=NONE
+2022-02-03 17:32:16.543 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 8f4eb496-90d0-44d7-b923-077b1b10f4cc
+2022-02-03 17:32:16.543 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-11
+##############################################################################
+#     RenderTemplateCard - Cleared                                            
+##############################################################################
+
+2022-02-03 17:32:18.388 [  b] 1 FocusManager:releaseChannel:channelName=Visual
+2022-02-03 17:32:18.388 [ 14] 0 Channel:addToChannelUpdatesLocked:interface=TemplateRuntime,focusState=NONE
+2022-02-03 17:32:18.388 [ 14] W Channel:notifyActivitiesFailed::No Associated Activities Found
+2022-02-03 17:32:18.388 [ 14] 1 FocusManager:notifyActivityTracker:name=Visual,interfaceName=TemplateRuntime,focusState=NONE
+2022-02-03 17:32:22.973 [ 12] 0 AudioInputProcessor:notEncodingAudio
+2022-02-03 17:32:22.973 [ 12] 0 AudioInputProcessor:Create audio reader:format=LPCM,offset=59334,encodingOffset=0
+2022-02-03 17:32:22.973 [ 12] I AudioInputProcessor:Create audio attachment reader success:resolveKey=DEFAULT_RESOLVE_KEY,format=AUDIO_L16_RATE_16000_CHANNELS_1
+2022-02-03 17:32:22.973 [ 12] W MetricEventBuilder:addDataPointFailed:reason=invalidDataPoint
+2022-02-03 17:32:22.973 [ 12] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:22.973 [ 12] 0 AudioInputProcessor:setState:from=IDLE,to=RECOGNIZING
+2022-02-03 17:32:22.973 [ 12] I MessageRouter:onWakeConnectionRetry
+2022-02-03 17:32:22.973 [ 12] I MessageRouter:onWakeConnectionRetry:m_activeTransport=0x55c452521000
+2022-02-03 17:32:22.973 [ 12] I HTTP2Transport:onWakeConnectionRetry:this=0x55c452521000
+2022-02-03 17:32:22.973 [ 12] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=RECOGNIZING
+2022-02-03 17:32:22.973 [  c] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=RECOGNIZING
+2022-02-03 17:32:22.973 [  c] 0 DialogUXStateAggregator:executeSetState:from=IDLE,to=LISTENING,validTransition=true
+############################
+#       Listening...       #
+############################
+
+2022-02-03 17:32:22.974 [ 1c] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=3
+2022-02-03 17:32:22.974 [ 1c] 0 ExternalMediaPlayer:executeProvideState:providePlaybackState={"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}
+2022-02-03 17:32:22.974 [  a] I PortAudioMicrophoneWrapper:startStreamingMicrophoneData
+2022-02-03 17:32:22.974 [ 1c] 0 ExternalMediaPlayer:executeProvideState:sendToken=true,stateRequestToken=3
+2022-02-03 17:32:22.974 [ 1c] 0 ExternalMediaPlayer:executeProvideState:provideSessionState={"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}
+2022-02-03 17:32:22.974 [ 12] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=LISTENING
+2022-02-03 17:32:22.974 [ 1b] I ContextManager:updateCapabilityState
+2022-02-03 17:32:22.974 [ 1b] I ContextManager:updateCapabilityState
+2022-02-03 17:32:22.974 [ 1b] I ContextManager:updateCapabilityState
+2022-02-03 17:32:22.974 [ 1b] I ContextManager:updateCapabilityState
+2022-02-03 17:32:22.975 [ 12] 0 AudioInputProcessor:executeOnContextAvailable
+2022-02-03 17:32:22.975 [ 12] 1 FocusManager:acquireChannel:channelName=Dialog,interface=SpeechRecognizer
+2022-02-03 17:32:22.975 [ 12] I DirectiveProcessor:setDialogRequestIdLocked:oldValue=30faf21e-b09b-407c-988a-46f229692535,newValue=b9c9c514-cea4-4cc5-a126-87480bd3f0e9
+2022-02-03 17:32:22.975 [ 12] 0 DirectiveProcessor:scrubDialogRequestIdLocked:dialogRequestId=30faf21e-b09b-407c-988a-46f229692535
+2022-02-03 17:32:22.975 [  6] 0 Channel:addToChannelUpdatesLocked:interface=SpeechRecognizer,focusState=FOREGROUND
+2022-02-03 17:32:22.975 [  6] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechRecognizer,focusState=FOREGROUND
+2022-02-03 17:32:22.975 [ 12] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:22.976 [ 12] 0 EventBuilder:buildJsonEventString:messageId=605530db-6599-4531-ad21-6d9d13c77cf6,namespace=SpeechRecognizer,name=Recognize
+2022-02-03 17:32:22.976 [ 12] 0 EventBuilder:buildJsonEventString:event={"context"\:{"properties"\:[{"namespace"\:"Alerts"\,"name"\:"AlertsState"\,"value"\:{"allAlerts"\:[]\,"activeAlerts"\:[]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.302Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Alexa.PlaybackStateReporter"\,"name"\:"playbackState"\,"value"\:{"state"\:"IDLE"\,"supportedOperations"\:[]\,"shuffle"\:"NOT_SHUFFLED"\,"repeat"\:"NOT_REPEATED"\,"favorite"\:"NOT_RATED"\,"positionMilliseconds"\:0\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:32\:22.974Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"AudioActivityTracker"\,"name"\:"ActivityState"\,"value"\:{"dialog"\:{"interface"\:"SpeechSynthesizer"\,"idleTimeInMilliseconds"\:6586}}\,"timeOfSample"\:"2022-02-03T17\:32\:22.974Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"AudioPlayer"\,"name"\:"PlaybackState"\,"value"\:{"token"\:""\,"offsetInMilliseconds"\:0\,"playerActivity"\:"IDLE"}\,"timeOfSample"\:"2022-02-03T17\:31\:55.822Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"EqualizerController"\,"name"\:"EqualizerState"\,"value"\:{"bands"\:[{"name"\:"TREBLE"\,"level"\:0}\,{"name"\:"MIDRANGE"\,"level"\:0}\,{"name"\:"BASS"\,"level"\:0}]}\,"timeOfSample"\:"2022-02-03T17\:31\:54.330Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"ExternalMediaPlayer"\,"name"\:"ExternalMediaPlayerState"\,"value"\:{"agent"\:"CQCAFYNYDC"\,"spiVersion"\:"1.0"\,"playerInFocus"\:""\,"players"\:[]}\,"timeOfSample"\:"2022-02-03T17\:32\:22.974Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Notifications"\,"name"\:"IndicatorState"\,"value"\:{"isEnabled"\:false\,"isVisualIndicatorPersisted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"Speaker"\,"name"\:"VolumeState"\,"value"\:{"volume"\:100\,"muted"\:false}\,"timeOfSample"\:"2022-02-03T17\:31\:54.314Z"\,"uncertaintyInMilliseconds"\:0}\,{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechState"\,"value"\:{"token"\:"amzn1.as-ct.v1.ThirdPartySdkSpeechlet#ACRI#ValidatedSpeakDirective_amzn1.ask.skill.03baeacc-1417-4568-adda-661c6afb72a3_ca32b453-4ba2-4ba0-b827-6214d7665fdf_VoiceInitiated#ACRI#[[ENCRYPTED_WITH_AlexaServiceKeyMasterUtil]]AAAAAAAAAACIY6GC168pIOAcJroKr/xXVQAAAAAAAACzxa79k8wufT7HB7yMCDvFjLOaASzBtt0s2/k316QsejLD48iTLLXthWqMu0OmAIoQxNIFVAiGD+BCVhvazed1AB8U/ReWF05MLP4CNY2ILXovMTaO"\,"offsetInMilliseconds"\:0\,"playerActivity"\:"FINISHED"}\,"timeOfSample"\:"2022-02-03T17\:32\:16.186Z"\,"uncertaintyInMilliseconds"\:0}]}\,"event"\:{"header"\:{"namespace"\:"SpeechRecognizer"\,"name"\:"Recognize"\,"messageId"\:"605530db-6599-4531-ad21-6d9d13c77cf6"\,"dialogRequestId"\:"b9c9c514-cea4-4cc5-a126-87480bd3f0e9"}\,"payload"\:{"profile"\:"NEAR_FIELD"\,"initiator"\:{"type"\:"TAP"\,"payload"\:{}}\,"startOfSpeechTimestamp"\:"1765352054089"\,"format"\:"AUDIO_L16_RATE_16000_CHANNELS_1"}}}
+2022-02-03 17:32:22.976 [ 12] 0 AudioInputProcessor:executeOnFocusChanged:newFocus=FOREGROUND
+2022-02-03 17:32:22.976 [ 12] 0 AudioInputProcessor:sendRequestNow
+2022-02-03 17:32:22.976 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:26.623 [ 18] 0 AudioInputProcessor:onResponseStatusReceived:status=SUCCESS
+2022-02-03 17:32:26.624 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: b31c1f5d-48d2-425d-bd3e-a0363e353732
+2022-02-03 17:32:26.623 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:26.624 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-13
+2022-02-03 17:32:26.624 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:SpeechRecognizer\,name\:StopCapture\,messageId\:317ceeda-12cf-44f0-be5e-9319b499db73\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:26.625 [ 21] I DirectiveRouter:preHandleDirective:messageId=317ceeda-12cf-44f0-be5e-9319b499db73,action=calling
+2022-02-03 17:32:26.625 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:26.625 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=317ceeda-12cf-44f0-be5e-9319b499db73
+2022-02-03 17:32:26.625 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:SpeechRecognizer\,name\:SetEndOfSpeechOffset\,messageId\:a45d0618-c171-4315-a7d3-50c092b0adb7\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:26.625 [ 22] I DirectiveRouter:handleDirective:messageId=317ceeda-12cf-44f0-be5e-9319b499db73,action=calling
+2022-02-03 17:32:26.625 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:26.625 [ 21] I DirectiveRouter:preHandleDirective:messageId=a45d0618-c171-4315-a7d3-50c092b0adb7,action=calling
+2022-02-03 17:32:26.625 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=a45d0618-c171-4315-a7d3-50c092b0adb7
+2022-02-03 17:32:26.625 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:InteractionModel\,name\:RequestProcessingStarted\,messageId\:f321ea34-4a93-4461-bd57-fa932a4ba5e0\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:26.625 [ 22] I DirectiveRouter:handleDirective:messageId=a45d0618-c171-4315-a7d3-50c092b0adb7,action=calling
+2022-02-03 17:32:26.625 [ 21] I DirectiveRouter:preHandleDirective:messageId=f321ea34-4a93-4461-bd57-fa932a4ba5e0,action=calling
+2022-02-03 17:32:26.626 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=f321ea34-4a93-4461-bd57-fa932a4ba5e0
+2022-02-03 17:32:26.626 [ 1a] 0 AudioInputProcessor:stopCapture:stopImmediately=true
+2022-02-03 17:32:26.626 [ 1a] 0 AudioInputProcessor:setState:from=RECOGNIZING,to=BUSY
+2022-02-03 17:32:26.626 [ 1a] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=BUSY
+2022-02-03 17:32:26.626 [ 1a] 0 DirectiveProcessor:onHandlingCompeted:messageId=317ceeda-12cf-44f0-be5e-9319b499db73,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:26.626 [ 13] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=BUSY
+2022-02-03 17:32:26.626 [ 1a] 0 CapabilityAgent:removingMessageIdFromMap:messageId=317ceeda-12cf-44f0-be5e-9319b499db73
+2022-02-03 17:32:26.626 [ 22] 0 AudioInputProcessor:handleSetEndOfSpeechOffsetDirective:startTimeSpeech(ms)=1765352054089,endTimeSpeech(ms)=1765352057024
+2022-02-03 17:32:26.626 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=a45d0618-c171-4315-a7d3-50c092b0adb7,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:26.626 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=a45d0618-c171-4315-a7d3-50c092b0adb7
+2022-02-03 17:32:26.627 [ 22] I DirectiveRouter:handleDirective:messageId=f321ea34-4a93-4461-bd57-fa932a4ba5e0,action=calling
+2022-02-03 17:32:26.627 [ 22] 0 DialogUXStateAggregator:onRequestProcessingStarted
+2022-02-03 17:32:26.628 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=f321ea34-4a93-4461-bd57-fa932a4ba5e0,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:26.628 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=f321ea34-4a93-4461-bd57-fa932a4ba5e0
+2022-02-03 17:32:26.628 [ 13] 0 DialogUXStateAggregator:onRequestProcessingStartedLambda:currentState=LISTENING
+2022-02-03 17:32:26.628 [ 13] 0 DialogUXStateAggregator:executeSetState:from=LISTENING,to=THINKING,validTransition=true
+2022-02-03 17:32:26.628 [ 1f] I PortAudioMicrophoneWrapper:stopStreamingMicrophoneData
+###########################
+#       Thinking...       #
+###########################
+
+2022-02-03 17:32:26.628 [ 1a] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=THINKING
+2022-02-03 17:32:26.634 [ 18] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:27.063 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:27.064 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:SpeechSynthesizer\,name\:Speak\,messageId\:eb14994b-1403-4b6e-be1b-becef56019d1\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:27.064 [ 21] I DirectiveRouter:preHandleDirective:messageId=eb14994b-1403-4b6e-be1b-becef56019d1,action=calling
+2022-02-03 17:32:27.064 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=eb14994b-1403-4b6e-be1b-becef56019d1
+2022-02-03 17:32:27.065 [ 20] 0 SpeechSynthesizer:executePreHandle:messageId=eb14994b-1403-4b6e-be1b-becef56019d1
+2022-02-03 17:32:27.065 [ 22] I DirectiveRouter:handleDirective:messageId=eb14994b-1403-4b6e-be1b-becef56019d1,action=calling
+2022-02-03 17:32:27.065 [ 20] 0 SpeechSynthesizer:executeHandle:messageId=eb14994b-1403-4b6e-be1b-becef56019d1
+2022-02-03 17:32:27.065 [ 20] 1 FocusManager:acquireChannel:channelName=Dialog,interface=SpeechSynthesizer
+2022-02-03 17:32:27.065 [  7] 0 Channel:addToChannelUpdatesLocked:interface=SpeechRecognizer,focusState=NONE
+2022-02-03 17:32:27.066 [  7] 0 Channel:addToChannelUpdatesLocked:interface=SpeechSynthesizer,focusState=FOREGROUND
+2022-02-03 17:32:27.066 [  7] 0 SpeechSynthesizer:onFocusChanged:newFocus=FOREGROUND,MixingBehavior=PRIMARY
+2022-02-03 17:32:27.066 [ 1a] 0 AudioInputProcessor:executeOnFocusChanged:newFocus=NONE
+2022-02-03 17:32:27.066 [ 1a] 0 AudioInputProcessor:executeOnFocusChanged:reason=Lost focus
+2022-02-03 17:32:27.066 [  7] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=GAINING_FOCUS
+2022-02-03 17:32:27.066 [ 1a] 0 AudioInputProcessor:executeResetState
+2022-02-03 17:32:27.066 [ 13] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=GAINING_FOCUS
+2022-02-03 17:32:27.066 [ 20] 0 SpeechSynthesizer:executeStateChange:newState=PLAYING
+2022-02-03 17:32:27.066 [ 1a] 0 AudioInputProcessor:setState:from=BUSY,to=IDLE
+2022-02-03 17:32:27.066 [ 1a] 0 DialogUXStateAggregator:onStateChanged:AudioInputProcessorState=IDLE
+2022-02-03 17:32:27.066 [  f] 0 MediaPlayer:handleSetAttachmentReaderSourceCalled:name=SpeakMediaPlayer
+2022-02-03 17:32:27.067 [ 13] 0 DialogUXStateAggregator:onStateChangedLambda:AudioInputProcessorState=IDLE
+2022-02-03 17:32:27.067 [ 20] 0 MediaPlayer:callingOnBufferingComplete:name=SpeakMediaPlayer,currentId=2
+2022-02-03 17:32:27.067 [  f] 0 MediaPlayer:handlePlayCalled:name=SpeakMediaPlayer,idPassed=2,currentId=2
+2022-02-03 17:32:27.072 [  f] 0 MediaPlayer:handlePlay:name=SpeakMediaPlayer,startingState=PAUSED,stateReturn=ASYNC
+2022-02-03 17:32:27.072 [  f] W MediaPlayer:getCurrentStreamOffsetError:name=SpeakMediaPlayer,reason=getElementGetStateUnsuccessful,stateChangeReturn=ASYNC
+2022-02-03 17:32:27.072 [  f] 0 SpeechSynthesizer:onFirstByteRead:id=2
+2022-02-03 17:32:27.300 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:27.301 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:27.308 [  f] 0 MediaPlayer:callingOnPlaybackStarted:name=SpeakMediaPlayer,currentId=2
+2022-02-03 17:32:27.308 [ 20] 0 SpeechSynthesizer:executePlaybackStarted
+2022-02-03 17:32:27.308 [ 20] 0 SpeechSynthesizer:executeProvideState:stateRequestToken=0,state=PLAYING
+2022-02-03 17:32:27.308 [ 15] I ContextManager:updateCapabilityState
+2022-02-03 17:32:27.308 [ 20] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=PLAYING
+2022-02-03 17:32:27.309 [ 20] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:27.309 [ 20] 0 EventBuilder:buildJsonEventString:messageId=c7ac9876-b0ea-4d70-89a8-4dad90bbbb72,namespace=SpeechSynthesizer,name=SpeechStarted
+2022-02-03 17:32:27.309 [ 20] 0 EventBuilder:buildJsonEventString:event={"event"\:{"header"\:{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechStarted"\,"messageId"\:"c7ac9876-b0ea-4d70-89a8-4dad90bbbb72"}\,"payload"\:{"token"\:"amzn1.as-ct.v1.ThirdPartySdkSpeechlet#ACRI#ValidatedSpeakDirective_amzn1.ask.skill.c832b729-df60-4d10-b9cb-15e17255cc33_db5f0a5f-9c1f-4e60-bfdf-30da728e5a2f_VoiceInitiated#ACRI#[[ENCRYPTED_WITH_AlexaServiceKeyMasterUtil]]AAAAAAAAAACIY6GC168pIOAcJroKr/xXVQAAAAAAAAAwqkcmo3prXk5jV/K/hPXJeShHLngpBHUTLIXeFCDjEkhPNpD5jNidYvdHeAvm7kC/1Jhy5CbSCRm6jb7kdZx5e+bwW7DBsD8NtLdBCC3mGwK93qrf"}}}
+2022-02-03 17:32:27.309 [ 13] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=PLAYING
+2022-02-03 17:32:27.309 [ 13] 0 DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true
+2022-02-03 17:32:27.309 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:27.309 [ 1a] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=SPEAKING
+###########################
+#       Speaking...       #
+###########################
+
+2022-02-03 17:32:27.309 [  7] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechRecognizer,focusState=NONE
+2022-02-03 17:32:27.309 [  7] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechSynthesizer,focusState=FOREGROUND
+2022-02-03 17:32:27.366 [  f] 0 MediaPlayer:callingOnTags:name=SpeakMediaPlayer
+2022-02-03 17:32:27.370 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:27.370 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:TemplateRuntime\,name\:RenderTemplate\,messageId\:17235cac-2248-4a01-8eb8-b4f784f98db5\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:27.370 [ 21] I DirectiveRouter:preHandleDirective:messageId=17235cac-2248-4a01-8eb8-b4f784f98db5,action=calling
+2022-02-03 17:32:27.370 [ 1e] 0 AvsDirective:parseEndpoint::noEndpoint
+2022-02-03 17:32:27.371 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=17235cac-2248-4a01-8eb8-b4f784f98db5
+2022-02-03 17:32:27.371 [ 1e] I DirectiveSequencer:onDirective:directive=namespace\:InteractionModel\,name\:RequestProcessingCompleted\,messageId\:15bf995a-8f87-49c7-bac9-88097280028d\,dialogRequestId\:b9c9c514-cea4-4cc5-a126-87480bd3f0e9\,correlationToken\:\,eventCorrelationToken\:\,payloadVersion\:\,instance\:
+2022-02-03 17:32:27.371 [ 22] I DirectiveRouter:handleDirective:messageId=17235cac-2248-4a01-8eb8-b4f784f98db5,action=calling
+2022-02-03 17:32:27.371 [  b] 1 FocusManager:acquireChannel:channelName=Visual,interface=TemplateRuntime
+2022-02-03 17:32:27.371 [ 21] I DirectiveRouter:preHandleDirective:messageId=15bf995a-8f87-49c7-bac9-88097280028d,action=calling
+2022-02-03 17:32:27.371 [  b] 0 DirectiveProcessor:onHandlingCompeted:messageId=17235cac-2248-4a01-8eb8-b4f784f98db5,directiveBeingPreHandled=15bf995a-8f87-49c7-bac9-88097280028d
+2022-02-03 17:32:27.371 [ 21] 0 CapabilityAgent:addingMessageIdToMap:messageId=15bf995a-8f87-49c7-bac9-88097280028d
+2022-02-03 17:32:27.371 [ 22] I DirectiveRouter:handleDirective:messageId=15bf995a-8f87-49c7-bac9-88097280028d,action=calling
+2022-02-03 17:32:27.371 [ 22] 0 DialogUXStateAggregator:onRequestProcessingCompleted
+2022-02-03 17:32:27.371 [ 22] 0 DirectiveProcessor:onHandlingCompeted:messageId=15bf995a-8f87-49c7-bac9-88097280028d,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:27.371 [ 13] 0 DialogUXStateAggregator:executeTryExitThinkingState
+2022-02-03 17:32:27.371 [  b] 0 CapabilityAgent:removingMessageIdFromMap:messageId=17235cac-2248-4a01-8eb8-b4f784f98db5
+2022-02-03 17:32:27.372 [ 22] 0 CapabilityAgent:removingMessageIdFromMap:messageId=15bf995a-8f87-49c7-bac9-88097280028d
+2022-02-03 17:32:27.372 [  3] 0 Channel:addToChannelUpdatesLocked:interface=TemplateRuntime,focusState=FOREGROUND
+2022-02-03 17:32:27.372 [  3] 1 FocusManager:notifyActivityTracker:name=Visual,interfaceName=TemplateRuntime,focusState=FOREGROUND
+##############################################################################
+#     RenderTemplateCard                                                      
+#-----------------------------------------------------------------------------
+# Focus State         : FOREGROUND
+# Template Type       : BodyTemplate2
+# Main Title          : 
+##############################################################################
+
+2022-02-03 17:32:27.417 [  f] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:27.711 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 7c81089e-1dd5-407f-9488-ebd2e4d8d11c
+2022-02-03 17:32:27.711 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-15
+2022-02-03 17:32:29.631 [  f] 0 DefaultAttachmentReader:readFailed:reason=SDS is closed
+2022-02-03 17:32:31.887 [  f] 0 MediaPlayer:callingOnPlaybackFinished:name=SpeakMediaPlayer,currentId=2
+2022-02-03 17:32:31.888 [ 1d] 0 SpeechSynthesizer:executePlaybackFinished
+2022-02-03 17:32:31.888 [ 1d] 0 SpeechSynthesizer:executeProvideState:stateRequestToken=0,state=FINISHED
+2022-02-03 17:32:31.888 [ 1d] 0 DialogUXStateAggregator:onStateChanged:SpeechSynthesizerState=FINISHED
+2022-02-03 17:32:31.888 [ 1c] 0 DialogUXStateAggregator:onStateChangedLambda:SpeechSynthesizerState=FINISHED
+2022-02-03 17:32:31.889 [ 1d] I UUIDGeneration:low entropy on call to generate UUID:current entropy=0
+2022-02-03 17:32:31.889 [ 1d] 0 EventBuilder:buildJsonEventString:messageId=0550cace-6c85-4f7c-9569-7183181bc867,namespace=SpeechSynthesizer,name=SpeechFinished
+2022-02-03 17:32:31.889 [ 1d] 0 EventBuilder:buildJsonEventString:event={"event"\:{"header"\:{"namespace"\:"SpeechSynthesizer"\,"name"\:"SpeechFinished"\,"messageId"\:"0550cace-6c85-4f7c-9569-7183181bc867"}\,"payload"\:{"token"\:"amzn1.as-ct.v1.ThirdPartySdkSpeechlet#ACRI#ValidatedSpeakDirective_amzn1.ask.skill.c832b729-df60-4d10-b9cb-15e17255cc33_db5f0a5f-9c1f-4e60-bfdf-30da728e5a2f_VoiceInitiated#ACRI#[[ENCRYPTED_WITH_AlexaServiceKeyMasterUtil]]AAAAAAAAAACIY6GC168pIOAcJroKr/xXVQAAAAAAAAAwqkcmo3prXk5jV/K/hPXJeShHLngpBHUTLIXeFCDjEkhPNpD5jNidYvdHeAvm7kC/1Jhy5CbSCRm6jb7kdZx5e+bwW7DBsD8NtLdBCC3mGwK93qrf"}}}
+2022-02-03 17:32:31.888 [ 10] I ContextManager:updateCapabilityState
+2022-02-03 17:32:31.889 [ 1d] 0 DirectiveProcessor:onHandlingCompeted:messageId=eb14994b-1403-4b6e-be1b-becef56019d1,directiveBeingPreHandled=(nullptr)
+2022-02-03 17:32:31.889 [ 16] 0 MessageRequestHandler:EventSent
+2022-02-03 17:32:31.890 [ 1d] 0 CapabilityAgent:removingMessageIdFromMap:messageId=eb14994b-1403-4b6e-be1b-becef56019d1
+2022-02-03 17:32:32.089 [ 1c] 0 DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true
+2022-02-03 17:32:32.089 [ 1d] 1 FocusManager:releaseChannel:channelName=Dialog
+########################################
+#       Alexa is currently idle!       #
+########################################
+
+2022-02-03 17:32:32.089 [  e] 0 AudioInputProcessor:executeOnDialogUXStateChanged:newState=IDLE
+2022-02-03 17:32:32.089 [  e] 0 AudioInputProcessor:executeResetState
+2022-02-03 17:32:32.089 [  a] 0 Channel:addToChannelUpdatesLocked:interface=SpeechSynthesizer,focusState=NONE
+2022-02-03 17:32:32.089 [  a] 0 SpeechSynthesizer:onFocusChanged:newFocus=NONE,result=skip,state=FINISHED
+2022-02-03 17:32:32.089 [  a] W Channel:notifyActivitiesFailed::No Associated Activities Found
+2022-02-03 17:32:32.090 [  a] 1 FocusManager:notifyActivityTracker:name=Dialog,interfaceName=SpeechSynthesizer,focusState=NONE
+2022-02-03 17:32:32.422 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 47475974-8c31-4736-9700-ad526caf2148
+2022-02-03 17:32:32.422 [ 18] 0 MimeResponseSink:receivedRequestId:value=x-amzn-requestid\: 02ca16fffe9b8bd7-000090fd-00c0e1fd-3ad76e480b5ee82d-6ee2b694-17
+##############################################################################
+#     RenderTemplateCard - Cleared                                            
+##############################################################################
+
+2022-02-03 17:32:34.090 [ 1f] 1 FocusManager:releaseChannel:channelName=Visual
+2022-02-03 17:32:34.090 [ 20] 0 Channel:addToChannelUpdatesLocked:interface=TemplateRuntime,focusState=NONE
+2022-02-03 17:32:34.090 [ 20] W Channel:notifyActivitiesFailed::No Associated Activities Found
+2022-02-03 17:32:34.090 [ 20] 1 FocusManager:notifyActivityTracker:name=Visual,interfaceName=TemplateRuntime,focusState=NONE

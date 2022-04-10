@@ -1,0 +1,12 @@
+[submodule "pysh"]
+  path = pysh
+  url = https://github.com/Mamatu/pysh
+  branch = main
+[submodule "vatf_utils"]
+  path = vatf_utils
+  url = https://github.com/Mamatu/vatf_utils.git
+  branch = issues/10
+[submodule "tools/python/vatf_utils"]
+	path = tools/python/vatf_utils
+  url = https://github.com/Mamatu/vatf_utils.git
+  branch = issues/10

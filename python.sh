@@ -1,0 +1,1 @@
+PYTHONPATH=..:.:./generator:$PYTHONPATH python "$@"
