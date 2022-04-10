@@ -7,10 +7,10 @@ import uuid
 from enum import Enum
 import random
 
-from vatf.generator import config, gen_core
+from vatf.generator import config, gen_tests
 
 def _play_audio(path):
-    gen_core.generate("play_audio", path = path)
+    gen_tests.create_call("play_audio", path = path)
 
 def get_random_audio_files(count = 1):
     dirs = config.get_pathes_to_audio_files()
