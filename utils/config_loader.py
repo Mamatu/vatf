@@ -109,23 +109,19 @@ class ConfigProxy:
     def get_pathes_audio_files(self):
         if not self.config:
             return ""
-        return self.config.assets.audio.path
-    def _convert_to_zone(self, dt, op):
+        return self.config.get_pathes_audio_files()
+    def convert_to_log_zone(self, dt):
         if not self.config:
             return dt
-        if self.config.va_log and self.config.va_log.timedelta:
-            return op(dt, self.config.va_log.timedelta)
-        return dt
-    def convert_to_log_zone(self, dt):
-        return self._convert_to_zone(dt, lambda d1, d2: d1 + d2)
+        return self.convert_to_log_zone(dt)
     def convert_to_system_zone(self, dt):
-        return self._convert_to_zone(dt, lambda d1, d2: d1 - d2)
+        if not self.config:
+            return dt
+        return self.convert_to_system_zone(dt)
     def get_regexes_for_sampling(self):
         if not self.config:
             return []
-        if self.config.utterance_from_va and self.config.utterance_from_va.regexes:
-            return [(regex.begin, regex.end) for regex in self.config.utterance_from_va.regexes]
-        return []
+        return self.config.get_regexes_for_sampling()
 
 def load(config_json_path = "./config.json", schema_json_path = None):
     return ConfigProxy(config_json_path, schema_json_path)
