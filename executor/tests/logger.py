@@ -8,6 +8,8 @@ import logging
 import textwrap
 import os
 
+import sys
+
 from vatf.executor import logger
 from vatf.utils import utils
 
@@ -34,23 +36,24 @@ class LoggerTests(TestCase):
         "2022-01-29 20:54:55.600 line6\n",
         "2022-01-29 20:54:56.568 line7\n"
         ]
-        path1 = self.create_file("w", text)
-        path2 = utils.get_temp_filepath()
-        DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-        now = datetime.datetime.strptime("2022-01-29 20:54:55.569", DATE_FORMAT)
-        logger.Start(now, path1, path2)
-        logger.WaitForLine()
-        logger.Stop()
-        with open(path2, "r") as f:
-            text = f.readlines()
-            logging.debug(text)
-            self.assertEqual(4, len(text))
-            self.assertEqual(text[0].rstrip(), "2022-01-29 20:54:55.569 line4")
-            self.assertEqual(text[1].rstrip(), "2022-01-29 20:54:55.570 line5")
-            self.assertEqual(text[2].rstrip(), "2022-01-29 20:54:55.600 line6")
-            self.assertEqual(text[3].rstrip(), "2022-01-29 20:54:56.568 line7")
-        os.remove(path1)
-        os.remove(path2)
+        with patch.object(sys, 'argv', ['', '', 'executor/tests/data/config.json']):
+            path1 = self.create_file("w", text)
+            path2 = utils.get_temp_filepath()
+            DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+            now = datetime.datetime.strptime("2022-01-29 20:54:55.569", DATE_FORMAT)
+            logger.Start(now, path1, path2)
+            logger.WaitForLine()
+            logger.Stop()
+            with open(path2, "r") as f:
+                text = f.readlines()
+                logging.debug(text)
+                self.assertEqual(4, len(text))
+                self.assertEqual(text[0].rstrip(), "2022-01-29 20:54:55.569 line4")
+                self.assertEqual(text[1].rstrip(), "2022-01-29 20:54:55.570 line5")
+                self.assertEqual(text[2].rstrip(), "2022-01-29 20:54:55.600 line6")
+                self.assertEqual(text[3].rstrip(), "2022-01-29 20:54:56.568 line7")
+            os.remove(path1)
+            os.remove(path2)
     def test_log_without_timestamps(self):
         text = [
         "2022-01-29 20:54:55.567 line1\n",
@@ -68,35 +71,37 @@ class LoggerTests(TestCase):
         "2022-01-29 20:54:56.568 line7\n"
         "line7\n",
         ]
-        path1 = self.create_file("w", text)
-        path2 = utils.get_temp_filepath()
-        DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-        now = datetime.datetime.strptime("2022-01-29 20:54:55.569", DATE_FORMAT)
-        logger.Start(now, path1, path2)
-        logger.WaitForLine()
-        logger.Stop()
-        with open(path2, "r") as f:
-            text = f.readlines()
-            logging.debug(text)
-            self.assertEqual(8, len(text))
-            self.assertEqual(text[0].rstrip(), "2022-01-29 20:54:55.569 line4"),
-            self.assertEqual(text[1].rstrip(), "line4"),
-            self.assertEqual(text[2].rstrip(), "2022-01-29 20:54:55.570 line5"),
-            self.assertEqual(text[3].rstrip(), "line5")
-            self.assertEqual(text[4].rstrip(), "2022-01-29 20:54:55.600 line6")
-            self.assertEqual(text[5].rstrip(), "line6")
-            self.assertEqual(text[6].rstrip(), "2022-01-29 20:54:56.568 line7")
-            self.assertEqual(text[7].rstrip(), "line7")
-        os.remove(path1)
-        os.remove(path2)
+        with patch.object(sys, 'argv', ['', '', 'executor/tests/data/config.json']):
+            path1 = self.create_file("w", text)
+            path2 = utils.get_temp_filepath()
+            DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+            now = datetime.datetime.strptime("2022-01-29 20:54:55.569", DATE_FORMAT)
+            logger.Start(now, path1, path2)
+            logger.WaitForLine()
+            logger.Stop()
+            with open(path2, "r") as f:
+                text = f.readlines()
+                logging.debug(text)
+                self.assertEqual(8, len(text))
+                self.assertEqual(text[0].rstrip(), "2022-01-29 20:54:55.569 line4"),
+                self.assertEqual(text[1].rstrip(), "line4"),
+                self.assertEqual(text[2].rstrip(), "2022-01-29 20:54:55.570 line5"),
+                self.assertEqual(text[3].rstrip(), "line5")
+                self.assertEqual(text[4].rstrip(), "2022-01-29 20:54:55.600 line6")
+                self.assertEqual(text[5].rstrip(), "line6")
+                self.assertEqual(text[6].rstrip(), "2022-01-29 20:54:56.568 line7")
+                self.assertEqual(text[7].rstrip(), "line7")
+            os.remove(path1)
+            os.remove(path2)
     def test_log_(self):
-        path2 = utils.get_temp_filepath()
-        DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-        now = datetime.datetime.strptime("2022-02-03 17:32:34.090", DATE_FORMAT)
-        logger.Start(now, "executor/tests/data/test.log", path2)
-        logger.WaitForLine()
-        logger.Stop()
-        with open(path2, "r") as f:
-            text = f.readlines()
-            logging.debug(text)
-            self.assertEqual(4, len(text))
+        with patch.object(sys, 'argv', ['', '', 'executor/tests/data/config.json']):
+            path2 = utils.get_temp_filepath()
+            DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+            now = datetime.datetime.strptime("2022-02-03 17:32:34.090", DATE_FORMAT)
+            logger.Start(now, "executor/tests/data/test.log", path2)
+            logger.WaitForLine()
+            logger.Stop()
+            with open(path2, "r") as f:
+                text = f.readlines()
+                logging.debug(text)
+                self.assertEqual(4, len(text))

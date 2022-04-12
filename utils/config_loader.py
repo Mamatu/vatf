@@ -4,6 +4,8 @@ from jsonschema import validate
 import logging
 import os
 
+from vatf.utils import os_proxy
+
 class AudioFile:
     def __init__(self, file_obj):
         self.name = file_obj['name']
@@ -63,24 +65,21 @@ class VaLog:
         self.path = va_log["path"]
         self.timedelta = datetime.timedelta(**va_log["timedelta"])
 
-class ConfigLoader:
+class Config:
     def __init__(self, config_json_path = None, schema_json_path = None):
-        self.searched_audio_files_pathes = ""
-        self.data = None
-        if config_json_path:
-            with open(config_json_path) as f:
-                logging.debug(f"Reads {config_json_path}")
-                data = json.load(f)
-                self.data = data
-                if schema_json_path:
-                    with open(schema_json_path) as schema:
-                        logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
-                        validate(data, schema=json.load(schema))
-                self.assets = Assets(data)
-                self.va_log = VaLog(data)
-                self.utterance_from_va = UtteranceFromVA.create(data)
-                self.utterance_to_va = UtteranceToVA.create(data)
-                self.searched_audio_files_pathes = self.assets.audio.path
+        with open(config_json_path) as f:
+            logging.debug(f"Reads {config_json_path}")
+            data = json.load(f)
+            self.data = data
+            if schema_json_path:
+                with open(schema_json_path) as schema:
+                    logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
+                    validate(data, schema=json.load(schema))
+            self.assets = Assets(data)
+            self.va_log = VaLog(data)
+            self.utterance_from_va = UtteranceFromVA.create(data)
+            self.utterance_to_va = UtteranceToVA.create(data)
+            self.searched_audio_files_pathes = self.assets.audio.path
     def get_copy(self):
         import copy
         return copy.deepcopy(self)
@@ -99,5 +98,34 @@ class ConfigLoader:
             return [(regex.begin, regex.end) for regex in self.utterance_from_va.regexes]
         return []
 
+class ConfigProxy:
+    def __init__(self, config_json_path = None, schema_json_path = None):
+        self.config = None
+        if config_json_path and os_proxy.exists(config_json_path):
+            self.config = Config(config_json_path, schema_json_path)
+    def get_copy(self):
+        import copy
+        return copy.deepcopy(self)
+    def get_pathes_audio_files(self):
+        if not self.config:
+            return ""
+        return self.config.assets.audio.path
+    def _convert_to_zone(self, dt, op):
+        if not self.config:
+            return dt
+        if self.config.va_log and self.config.va_log.timedelta:
+            return op(dt, self.config.va_log.timedelta)
+        return dt
+    def convert_to_log_zone(self, dt):
+        return self._convert_to_zone(dt, lambda d1, d2: d1 + d2)
+    def convert_to_system_zone(self, dt):
+        return self._convert_to_zone(dt, lambda d1, d2: d1 - d2)
+    def get_regexes_for_sampling(self):
+        if not self.config:
+            return []
+        if self.config.utterance_from_va and self.config.utterance_from_va.regexes:
+            return [(regex.begin, regex.end) for regex in self.config.utterance_from_va.regexes]
+        return []
+
 def load(config_json_path = "./config.json", schema_json_path = None):
-    return ConfigLoader(config_json_path, schema_json_path)
+    return ConfigProxy(config_json_path, schema_json_path)

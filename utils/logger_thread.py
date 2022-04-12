@@ -2,13 +2,14 @@ import datetime
 import threading
 import logging
 
-from vatf_utils import utils
-from vatf_utils import config
+from vatf.utils import utils
+from vatf.utils import config_loader
 
 class LoggerThread(threading.Thread):
-    def __init__(self, now, inpath, outpath, delta = 0.5):
+    def __init__(self, now, inpath, outpath, config_path, delta = 0.5):
         threading.Thread.__init__(self)
-        self.now = config.ConvertToLogZone(now)
+        cfg = config_loader.load(config_path)
+        self.now = cfg.convert_to_log_zone(now)
         self.inpath = inpath
         self.outpath = outpath
         self.delta = delta

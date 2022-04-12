@@ -17,11 +17,13 @@ from vatf.utils import utils, os_proxy
 
 _logger_thread = None
 
-def Start(now, inpath, outpath):
-    if not os_proxy.exists(inpath):
-        raise FileNotFoundError(inpath)
+def Start(now, inpath, outpath, config_path = None):
+    def check_file(path):
+        if not os_proxy.exists(path):
+            raise FileNotFoundError(path)
+    check_file(inpath)
     global _logger_thread
-    _logger_thread = logger_thread.LoggerThread(now, inpath, outpath)
+    _logger_thread = logger_thread.LoggerThread(now, inpath, outpath, config_path)
     _logger_thread.start()
 
 def WaitForLine():
