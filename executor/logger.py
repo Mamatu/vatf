@@ -5,21 +5,23 @@ It is one of method to collect log data.
 
 import datetime
 
-from vatf_utils import utils
-from vatf_utils import config
 import time
 import logging
 
-from modules import logger as mlogger
 
 import signal
 import sys
 
+from vatf.utils import logger_thread
+from vatf.utils import utils, os_proxy
+
 _logger_thread = None
 
 def Start(now, inpath, outpath):
+    if not os_proxy.exists(inpath):
+        raise FileNotFoundError(inpath)
     global _logger_thread
-    _logger_thread = mlogger.LoggerThread(now, inpath, outpath)
+    _logger_thread = logger_thread.LoggerThread(now, inpath, outpath)
     _logger_thread.start()
 
 def WaitForLine():

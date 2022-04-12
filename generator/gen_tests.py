@@ -1,10 +1,10 @@
-import os_proxy
 import logging
 
-from vatf.utils.config_loader import ConfigLoader
-from vatf import test_api
+from vatf.utils import os_proxy
+from vatf import vatf_register
 
 _test_py_file = None
+_test_name = None
 
 def _k_repr(k):
     if isinstance(k, str):
@@ -24,9 +24,15 @@ def make_pycall(function_name, *args, **kwargs):
     funcall = f"{funcall}({py_args})"
     return funcall
 
-def _create(filepath, config = None, testf_ctx = None):
+def _create_pytest_file(suite_path, test_name):
     global _test_py_file
-    _test_py_file = os_proxy.open_to_write(filepath)
+    _test_py_file = os_proxy.join(suite_path, test_name, "test.py")
+    _test_py_file = os_proxy.open_to_write(_test_py_file)
+
+def _create_assets_dir(suite_path, test_name):
+    assets_path = os_proxy.join(suite_path, test_name, "assets")
+    os_proxy.mkdir(assets_path)
+    os_proxy.mkdir(os_proxy.join(assets_path, "audio_files"))
 
 def _create_test_config(config):
     import json
@@ -38,49 +44,43 @@ def _create_tools(config):
     logging.info(f"{_create_tools.__name__} create tools in {config.test_path}")
     import shutil
     import pathlib
-    toolsPath = os.path.join(config.test_path, "tools")
-    if os.path.exists(toolsPath):
-        shutil.rmtree(toolsPath)
+    toolsPath = os_proxy.join(config.test_path, "tools")
+    os_proxy.remove(toolsPath)
     filedir = pathlib.Path(__file__).parent.resolve()
-    shutil.copytree(f'{filedir}/tools', toolsPath)
+    os_proxy.copy(f'{filedir}/tools', toolsPath)
 
-def _create_test_dir(config, suite_path, filepath, testf_ctx):
-    global _test_py_file
-    if config is None:
-        config = Config("config.json")
-    logging.debug(f"Config: {config.__dict__}")
-    setattr(config, 'searched_audio_files_pathes', config.searched_audio_files_pathes)
-    setattr(config, 'suite_path', suite_path)
-    setattr(config, 'test_path', os.path.dirname(filepath))
-    setattr(config, 'rel_audio_files_path_in_test', "assets/audio_files")
-    setattr(config, 'abs_audio_files_path_in_test', os.path.join(config.test_path, config.rel_audio_files_path_in_test))
-    os_proxy.mkdir(config.__dict__['abs_audio_files_path_in_test'])
-    _create_test_config(config)
-    _create(filepath, config, testf_ctx)
-    _create_tools(config)
+def _create_test_dir(suite_path, test_name):
+    _test_name = test_name
+    #logging.debug(f"Config: {config.__dict__}")
+    #setattr(config, 'searched_audio_files_pathes', config.searched_audio_files_pathes)
+    #setattr(config, 'suite_path', suite_path)
+    #setattr(config, 'test_path', os_proxy.dirname(filepath))
+    #setattr(config, 'rel_audio_files_path_in_test', "assets/audio_files")
+    #setattr(config, 'abs_audio_files_path_in_test', os_proxy.join(config.test_path, config.rel_audio_files_path_in_test))
+    os_proxy.mkdir(os_proxy.join(suite_path, test_name))
+    _create_assets_dir(suite_path, test_name)
+    _create_pytest_file(suite_path, test_name)
+    #_create_test_config(config)
+    #_create_tools(config)
 
 def create_call(function_name, *args, **kwargs):
     global _test_py_file
-    if not test_api.is_registered(function_name):
+    if not vatf_register.is_registered(function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    _test_py_file.write(f"{funcall}\n")
+    os_proxy.writeln_to_file(_test_py_file, funcall)
 
-def create_test(config, suite_path, test_name, test, cleanup = None):
-    global _run_test, _cleanup_test, _test_py_file
-    test_file_path = os.path.join(suite_path, test_name)
-    os_proxy.mkdir(test_file_path)
-    run_test_script = os.path.join(test_file_path, _run_test)
-    _create_test_dir(config, suite_path, run_test_script, TestFContextWithInit)
+def create_test(suite_path, test_name, test):
+    _create_test_dir(suite_path, test_name)
     test()
 
-def create_tests(config, suite_path, **kwargs):
+def create_tests(suite_path, **kwargs):
     test_names = []
     for k,v in kwargs.items():
         if isinstance(v, tuple):
-            create_test(config, suite_path, test_name = k, test = v[0], cleanup = v[1])
+            create_test(suite_path, test_name = k, test = v[0], cleanup = v[1])
         else:
-            create_test(config, suite_path, test_name = k, test = v)
-        test_names.append (k)
-    run_suite_script = os.path.join(suite_path, _run_suite)
+            create_test(suite_path, test_name = k, test = v)
+        test_names.append(k)
+    run_suite_script = os_proxy.join(suite_path, _run_suite)
     _create(run_suite_script)

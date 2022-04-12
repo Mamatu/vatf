@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import ANY, call, Mock, patch
 
 import logging
 import textwrap
@@ -17,30 +17,17 @@ class GenTestsTests(TestCase):
         self.assertEqual("foo('a', 1, a = 'a', b = 2)", gen_tests.make_pycall("foo", "a", 1, a = "a", b = 2))
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2)", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2))
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2, c = {'e': 9, 'f': 10})", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2, c = {"e": 9, "f": 10}))
-    #def test_searched_audio_files_pathes_as_str(self):
-    #    config = cfg.Config("generator/tests/config.json")
-    #    test = Mock()
-    #    get_tests.CreateTest(config, "/tmp/suite", "test", test)
-    #    pathes = get_tests.Get().getAudioFilesPathes("example.mp3")
-    #    self.assertTrue(isinstance(pathes, list))
-    #    self.assertEqual(config.abs_audio_files_path_in_test, "/tmp/suite/test/assets/audio_files");
-    #    self.assertEqual(pathes, ["/tmp/assets/audio_files/example.mp3"])
-    #    test.assert_called_once()
-    #def test_searched_audio_files_pathes_as_list(self):
-    #    config = cfg.Config("generator/tests/config.json")
-    #    test = Mock()
-    #    get_tests.CreateTest(config, "/tmp/suite", "test", test)
-    #    pathes = get_tests.Get().getAudioFilesPathes("example.mp3")
-    #    self.assertTrue(isinstance(pathes, list))
-    #    self.assertEqual(config.abs_audio_files_path_in_test, "/tmp/suite/test/assets/audio_files");
-    #    self.assertEqual(pathes, ["/tmp/assets/audio_files/example.mp3"])
-    #    test.assert_called_once()
-    #def test_searched_audio_files_pathes_as_list_two_pathes(self):
-    #    config = cfg.Config("generator/tests/config.json")
-    #    test = Mock()
-    #    get_tests.CreateTest(config, "/tmp/suite", "test", test)
-    #    pathes = get_tests.Get().getAudioFilesPathes("example.mp3")
-    #    self.assertTrue(isinstance(pathes, list))
-    #    self.assertEqual(config.abs_audio_files_path_in_test, "/tmp/suite/test/assets/audio_files");
-    #    self.assertEqual(pathes, ["/tmp/assets/audio_files/example.mp3"])
-    #    test.assert_called_once()
+    @patch("vatf.vatf_register.is_registered")
+    @patch("vatf.utils.os_proxy.write_to_file")
+    @patch("vatf.utils.os_proxy.mkdir")
+    @patch("vatf.utils.os_proxy.open_to_write")
+    def test_create_test(self, os_proxy_open_to_write, os_proxy_mkdir, os_proxy_write_to_file, is_registered):
+        is_registered.return_value = True
+        def test_body():
+            gen_tests.create_call("foo", "a", 1)
+            gen_tests.create_call("foo", 2)
+            gen_tests.create_call("foo", path="/tmp")
+        gen_tests.create_test("/tmp/", "test1", test_body)
+        os_proxy_open_to_write.assert_called_with("/tmp/test1/test.py")
+        os_proxy_mkdir.assert_has_calls([call("/tmp/test1"), call("/tmp/test1/assets"), call("/tmp/test1/assets/audio_files")])
+        os_proxy_write_to_file.assert_has_calls([call(ANY, "foo('a', 1)\n"), call(ANY, "foo(2)\n"), call(ANY, "foo(path = '/tmp')\n")])

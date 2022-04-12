@@ -4,18 +4,16 @@ from unittest.mock import patch
 
 import datetime
 import logging
-import gstreamer
-import ac
 import os
 
-import config
+from vatf.utils import config_loader
 
-class ConfigTests(TestCase):
+class ConfigLoaderTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
     def test_load_config_in_tests(self):
-        c = config.Config("tests/config.json")
+        c = config_loader.load("utils/tests/config.json")
         self.assertEqual(2, len(c.assets.audio.files))
         self.assertEqual("track1.wav", c.assets.audio.files[0].name)
         self.assertEqual(1, len(c.assets.audio.files[0].tags))
@@ -30,16 +28,16 @@ class ConfigTests(TestCase):
         self.assertEqual("end_utterance", c.utterance_from_va.regexes[0].end)
         self.assertEqual(None, c.utterance_to_va)
     def test_convert_to_log_zone(self):
-        config.LoadConfig("tests/config.json")
+        c = config_loader.load("utils/tests/config.json")
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         dt = datetime.datetime.strptime("2022-01-20 12:30:34.564879", date_format)
-        dt = config.ConvertToLogZone(dt)
+        dt = c.convert_to_log_zone(dt)
         self.assertEqual("2022-01-20 11:30:34.564879", dt.strftime(date_format))
-        dt = config.ConvertToSystemZone(dt)
+        dt = c.convert_to_system_zone(dt)
         self.assertEqual("2022-01-20 12:30:34.564879", dt.strftime(date_format))
     def test_get_regexes_for_sampling(self):
-        config.LoadConfig("tests/config.json")
-        regexes = config.GetRegexesForSampling()
+        c = config_loader.load("utils/tests/config.json")
+        regexes = c.get_regexes_for_sampling()
         self.assertEqual(1, len(regexes))
         self.assertEqual(2, len(regexes[0]))
         self.assertEqual("start_utterance", regexes[0][0])

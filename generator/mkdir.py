@@ -1,4 +1,7 @@
-from vatf.generator import ctx
+from vatf.generator import gen_tests
+
+def _mkdir(path):
+    gen_tests.create_call("mkdir", path = path)
 
 def _getTempFileName():
     import tempfile

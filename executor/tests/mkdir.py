@@ -6,8 +6,9 @@ import errno
 
 import logging
 import textwrap
-import mkdir
 import os
+
+from vatf.executor import mkdir
 
 class MkdirTests(TestCase):
     def __init__(self, arg):

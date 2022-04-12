@@ -52,7 +52,7 @@ def LoadMfccFromAudioFile(filepath):
     return mfcc
 
 def LoadSamplesSampleRateFromNumpyFile(filepath):
-    data = numpy.Load(filepath)
+    data = numpy.load(filepath)
     return LoadSamplesSampleRateFromNumpyData(data)
 
 def CreateMfcc(input_arg):

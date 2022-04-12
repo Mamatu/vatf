@@ -6,10 +6,10 @@ import errno
 import datetime
 import logging
 import textwrap
-import logger
 import os
 
-from vatf_utils import utils
+from vatf.executor import logger
+from vatf.utils import utils
 
 class LoggerTests(TestCase):
     def __init__(self, arg):
@@ -93,7 +93,7 @@ class LoggerTests(TestCase):
         path2 = utils.get_temp_filepath()
         DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
         now = datetime.datetime.strptime("2022-02-03 17:32:34.090", DATE_FORMAT)
-        logger.Start(now, "tests/data/test.log", path2)
+        logger.Start(now, "executor/tests/data/test.log", path2)
         logger.WaitForLine()
         logger.Stop()
         with open(path2, "r") as f:

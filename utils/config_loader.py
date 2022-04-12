@@ -81,37 +81,23 @@ class ConfigLoader:
                 self.utterance_from_va = UtteranceFromVA.create(data)
                 self.utterance_to_va = UtteranceToVA.create(data)
                 self.searched_audio_files_pathes = self.assets.audio.path
+    def get_copy(self):
+        import copy
+        return copy.deepcopy(self)
+    def get_pathes_audio_files(self):
+        return self.assets.audio.path
+    def _convert_to_zone(self, dt, op):
+        if self.va_log and self.va_log.timedelta:
+            return op(dt, self.va_log.timedelta)
+        return dt
+    def convert_to_log_zone(self, dt):
+        return self._convert_to_zone(dt, lambda d1, d2: d1 + d2)
+    def convert_to_system_zone(self, dt):
+        return self._convert_to_zone(dt, lambda d1, d2: d1 - d2)
+    def get_regexes_for_sampling(self):
+        if self.utterance_from_va and self.utterance_from_va.regexes:
+            return [(regex.begin, regex.end) for regex in self.utterance_from_va.regexes]
+        return []
 
-_config = None
-
-def LoadConfig(config_json_path = "./config.json", schema_json_path = None):
-    global _config
-    if not _config:
-        if os.path.exists(config_json_path):
-            _config = Config(config_json_path, schema_json_path)
-        else:
-            logging.warning("LoadConfig cannot find ./config.py. It supposes that it is expectional")
-
-def _convert_to_zone(dt, config, op):
-    if not config:
-        global _config
-        LoadConfig()
-        config = _config
-    if config and config.va_log and config.va_log.timedelta:
-        return op(dt, config.va_log.timedelta)
-    return dt
-
-def ConvertToLogZone(dt, config = None):
-    return _convert_to_zone(dt, config, lambda d1, d2: d1 + d2)
-
-def ConvertToSystemZone(dt, config = None):
-    return _convert_to_zone(dt, config, lambda d1, d2: d1 - d2)
-
-def GetRegexesForSampling(config = None):
-    if not config:
-        global _config
-        LoadConfig()
-        config = _config
-    if config and config.utterance_from_va and config.utterance_from_va.regexes:
-        return [(regex.begin, regex.end) for regex in config.utterance_from_va.regexes]
-    return []
+def load(config_json_path = "./config.json", schema_json_path = None):
+    return ConfigLoader(config_json_path, schema_json_path)

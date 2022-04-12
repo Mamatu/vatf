@@ -7,8 +7,9 @@ import errno
 import datetime
 import logging
 import textwrap
-import utils
 import os
+
+from vatf.utils import utils
 
 class UtilsTests(TestCase):
     def __init__(self, arg):

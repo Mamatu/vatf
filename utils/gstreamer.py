@@ -2,7 +2,7 @@ import psutil
 
 import subprocess
 import sys
-import ac
+from vatf.utils import ac
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 

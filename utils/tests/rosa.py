@@ -6,8 +6,9 @@ import datetime
 import logging
 import numpy
 import os
-import rosa
 import random
+
+from vatf.utils import rosa
 
 class RosaTests(TestCase):
     def __init__(self, arg):

@@ -9,7 +9,7 @@ import textwrap
 import mkdir
 import os
 
-import play
+from vatf.executor import player
 
 class PopenMock:
     def __init__(self):
@@ -24,4 +24,6 @@ class PlayTests(TestCase):
     @patch("subprocess.Popen")
     def test_play_audio(self, subprocess_popen_mock):
         subprocess_popen_mock.return_value = PopenMock()
-        play.PlayAudio("utterance.mp3")
+        self.assertTrue(player)
+        self.assertTrue(player.play_audio)
+        player.play_audio(path = "utterance.mp3")

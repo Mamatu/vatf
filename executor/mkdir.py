@@ -1,11 +1,14 @@
 import os
 import re
 
-from vatf_utils import utils
+from vatf.utils import utils
+from vatf.vatf_register import public_api
+
 import logging
 
-def Mkdir(path):
-    os.makedirs(path)
+@public_api
+def mkdir(*args, **kwargs):
+    os.makedirs(kwargs["path"])
 
 def MkdirByCounter(dirpath):
     top = os.path.basename(dirpath)

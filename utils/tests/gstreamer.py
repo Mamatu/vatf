@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import datetime
 import logging
-import gstreamer
-import ac
 import os
+
+from vatf.utils import gstreamer, ac
 
 class GstreamerTests(TestCase):
     def __init__(self, arg):
