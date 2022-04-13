@@ -1,1 +1,1 @@
-PYTHONPATH=..:.:./generator:$PYTHONPATH python "$@"
+PYTHONPATH=.:$PYTHONPATH python3 "$@"
