@@ -6,10 +6,9 @@ import errno
 
 import logging
 import textwrap
-import mkdir
 import os
 
-from vatf.executor import player
+from vatf.executor import player, mkdir
 
 class PopenMock:
     def __init__(self):
