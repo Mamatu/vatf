@@ -1,4 +1,0 @@
-[submodule "vatf_utils"]
-	path = vatf_utils
-	url = https://github.com/Mamatu/vatf_utils.git
-  branch = master
