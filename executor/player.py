@@ -14,4 +14,7 @@ def cvlc_play_audio(path):
 
 @public_api
 def play_audio(*args, **kwargs):
-    cvlc_play_audio(kwargs["path"])
+    if "path" in kwargs:
+        cvlc_play_audio(kwargs["path"])
+    else:
+        cvlc_play_audio(args[0])
