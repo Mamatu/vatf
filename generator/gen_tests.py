@@ -50,28 +50,33 @@ def _create_tools(config):
     os_proxy.copy(f'{filedir}/tools', toolsPath)
 
 def _create_test_dir(suite_path, test_name):
+    global _test_name
     _test_name = test_name
-    #logging.debug(f"Config: {config.__dict__}")
-    #setattr(config, 'searched_audio_files_pathes', config.searched_audio_files_pathes)
-    #setattr(config, 'suite_path', suite_path)
-    #setattr(config, 'test_path', os_proxy.dirname(filepath))
-    #setattr(config, 'rel_audio_files_path_in_test', "assets/audio_files")
-    #setattr(config, 'abs_audio_files_path_in_test', os_proxy.join(config.test_path, config.rel_audio_files_path_in_test))
     os_proxy.mkdir(os_proxy.join(suite_path, test_name))
     _create_assets_dir(suite_path, test_name)
     _create_pytest_file(suite_path, test_name)
-    #_create_test_config(config)
-    #_create_tools(config)
+
+def get_test_name():
+    global _test_name
+    return _test_name
+
+def _write_to_script(line):
+    global _test_py_file
+    os_proxy.writeln_to_file(_test_py_file, line)
 
 def create_call(function_name, *args, **kwargs):
     global _test_py_file
     if not vatf_register.is_registered(function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    os_proxy.writeln_to_file(_test_py_file, funcall)
+    _write_to_script(f"api.{funcall}")
 
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
+    global _test_py_file
+    _write_to_script("import os")
+    _write_to_script("os.system('git clone https://github.com/Mamatu/vatf.git')")
+    _write_to_script("from vatf import api")
     test()
 
 def create_tests(suite_path, **kwargs):

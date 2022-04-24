@@ -84,7 +84,7 @@ class Config:
         import copy
         return copy.deepcopy(self)
     def get_pathes_audio_files(self):
-        return self.assets.audio.path
+        return [self.assets.audio.path]
     def _convert_to_zone(self, dt, op):
         if self.va_log and self.va_log.timedelta:
             return op(dt, self.va_log.timedelta)
@@ -108,7 +108,7 @@ class ConfigProxy:
         return copy.deepcopy(self)
     def get_pathes_audio_files(self):
         if not self.config:
-            return ""
+            return []
         return self.config.get_pathes_audio_files()
     def convert_to_log_zone(self, dt):
         if not self.config:

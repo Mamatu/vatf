@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import hashlib
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -44,3 +45,10 @@ def isfile(path):
 
 def listdir(path):
     return os.listdir(path)
+
+def md5sum(filepath):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

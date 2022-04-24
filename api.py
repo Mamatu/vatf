@@ -1,5 +1,5 @@
-from vatf.executor import exec_player
-from vatf.generator import gen_player
+from vatf.executor import player
+from vatf.generator import player
 
 from vatf import vatf_api
 
