@@ -30,4 +30,4 @@ class GenTestsTests(TestCase):
         gen_tests.create_test("/tmp/", "test1", test_body)
         os_proxy_open_to_write.assert_called_with("/tmp/test1/test.py")
         os_proxy_mkdir.assert_has_calls([call("/tmp/test1"), call("/tmp/test1/assets"), call("/tmp/test1/assets/audio_files")])
-        os_proxy_write_to_file.assert_has_calls([call(ANY, "foo('a', 1)\n"), call(ANY, "foo(2)\n"), call(ANY, "foo(path = '/tmp')\n")])
+        os_proxy_write_to_file.assert_has_calls([call(ANY, "api.foo('a', 1)\n"), call(ANY, "api.foo(2)\n"), call(ANY, "api.foo(path = '/tmp')\n")])
