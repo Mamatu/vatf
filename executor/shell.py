@@ -4,4 +4,4 @@ import os
 
 @public_api("shell")
 def command(command):
-    os.command(command)
+    os.system(command)
