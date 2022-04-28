@@ -76,7 +76,7 @@ def create_test(suite_path, test_name, test):
     global _test_py_file
     _write_to_script("import os")
     _write_to_script("os.system('git clone https://github.com/Mamatu/vatf.git')")
-    _write_to_script("from vatf import api, vatf_api")
+    _write_to_script("from vatf import vatf_api, player, sleep, shell")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
     test()
 
