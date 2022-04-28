@@ -5,9 +5,11 @@ from random import randint
 
 from vatf.utils import utils
 
+@public_api(__name__)
 def sleep(duration):
     t.sleep(duration)
 
+@public_api(__name__)
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 #

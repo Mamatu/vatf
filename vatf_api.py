@@ -11,11 +11,16 @@ class API_TYPE(Enum):
     GENERATOR = 2
 
 _apiType = API_TYPE.GENERATOR
-_api = {API_TYPE.GENERATOR : gen_player, API_TYPE.EXECUTOR : exec_player}
+_player_api = {API_TYPE.GENERATOR : gen_player, API_TYPE.EXECUTOR : exec_player}
+_sleep_api = {API_TYPE.GENERATOR : gen_sleep, API_TYPE.EXECUTOR : exec_sleep}
+
+_modules = {"player" : _player_api, "sleep" : _sleep_api}
 
 def set_api_type(apiType):
     global _apiType
     _apiType = apiType
 
-def get_api():
-    return _api[_apiType]
+def get_api(module):
+    if not module in _modules:
+        raise Exception(f"Module {module} was not registered")
+    return _modules[module][_apiType]

@@ -64,12 +64,12 @@ def _write_to_script(line):
     global _test_py_file
     os_proxy.writeln_to_file(_test_py_file, line)
 
-def create_call(function_name, *args, **kwargs):
+def create_call(module, function_name, *args, **kwargs):
     global _test_py_file
-    if not vatf_register.is_registered(function_name):
+    if not vatf_register.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    _write_to_script(f"api.{funcall}")
+    _write_to_script(f"{module}.{funcall}")
 
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
