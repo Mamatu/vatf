@@ -4,6 +4,7 @@ from random import random
 from random import randint
 
 from vatf.utils import utils
+from vatf.vatf_register import public_api
 
 @public_api(__name__)
 def sleep(duration):
