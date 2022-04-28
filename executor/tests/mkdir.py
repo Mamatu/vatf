@@ -16,8 +16,8 @@ class MkdirTests(TestCase):
         TestCase.__init__(self, arg)
     @patch("os.makedirs")
     @patch("os.listdir")
-    def test_mkdir_by_counter(self, os_listdir_mock, os_makedirs_mock):
+    def test_mkdir_with_counter(self, os_listdir_mock, os_makedirs_mock):
         os_listdir_mock.return_value = ["session_0"]
-        mkdir.MkdirByCounter("/tmp/session")
+        mkdir.mkdir_with_counter("/tmp/session")
         self.assertTrue(os_makedirs_mock.called)
         self.assertTrue("/tmp/session_1", os_makedirs_mock.call_args)
