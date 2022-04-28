@@ -12,7 +12,7 @@ def cvlc_play_audio(path):
     proc = subprocess.Popen(command, shell=True)
     proc.wait()
 
-@public_api(__name__)
+@public_api("player")
 def play_audio(*args, **kwargs):
     if "path" in kwargs:
         cvlc_play_audio(kwargs["path"])
