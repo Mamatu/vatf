@@ -2,8 +2,6 @@ from random import random
 from random import randint
 from vatf.generator import config, gen_tests
 
-#from vatf.generator import ctx
-
 def _sleep(t):
     gen_tests.create_call("sleep", "sleep", t)
 
