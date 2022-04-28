@@ -7,4 +7,4 @@ def _get_api():
     return vatf_api.get_api("shell")
 
 def command(command):
-    _get_api("shell").command(command)
+    _get_api().command(command)
