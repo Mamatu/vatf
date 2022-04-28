@@ -3,6 +3,9 @@ from enum import Enum
 from vatf.generator import player as gen_player
 from vatf.executor import player as exec_player
 
+from vatf.generator import sleep as gen_sleep
+from vatf.executor import sleep as exec_sleep
+
 class API_TYPE(Enum):
     EXECUTOR = 1,
     GENERATOR = 2
