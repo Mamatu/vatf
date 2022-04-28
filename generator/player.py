@@ -10,7 +10,7 @@ from vatf.generator import config, gen_tests
 from vatf.utils import os_proxy
 
 def _play_audio(path):
-    gen_tests.create_call("play_audio", path = path)
+    gen_tests.create_call("player", "play_audio", path = path)
 
 def get_random_audio_files(count = 1):
     dirs = config.get_pathes_to_audio_files_in_system()

@@ -4,8 +4,11 @@ from vatf.generator import config, gen_tests
 
 #from vatf.generator import ctx
 
-def _sleep(duration):
-    gen_tests.create_call("play_audio", path = path)
+def _sleep(t):
+    gen_tests.create_call("sleep", "sleep", t)
+
+def _sleep_random(t1, t2):
+    gen_tests.create_call("sleep", "sleep_random", t1, t2)
 
 def sleep(t):
     _sleep(t)
