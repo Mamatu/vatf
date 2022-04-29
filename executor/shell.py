@@ -5,7 +5,7 @@ import subprocess
 
 @public_api("shell")
 def fg(command):
-    os.command(command)
+    os.system(command)
 
 @public_api("shell")
 def bg(command):
