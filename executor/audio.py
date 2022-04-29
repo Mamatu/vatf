@@ -1,4 +1,5 @@
 from vatf.executor import shell
+from vatf.vatf_register import public_api
 
 @public_api("audio")
 def record_inputs_outputs():
