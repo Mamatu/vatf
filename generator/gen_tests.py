@@ -1,7 +1,9 @@
 import logging
 
-from vatf.utils import os_proxy
+from vatf.generator import config
+from vatf.utils import os_proxy, config_loader
 from vatf import vatf_register
+
 
 _test_py_file = None
 _test_name = None
@@ -74,8 +76,12 @@ def create_call(module, function_name, *args, **kwargs):
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
     global _test_py_file
+    branch = config.get_vatf_branch_to_clone()
+    if branch != None and branch != "":
+        branch = f"-b {branch}"
+    git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
     _write_to_script("import os")
-    _write_to_script("os.system('git clone https://github.com/Mamatu/vatf.git')")
+    _write_to_script(f"os.system('{git_clone}')")
     _write_to_script("from vatf import vatf_api, player, sleep, shell")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
     test()

@@ -35,3 +35,8 @@ def get_absolute_path_to_audio_files_in_test():
     test_path = get_path_to_generated_test()
     audio_files_path = get_relative_path_to_audio_files_in_test()
     return os_proxy.join(test_path, audio_files_path)
+
+def get_vatf_branch_to_clone():
+    _load_config()
+    global _cfg_loader
+    return _cfg_loader.get_vatf_branch_to_clone()
