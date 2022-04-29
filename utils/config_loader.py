@@ -135,5 +135,5 @@ class ConfigProxy:
             return []
         return self.config.get_regexes_for_sampling()
 
-def load(config_json_path = "./config.json", schema_json_path = "./vatf/utils/schame/config.schema.json"):
+def load(config_json_path = "./config.json", schema_json_path = "./vatf/utils/schemas/config.schema.json"):
     return ConfigProxy(config_json_path, schema_json_path)
