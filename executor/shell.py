@@ -14,7 +14,7 @@ def fg(command):
 @public_api("shell")
 def bg(command):
     command = command.split(" ")
-    process = subprocess.Popen(command)
+    process = subprocess.Popen(command, shell=True)
     def on_exit(process):
         process.terminate()
         process.wait()
