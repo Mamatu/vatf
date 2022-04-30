@@ -81,6 +81,7 @@ def create_test(suite_path, test_name, test):
         branch = f"-b {branch}"
     git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
     _write_to_script("import os")
+    _write_to_script(f"os.system('rm -r vatf')")
     _write_to_script(f"os.system('{git_clone}')")
     _write_to_script("from vatf import vatf_api")
     _write_to_script("from vatf.api import audio, player, sleep, shell, mkdir")
