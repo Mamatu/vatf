@@ -11,4 +11,4 @@ do
     esac
 done
 
-find ${ROOT_DIR} -name "*.ogg" | parallel -I % --max-args 1 --jobs $JOBS python tools/python/waveform_to_npz.py % %.npz
+find ${ROOT_DIR} -name "*.ogg" | parallel -I % --max-args 1 --jobs $JOBS python3 tools/python3/waveform_to_npz.py % %.npz
