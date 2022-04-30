@@ -1,7 +1,8 @@
 import os
-import shutil
+import disutils
 import logging
 import hashlib
+import shutil
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -15,7 +16,7 @@ def remove(path):
         shutil.rmtree(path)
 
 def copy(src, dst):
-    shutil.copytree(src, dst)
+    distutils.dir_util.copy_tree(src, dst)
 
 def open_to_write(path):
     return open(path, "w")
