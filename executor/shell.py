@@ -13,7 +13,7 @@ def fg(command):
 
 @public_api("shell")
 def bg(command):
-    command = command.split(" ")
+    #command = command.split(" ")
     process = subprocess.Popen(command, shell=True)
     def on_exit(process):
         process.terminate()
