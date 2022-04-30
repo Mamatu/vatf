@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 tools/plot_waveform.py "$@"
+PYTHONPATH=. python3 tools/plot_waveform.py "$@"

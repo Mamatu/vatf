@@ -11,4 +11,4 @@ do
     esac
 done
 
-find ${ROOT_DIR} -name "*.ogg" | parallel -I % --max-args 1 --jobs $JOBS python3 tools/python/remove_all_empty_ogg.py %
+find ${ROOT_DIR} -name "*.ogg" | parallel -I % --max-args 1 --jobs $JOBS PYTHONPATH=. python3 tools/python/remove_all_empty_ogg.py %
