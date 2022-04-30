@@ -27,10 +27,10 @@ class GenTestsTests(TestCase):
         with patch.object(sys, 'argv', ['', '', 'generator/tests/config.json']):
             is_registered.return_value = True
             def test_body():
-                gen_tests.create_call("barmodule", "foo", "a", 1)
-                gen_tests.create_call("barmodule", "foo", 2)
-                gen_tests.create_call("barmodule", "foo", path="/tmp")
+                gen_tests.create_call("bar", "foo", "a", 1)
+                gen_tests.create_call("bar", "foo", 2)
+                gen_tests.create_call("bar", "foo", path="/tmp")
             gen_tests.create_test("/tmp/", "test1", test_body)
             os_proxy_open_to_write.assert_has_calls([call("/tmp/test1/test.py"), call("/tmp/test1/run_test.sh")])
             os_proxy_mkdir.assert_has_calls([call("/tmp/test1"), call("/tmp/test1/assets"), call("/tmp/test1/assets/audio_files")])
-            os_proxy_write_to_file.assert_has_calls([call(ANY, "barmodule.foo('a', 1)\n"), call(ANY, "barmodule.foo(2)\n"), call(ANY, "barmodule.foo(path = '/tmp')\n")])
+            os_proxy_write_to_file.assert_has_calls([call(ANY, "bar.foo('a', 1)\n"), call(ANY, "bar.foo(2)\n"), call(ANY, "bar.foo(path = '/tmp')\n")])
