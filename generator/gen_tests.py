@@ -64,6 +64,10 @@ def _create_run_sh_script(suite_path, test_name):
         sh_run.write("#!/bin/bash\n")
         sh_run.write("PYTHONPATH=. python3 test.py")
 
+def _copy_tools(suite_path, test_name):
+    tools_path = os_proxy.join(suite_path, test_name, "tools")
+    os_proxy.copy("./vatf/tools", tools_path)
+
 def get_test_name():
     global _test_name
     return _test_name
@@ -82,6 +86,7 @@ def create_call(module, function_name, *args, **kwargs):
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
     _create_run_sh_script(suite_path, test_name)
+    _copy_tools(suite_path, test_name)
     global _test_py_file
     branch = config.get_vatf_branch_to_clone()
     if branch != None and branch != "":
