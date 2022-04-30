@@ -165,7 +165,7 @@ class MelspectogramArgs:
 class MfccArgs:
     mfcc="--mfcc"
 
-clas ThreadArgs:
+class ThreadArgs:
     j = "--j"
 
 parser.add_argument(CutArgs.cut, help = "Cut content from wave", action="store_true")
