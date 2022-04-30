@@ -86,7 +86,6 @@ def create_call(module, function_name, *args, **kwargs):
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
     _create_run_sh_script(suite_path, test_name)
-    _copy_tools(suite_path, test_name)
     global _test_py_file
     branch = config.get_vatf_branch_to_clone()
     if branch != None and branch != "":
