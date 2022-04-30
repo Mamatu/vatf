@@ -1,5 +1,5 @@
 import os
-import disutils
+import distutils
 import logging
 import hashlib
 import shutil
