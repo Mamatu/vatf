@@ -60,7 +60,7 @@ def _create_test_dir(suite_path, test_name):
 
 def _create_run_sh_script(suite_path, test_name):
     sh_run = os_proxy.join(suite_path, test_name, "run_test.sh")
-    with open(sh_run) as sh_run:
+    with open(sh_run, "w") as sh_run:
         sh_run.write("#!/bin/bash\n")
         sh_run.write("PYTHONPATH=. python3 test.py")
 
