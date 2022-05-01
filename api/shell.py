@@ -1,6 +1,3 @@
-from vatf.executor import shell
-from vatf.generator import shell
-
 from vatf import vatf_api
 
 def _get_api():

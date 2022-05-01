@@ -3,11 +3,12 @@
   generator/tests/audio.py \
   generator/tests/player.py \
   generator/tests/mkdir.py \
-  generator/tests/sleep.py \
+  generator/tests/wait.py \
   generator/tests/shell.py \
   executor/tests/logger.py \
   executor/tests/mkdir.py \
   executor/tests/player.py \
+  executor/tests/wait.py \
   utils/tests/os_proxy.py \
   utils/tests/config_loader.py \
   utils/tests/gstreamer.py \

@@ -6,14 +6,11 @@ import errno
 
 import logging
 import textwrap
-import mkdir
 import os
 
-import sleep
+from vatf.executor import wait
 
-class SleepTests(TestCase):
+class WaitTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
-    def test_sleep(self):
-        sleep.SleepUntilTimeout(0.1)

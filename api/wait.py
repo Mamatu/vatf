@@ -1,10 +1,7 @@
-from vatf.executor import sleep
-from vatf.generator import sleep
-
 from vatf import vatf_api
 
 def _get_api():
-    return vatf_api.get_api("sleep")
+    return vatf_api.get_api("wait")
 
 def sleep(t):
     _get_api().sleep(t)

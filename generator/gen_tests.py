@@ -95,7 +95,7 @@ def create_test(suite_path, test_name, test):
     _write_to_script(f"os.system('rm -rf vatf')")
     _write_to_script(f"os.system('{git_clone}')")
     _write_to_script("from vatf import vatf_api")
-    _write_to_script("from vatf.api import audio, player, sleep, shell, mkdir")
+    _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
     test()
 

@@ -1,6 +1,3 @@
-from vatf.executor import audio
-from vatf.generator import audio
-
 from vatf import vatf_api
 
 def _get_api():
