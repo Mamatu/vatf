@@ -16,7 +16,7 @@ def fg(command):
 @public_api("shell")
 def bg(command):
     process = subprocess.Popen(command, shell=True)
-    logging.debug(f"Run process {process.pid} in background")
+    logging.debug(f"Run process {process.pid} in background for command {command}")
     def on_exit(process):
         parent = psutil.Process(process.pid)
         children = parent.children(recursive=True)
