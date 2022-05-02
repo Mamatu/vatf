@@ -11,14 +11,18 @@ _cfg_path = None
 def _load_config():
     global _cfg_loader, _cfg_path
     if not _cfg_loader:
-        config_path = _cfg_path
-        if not config_path:
-            config_path = sys.argv[2]
-        _cfg_loader = config_loader.load(config_path)
+        _cfg_loader = config_loader.load(get_config_path())
 
 def set_config_path(path):
     global _cfg_path
     _cfg_path = path
+
+def get_config_path():
+    global _cfg_path
+    config_path = _cfg_path
+    if not config_path:
+        config_path = sys.argv[2]
+    return config_path
 
 def get_pathes_to_audio_files_in_system():
     _load_config()

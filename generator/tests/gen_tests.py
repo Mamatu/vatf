@@ -18,12 +18,14 @@ class GenTestsTests(TestCase):
         self.assertEqual("foo('a', 1, a = 'a', b = 2)", gen_tests.make_pycall("foo", "a", 1, a = "a", b = 2))
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2)", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2))
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2, c = {'e': 9, 'f': 10})", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2, c = {"e": 9, "f": 10}))
+    @patch("json.dump")
     @patch("vatf.vatf_register.is_registered")
     @patch("vatf.utils.os_proxy.write_to_file")
     @patch("vatf.utils.os_proxy.mkdir")
+    @patch("vatf.utils.os_proxy.open_to_read")
     @patch("vatf.utils.os_proxy.open_to_write")
     @patch("vatf.utils.os_proxy.copy")
-    def test_create_test(self, os_proxy_copy, os_proxy_open_to_write, os_proxy_mkdir, os_proxy_write_to_file, is_registered):
+    def test_create_test(self, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
         with patch.object(sys, 'argv', ['', '', 'generator/tests/config.json']):
             is_registered.return_value = True
             def test_body():

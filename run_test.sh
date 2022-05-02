@@ -5,7 +5,7 @@
   generator/tests/mkdir.py \
   generator/tests/wait.py \
   generator/tests/shell.py \
-  executor/tests/logger.py \
+  executor/tests/log_snapshot.py \
   executor/tests/mkdir.py \
   executor/tests/player.py \
   executor/tests/wait.py \

@@ -20,6 +20,9 @@ def copy(src, dst):
 def open_to_write(path):
     return open(path, "w")
 
+def open_to_read(path):
+    return open(path, "r")
+
 def writeln_to_file(handler, data):
     write_to_file(handler, f"{data}\n")
 

@@ -36,11 +36,12 @@ def _create_assets_dir(suite_path, test_name):
     os_proxy.mkdir(assets_path)
     os_proxy.mkdir(os_proxy.join(assets_path, "audio_files"))
 
-def _create_test_config(config):
+def _copy_config(suite_path, test_name):
     import json
-    if config.data != None:
-        with open(f'{config.test_path}/config.json', 'w') as f:
-            json.dump(config.data, f)
+    if config.get_config_path() != None:
+        with os_proxy.open_to_read(config.get_config_path()) as cfg:
+            with os_proxy.open_to_write(os_proxy.join(suite_path, test_name, "config.json")) as f:
+                json.dump(cfg.data, f)
 
 def _create_tools(config):
     logging.info(f"{_create_tools.__name__} create tools in {config.test_path}")
@@ -86,6 +87,7 @@ def create_call(module, function_name, *args, **kwargs):
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
     _create_run_sh_script(suite_path, test_name)
+    _copy_config(suite_path, test_name)
     global _test_py_file
     branch = config.get_vatf_branch_to_clone()
     if branch != None and branch != "":
