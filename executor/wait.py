@@ -42,13 +42,17 @@ def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), 
         logging.debug(f"{wait_for_regex.__name__}: sleep {time}")
         call(callbacks, "pre_sleep", time)
         if isinstance(time, datetime.timedelta):
-            time = time.total_seconds()
+            time = time / datetime.timedelta(seconds = 1)
         t.sleep(time)
     pause = convert_to_timedelta(pause)
     timeout = convert_to_timedelta(timeout)
     start_real_time = datetime.datetime.now()
     start_log_time = config.convert_to_log_zone(start_time)
     logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
+    def calc_delta_time():
+        now = datetime.datetime.now()
+        diff = now - start_real_time
+        return diff
     while True:
         out = utils.grep_regex_in_line(log_path, regex, f"({utils.TIMESTAMP_REGEX}).*({regex})")
         if len(out) > 0:
@@ -58,21 +62,19 @@ def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), 
             if regex_timestamp >= start_log_time:
                 logging.debug(f"{wait_for_regex.__name__}: break {regex_timestamp} > {start_log_time}")
                 call(callbacks, "success", regex_timestamp, matched[2])
-                break
-        now = datetime.datetime.now()
-        diff = now - start_real_time
-        diff = convert_to_timedelta(diff)
+                return
+        diff = calc_delta_time()
         if pause:
-            if diff + pause > timeout:
-                pause_timeout = (diff + pause) - timeout
-                call(callbacks, "pre_sleep", pause_timeout)
-                _sleep(pause_timeout)
-            else:
+            if not diff + pause >= timeout:
                 _sleep(pause)
+            else:
+                pause_timeout = timeout - diff
+                _sleep(pause_timeout)
+        diff = calc_delta_time()
         if diff > timeout:
             call(callbacks, "timeout", timeout)
             logging.debug(f"{wait_for_regex.__name__}: break {diff} > {timeout} timeout")
-            break
+            return
 
 #def SleepUntilTimeout(timeout):
 #    if isinstance(timeout, str):

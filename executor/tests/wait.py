@@ -52,3 +52,28 @@ class WaitTests(TestCase):
         callbacks.success.assert_has_calls([call(line7_timestamp, "line7")])
         self.assertFalse(callbacks.timeout.called)
         self.assertFalse(callbacks.pre_sleep.called)
+    @patch("vatf.utils.config.convert_to_log_zone")
+    def test_wait_for_regex_timeout(self, convert_to_log_zone):
+        convert_to_log_zone.side_effect = lambda dt: dt #ToDo: To overload config loading, it should be removed in the future
+        callbacks = wait.WfrCallbacks()
+        callbacks.success = MagicMock()
+        callbacks.timeout = MagicMock()
+        callbacks.pre_sleep = MagicMock()
+        text = [
+        "2022-01-29 20:54:55.567 line1\n",
+        "2022-01-29 20:54:55.567 line2\n",
+        "2022-01-29 20:54:55.568 line3\n",
+        "2022-01-29 20:54:55.569 line4\n",
+        "2022-01-29 20:54:55.570 line5\n",
+        "2022-01-29 20:54:55.600 line6\n",
+        ]
+        log_path = os_proxy.create_file("w", data = "".join(text))
+        start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", utils.TIMESTAMP_FORMAT)
+        timeout = datetime.timedelta(seconds = 0.5)
+        pause = datetime.timedelta(seconds = 0.5)
+        pause1 = datetime.timedelta(seconds = 0.49)
+        pause2 = datetime.timedelta(seconds = 0.5)
+        wait.wait_for_regex("line7", log_path, start_time = start_time, callbacks = callbacks, timeout = timeout, pause = pause)
+        callbacks.timeout.assert_has_calls([call(timeout)])
+        self.assertFalse(callbacks.success.called)
+        self.assertTrue(pause1 <= callbacks.pre_sleep.call_args.args[0] and callbacks.pre_sleep.call_args.args[0] <= pause2)
