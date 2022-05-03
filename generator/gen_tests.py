@@ -1,9 +1,8 @@
 import logging
 
-from vatf.generator import config
+from vatf.utils import config
 from vatf.utils import os_proxy, config_loader
 from vatf import vatf_register
-
 
 _test_py_file = None
 _test_name = None

@@ -3,8 +3,10 @@ import logging
 from random import random
 from random import randint
 
-from vatf.utils import utils
+from vatf.utils import utils, os_proxy, config
 from vatf.vatf_register import public_api
+
+import datetime
 
 @public_api("wait")
 def sleep(duration):
@@ -14,7 +16,64 @@ def sleep(duration):
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 
-#
+class WfrCallbacks:
+    def __init__(self):
+        pass
+    def success(timestamp, matched):
+        pass
+    def timeout(timeout):
+        pass
+    def pre_sleep(time):
+        pass
+
+@public_api("wait")
+def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), pause = datetime.timedelta(seconds = 0.5), start_time = datetime.datetime.now(), callbacks = None):
+    if not os_proxy.exists(log_path):
+        raise FileNotFoundError(log_path)
+    def convert_to_timedelta(t):
+        if not isinstance(pause, datetime.timedelta):
+            return datetime.timedelta(t)
+        return t
+    def call(callbacks, method_name, *args):
+        if callbacks:
+            method = getattr(callbacks, method_name)
+            method(*args)
+    def _sleep(time):
+        logging.debug(f"{wait_for_regex.__name__}: sleep {time}")
+        call(callbacks, "pre_sleep", time)
+        if isinstance(time, datetime.timedelta):
+            time = time.total_seconds()
+        t.sleep(time)
+    pause = convert_to_timedelta(pause)
+    timeout = convert_to_timedelta(timeout)
+    start_real_time = datetime.datetime.now()
+    start_log_time = config.convert_to_log_zone(start_time)
+    logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
+    while True:
+        out = utils.grep_regex_in_line(log_path, regex, f"({utils.TIMESTAMP_REGEX}).*({regex})")
+        if len(out) > 0:
+            matched = out[-1].matched
+            regex_timestamp = datetime.datetime.strptime(matched[1], utils.TIMESTAMP_FORMAT)
+            logging.debug(f"{wait_for_regex.__name__}: found {len(out)} matches")
+            if regex_timestamp >= start_log_time:
+                logging.debug(f"{wait_for_regex.__name__}: break {regex_timestamp} > {start_log_time}")
+                call(callbacks, "success", regex_timestamp, matched[2])
+                break
+        now = datetime.datetime.now()
+        diff = now - start_real_time
+        diff = convert_to_timedelta(diff)
+        if pause:
+            if diff + pause > timeout:
+                pause_timeout = (diff + pause) - timeout
+                call(callbacks, "pre_sleep", pause_timeout)
+                _sleep(pause_timeout)
+            else:
+                _sleep(pause)
+        if diff > timeout:
+            call(callbacks, "timeout", timeout)
+            logging.debug(f"{wait_for_regex.__name__}: break {diff} > {timeout} timeout")
+            break
+
 #def SleepUntilTimeout(timeout):
 #    if isinstance(timeout, str):
 #        timeout = int(timeout)

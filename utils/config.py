@@ -11,7 +11,14 @@ _cfg_path = None
 def _load_config():
     global _cfg_loader, _cfg_path
     if not _cfg_loader:
-        _cfg_loader = config_loader.load(get_config_path())
+        path = get_config_path()
+        if path:
+            _cfg_loader = config_loader.load(path)
+
+def _reset():
+    global _cfg_loader, _cfg_path
+    _cfg_path = None
+    _cfg_loader = None
 
 def set_config_path(path):
     global _cfg_path
@@ -20,14 +27,16 @@ def set_config_path(path):
 def get_config_path():
     global _cfg_path
     config_path = _cfg_path
-    if not config_path:
+    if not config_path and len(sys.argv) > 2:
         config_path = sys.argv[2]
     return config_path
 
 def get_pathes_to_audio_files_in_system():
     _load_config()
     global _cfg_loader
-    return _cfg_loader.get_pathes_audio_files()
+    if _cfg_loader:
+        return _cfg_loader.get_pathes_audio_files()
+    return []
 
 def get_path_to_generated_suite():
     return sys.argv[1]
@@ -50,4 +59,20 @@ def get_absolute_path_to_audio_files_in_test():
 def get_vatf_branch_to_clone():
     _load_config()
     global _cfg_loader
-    return _cfg_loader.get_vatf_branch_to_clone()
+    if _cfg_loader:
+        return _cfg_loader.get_vatf_branch_to_clone()
+    return ""
+
+def convert_to_log_zone(dt):
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.convert_to_log_zone(dt)
+    return dt
+
+def convert_to_system_zone(dt):
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.convert_to_system_zone(dt)
+    return dt

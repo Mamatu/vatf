@@ -132,11 +132,11 @@ class ConfigProxy:
     def convert_to_log_zone(self, dt):
         if not self.config:
             return dt
-        return self.convert_to_log_zone(dt)
+        return self.config.convert_to_log_zone(dt)
     def convert_to_system_zone(self, dt):
         if not self.config:
             return dt
-        return self.convert_to_system_zone(dt)
+        return self.config.convert_to_system_zone(dt)
     def get_regexes_for_sampling(self):
         if not self.config:
             return []

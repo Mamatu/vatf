@@ -11,12 +11,15 @@ import os
 import sys
 
 from vatf.executor import log_snapshot
-from vatf.utils import utils
+from vatf.utils import utils, config
 
 class LogSnapshotTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
+    def setUp(self):
+        from vatf.utils import config
+        config._reset()
     def create_file(self, mode, data = None):
         path = utils.get_temp_filepath()
         with open(path, mode) as f:

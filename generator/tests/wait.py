@@ -29,3 +29,9 @@ class WaitTests(TestCase):
         is_registered.return_value = True
         wait.sleep_random(1, 2, wait.RandomStage.EXECUTOR)
         os_proxy_write_to_file.assert_has_calls([call(ANY, "wait.sleep_random(1, 2)\n")])
+    @patch("vatf.vatf_register.is_registered")
+    @patch("vatf.utils.os_proxy.write_to_file")
+    def test_wait_for_regex(self, os_proxy_write_to_file, is_registered):
+        is_registered.return_value = True
+        wait.wait_for_regex(".*", "/tmp/tmp.log", timeout = 10, pause = 0.5)
+        os_proxy_write_to_file.assert_has_calls([call(ANY, "wait.wait_for_regex('.*', '/tmp/tmp.log', timeout = 10, pause = 0.5)\n")])

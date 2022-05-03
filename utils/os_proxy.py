@@ -3,6 +3,8 @@ import logging
 import hashlib
 import shutil
 
+from vatf.utils import utils
+
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -55,3 +57,14 @@ def md5sum(filepath):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+def create_file(mode, data = None):
+    path = utils.get_temp_filepath()
+    with open(path, mode) as f:
+        logging.debug(f"{create_file.__name__}: {path} {mode}")
+        if data:
+            f.write(data)
+    return path
+
+def remove_file(path):
+    os.remove(path)
