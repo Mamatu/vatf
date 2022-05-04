@@ -40,7 +40,7 @@ def _copy_config(suite_path, test_name):
     if config.get_config_path() != None:
         with os_proxy.open_to_read(config.get_config_path()) as cfg:
             with os_proxy.open_to_write(os_proxy.join(suite_path, test_name, "config.json")) as f:
-                json.dump(cfg.data, f)
+                json.dump(cfg.read(), f)
 
 def _create_tools(config):
     logging.info(f"{_create_tools.__name__} create tools in {config.test_path}")
