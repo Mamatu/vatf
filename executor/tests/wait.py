@@ -77,8 +77,10 @@ class WaitTests(TestCase):
         wait.wait_for_regex("line7", log_path, start_time = start_time, callbacks = callbacks, timeout = timeout, pause = pause)
         callbacks.timeout.assert_has_calls([call(timeout)])
         self.assertFalse(callbacks.success.called)
-        c_args = callbacks.pre_sleep.call_args.args
-        self.assertEqual(1, len(c_args), f"{c_args[:]}, pre_sleep: {dir(callbacks.pre_sleep)}")
-        self.assertTrue(isinstance(c_args[0], datetime.timedelta))
-        fail_msg = f"Condition doesn't pass: {pause1} < {c_args[0]} and {c_args[0]} < {pause2}"
-        self.assertTrue(pause1 < c_args[0] and c_args[0] < pause2, fail_msg)
+        c_args = callbacks.pre_sleep.call_args
+        c_args = c_args[0]
+        if isinstance(c_args, tuple):
+            c_args = c_args[0]
+        self.assertTrue(isinstance(c_args, datetime.timedelta), f"{c_args}")
+        fail_msg = f"Condition doesn't pass: {pause1} < {c_args} and {c_args} < {pause2}"
+        self.assertTrue(pause1 < c_args and c_args < pause2, fail_msg)
