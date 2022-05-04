@@ -27,12 +27,12 @@ class WfrCallbacks:
         pass
 
 @public_api("wait")
-def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), pause = datetime.timedelta(seconds = 0.5), start_time = datetime.datetime.now(), callbacks = None, read_from_config = None):
+def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = datetime.datetime.now(), callbacks = None):
     if not os_proxy.exists(log_path):
         raise FileNotFoundError(log_path)
     def convert_to_timedelta(t):
         if not isinstance(pause, datetime.timedelta):
-            return datetime.timedelta(t)
+            return datetime.timedelta(seconds = t)
         return t
     def call(callbacks, method_name, *args):
         if callbacks:
