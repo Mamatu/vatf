@@ -28,8 +28,6 @@ class WfrCallbacks:
 
 @public_api("wait")
 def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = datetime.datetime.now(), callbacks = None):
-    if not os_proxy.exists(log_path):
-        raise FileNotFoundError(log_path)
     def convert_to_timedelta(t):
         if not isinstance(pause, datetime.timedelta):
             return datetime.timedelta(seconds = t)
@@ -48,11 +46,13 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = date
         if isinstance(time, datetime.timedelta):
             time = time / datetime.timedelta(seconds = 1)
         t.sleep(time)
+    log_path = init_log_path(log_path)
+    if not os_proxy.exists(log_path):
+        raise FileNotFoundError(log_path)
     pause = convert_to_timedelta(pause)
     timeout = convert_to_timedelta(timeout)
     start_real_time = datetime.datetime.now()
     start_log_time = config.convert_to_log_zone(start_time)
-    log_path = init_log_path(log_path)
     logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
     def calc_delta_time():
         now = datetime.datetime.now()
