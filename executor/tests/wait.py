@@ -79,7 +79,7 @@ class WaitTests(TestCase):
         self.assertFalse(callbacks.success.called)
         c_args = callbacks.pre_sleep.call_args
         c_args = c_args[0]
-        if isinstance(c_args, tuple):
+        if isinstance(c_args, tuple): # ToDo: workaround for python 3.6 and 3.7 which in different way handle call_args
             c_args = c_args[0]
         self.assertTrue(isinstance(c_args, datetime.timedelta), f"{c_args}")
         fail_msg = f"Condition doesn't pass: {pause1} < {c_args} and {c_args} < {pause2}"
