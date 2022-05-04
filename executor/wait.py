@@ -29,7 +29,7 @@ class WfrCallbacks:
 @public_api("wait")
 def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = datetime.datetime.now(), callbacks = None):
     def convert_to_timedelta(t):
-        if not isinstance(pause, datetime.timedelta):
+        if not isinstance(t, datetime.timedelta):
             return datetime.timedelta(seconds = t)
         return t
     def call(callbacks, method_name, *args):
