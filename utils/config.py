@@ -63,6 +63,13 @@ def get_vatf_branch_to_clone():
         return _cfg_loader.get_vatf_branch_to_clone()
     return ""
 
+def get_log_path():
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.get_log_path()
+    return ""
+
 def convert_to_log_zone(dt):
     _load_config()
     global _cfg_loader

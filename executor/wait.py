@@ -27,7 +27,7 @@ class WfrCallbacks:
         pass
 
 @public_api("wait")
-def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), pause = datetime.timedelta(seconds = 0.5), start_time = datetime.datetime.now(), callbacks = None):
+def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), pause = datetime.timedelta(seconds = 0.5), start_time = datetime.datetime.now(), callbacks = None, read_from_config = None):
     if not os_proxy.exists(log_path):
         raise FileNotFoundError(log_path)
     def convert_to_timedelta(t):
@@ -38,6 +38,10 @@ def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), 
         if callbacks:
             method = getattr(callbacks, method_name)
             method(*args)
+    def init_log_path(log_path):
+        if log_path == None:
+            return config.get_log_path()
+        return log_path
     def _sleep(time):
         logging.debug(f"{wait_for_regex.__name__}: sleep {time}")
         call(callbacks, "pre_sleep", time)
@@ -48,6 +52,7 @@ def wait_for_regex(regex, log_path, timeout = datetime.timedelta(seconds = 10), 
     timeout = convert_to_timedelta(timeout)
     start_real_time = datetime.datetime.now()
     start_log_time = config.convert_to_log_zone(start_time)
+    log_path = init_log_path(log_path)
     logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
     def calc_delta_time():
         now = datetime.datetime.now()

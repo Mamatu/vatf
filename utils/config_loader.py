@@ -112,6 +112,8 @@ class Config:
         if self.utterance_from_va and self.utterance_from_va.regexes:
             return [(regex.begin, regex.end) for regex in self.utterance_from_va.regexes]
         return []
+    def get_log_path(self):
+        return self.va_log.path
 
 class ConfigProxy:
     def __init__(self, config_json_path = None, schema_json_path = None):
@@ -141,6 +143,10 @@ class ConfigProxy:
         if not self.config:
             return []
         return self.config.get_regexes_for_sampling()
+    def get_log_path(self):
+        if not self.config:
+            return ""
+        return self.config.get_log_path()
 
 def _abs_path_to_schema():
     import pathlib
