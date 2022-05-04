@@ -78,7 +78,7 @@ class WaitTests(TestCase):
         callbacks.timeout.assert_has_calls([call(timeout)])
         self.assertFalse(callbacks.success.called)
         c_args = callbacks.pre_sleep.call_args.args
-        self.assertTrue(len(c_args) == 1)
+        self.assertEqual(1, len(c_args), f"{c_args}")
         self.assertTrue(isinstance(c_args[0], datetime.timedelta))
         fail_msg = f"Condition doesn't pass: {pause1} < {c_args[0]} and {c_args[0]} < {pause2}"
         self.assertTrue(pause1 < c_args[0] and c_args[0] < pause2, fail_msg)
