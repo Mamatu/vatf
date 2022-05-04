@@ -6,8 +6,8 @@ import uuid
 from enum import Enum
 import random
 
-from vatf.generator import config, gen_tests
-from vatf.utils import os_proxy
+from vatf.generator import gen_tests
+from vatf.utils import os_proxy, config
 
 def _play_audio(path):
     gen_tests.create_call("player", "play_audio", path = path)

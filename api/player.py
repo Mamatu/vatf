@@ -1,6 +1,3 @@
-from vatf.executor import player
-from vatf.generator import player
-
 from vatf import vatf_api
 
 def _get_api():

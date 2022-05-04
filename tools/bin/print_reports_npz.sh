@@ -11,4 +11,4 @@ do
     esac
 done
 
-find ${ROOT_DIR} -name "*.npz" | parallel -I % --max-args 1 --jobs $JOBS python3 tools/python/print_reports_npz.py %
+find ${ROOT_DIR} -name "*.npz" | parallel -I % --max-args 1 --jobs $JOBS PYTHONPATH=. python3 tools/python/print_reports_npz.py %

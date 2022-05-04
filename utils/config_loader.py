@@ -6,6 +6,16 @@ import os
 
 from vatf.utils import os_proxy
 
+class Vatf:
+    def __init__(self, data):
+        vatf = data["vatf"]
+        self.branch = vatf["branch"]
+    @staticmethod
+    def create(data):
+        if not "vatf" in data:
+            return None
+        return Vatf(data)
+
 class AudioFile:
     def __init__(self, file_obj):
         self.name = file_obj['name']
@@ -75,6 +85,7 @@ class Config:
                 with open(schema_json_path) as schema:
                     logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
                     validate(data, schema=json.load(schema))
+            self.vatf = Vatf.create(data)
             self.assets = Assets(data)
             self.va_log = VaLog(data)
             self.utterance_from_va = UtteranceFromVA.create(data)
@@ -83,6 +94,10 @@ class Config:
     def get_copy(self):
         import copy
         return copy.deepcopy(self)
+    def get_vatf_branch_to_clone(self):
+        if self.vatf == None:
+            return ""
+        return self.vatf.branch
     def get_pathes_audio_files(self):
         return [self.assets.audio.path]
     def _convert_to_zone(self, dt, op):
@@ -106,6 +121,10 @@ class ConfigProxy:
     def get_copy(self):
         import copy
         return copy.deepcopy(self)
+    def get_vatf_branch_to_clone(self):
+        if not self.config:
+            return ""
+        return self.config.get_vatf_branch_to_clone()
     def get_pathes_audio_files(self):
         if not self.config:
             return []
@@ -113,15 +132,20 @@ class ConfigProxy:
     def convert_to_log_zone(self, dt):
         if not self.config:
             return dt
-        return self.convert_to_log_zone(dt)
+        return self.config.convert_to_log_zone(dt)
     def convert_to_system_zone(self, dt):
         if not self.config:
             return dt
-        return self.convert_to_system_zone(dt)
+        return self.config.convert_to_system_zone(dt)
     def get_regexes_for_sampling(self):
         if not self.config:
             return []
         return self.config.get_regexes_for_sampling()
 
-def load(config_json_path = "./config.json", schema_json_path = None):
+def _abs_path_to_schema():
+    import pathlib
+    path = pathlib.Path(__file__).parent.resolve()
+    return os_proxy.join(path, "schemas/config.schema.json")
+
+def load(config_json_path = "./config.json", schema_json_path = _abs_path_to_schema()):
     return ConfigProxy(config_json_path, schema_json_path)

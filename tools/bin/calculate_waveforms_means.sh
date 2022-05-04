@@ -13,4 +13,4 @@ do
     esac
 done
 
-find ${ROOT_DIR} -name "*.ogg" -o -name "*.wav" | parallel -I % --max-args 1 --jobs $JOBS python tools/python/calculate_waveform_means.py % %.means.npz $PYARGS
+find ${ROOT_DIR} -name "*.ogg" -o -name "*.wav" | parallel -I % --max-args 1 --jobs $JOBS PYTHONPATH=. python3 tools/python3/calculate_waveform_means.py % %.means.npz $PYARGS

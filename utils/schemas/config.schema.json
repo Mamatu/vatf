@@ -5,20 +5,30 @@
   "description": "Test framework",
   "type": "object",
   "properties": {
+    "vatf" : {
+      "type" : "object",
+      "description" : "vatf branch to clone",
+      "properties" : {
+        "branch" : {
+          "type" : "string",
+          "description" : "vatf branch to clone"
+        }
+      }
+    },
     "assets" : {
       "type" : "object",
       "properties" : {
         "audio" : {
-          "description" : "object which contains information about audio files used in project",
           "type" : "object",
+          "description" : "object which contains information about audio files used in project",
           "properties": {
             "path" : {
               "description" : "path to audio files directory",
               "type" : "string"
             },
             "files" : {
-              "description" : "array of files objects",
               "type" : "array",
+              "description" : "array of files objects",
               "items" : {
                 "type" : "object",
                 "properties" : {
@@ -43,16 +53,16 @@
     }
   },
   "va_log" : {
-    "description" : "voice assitance debug log configuration",
     "type" : "object",
+    "description" : "voice assitance debug log configuration",
     "properties" : {
       "path" : {
-        "description" : "path to log file",
-        "type" : "string"
+        "type" : "string",
+        "description" : "path to log file"
       },
       "timedelta" : {
-        "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
         "type" : "object",
+        "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
         "properties" : {
           "days" : {
             "type" : "number",
@@ -88,8 +98,8 @@
     "required" : ["path", "strformat"]
   },
   "utterance_to_va" : {
-    "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
     "type" : "object",
+    "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
     "properties" : {
       "regexes" : {
         "type" : "array",
@@ -113,8 +123,8 @@
     }
   },
   "utterance_from_va" : {
-    "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
     "type" : "object",
+    "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
     "properties" : {
       "regexes" : {
         "type" : "array",

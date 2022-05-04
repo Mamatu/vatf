@@ -14,6 +14,9 @@ class MkdirTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
+    def setUp(self):
+        from vatf.utils import config
+        config._reset()
     @patch("os.makedirs")
     @patch("os.listdir")
     def test_mkdir_with_counter(self, os_listdir_mock, os_makedirs_mock):

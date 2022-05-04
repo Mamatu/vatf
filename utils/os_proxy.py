@@ -1,7 +1,9 @@
 import os
-import shutil
 import logging
 import hashlib
+import shutil
+
+from vatf.utils import utils
 
 def mkdir(path):
     if not os.path.exists(path):
@@ -15,10 +17,13 @@ def remove(path):
         shutil.rmtree(path)
 
 def copy(src, dst):
-    shutil.copytree(src, dst)
+    shutil.copytree(src, dst, dirs_exist_ok=True)
 
 def open_to_write(path):
     return open(path, "w")
+
+def open_to_read(path):
+    return open(path, "r")
 
 def writeln_to_file(handler, data):
     write_to_file(handler, f"{data}\n")
@@ -52,3 +57,14 @@ def md5sum(filepath):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+def create_file(mode, data = None):
+    path = utils.get_temp_filepath()
+    with open(path, mode) as f:
+        logging.debug(f"{create_file.__name__}: {path} {mode}")
+        if data:
+            f.write(data)
+    return path
+
+def remove_file(path):
+    os.remove(path)
