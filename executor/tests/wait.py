@@ -68,12 +68,15 @@ class WaitTests(TestCase):
         "2022-01-29 20:54:55.600 line6\n",
         ]
         log_path = os_proxy.create_file("w", data = "".join(text))
+        # ToDo: in this test in wait_for_regex should be used mocked timer.sleep not real!
         start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", utils.TIMESTAMP_FORMAT)
         timeout = datetime.timedelta(seconds = 0.5)
         pause = datetime.timedelta(seconds = 0.5)
-        pause1 = datetime.timedelta(seconds = 0.49)
-        pause2 = datetime.timedelta(seconds = 0.5)
+        pause1 = datetime.timedelta(seconds = 0.45)
+        pause2 = datetime.timedelta(seconds = 0.51)
         wait.wait_for_regex("line7", log_path, start_time = start_time, callbacks = callbacks, timeout = timeout, pause = pause)
         callbacks.timeout.assert_has_calls([call(timeout)])
         self.assertFalse(callbacks.success.called)
-        self.assertTrue(pause1 <= callbacks.pre_sleep.call_args.args[0] and callbacks.pre_sleep.call_args.args[0] <= pause2)
+        c_args = callbacks.pre_sleep.call_args.args
+        fail_msg = f"Condition doesn't pass: {pause1} < {c_args[0]} and {c_args[0]} < {pause2}"
+        self.assertTrue(pause1 < c_args[0] and c_args[0] < pause2, fail_msg)
