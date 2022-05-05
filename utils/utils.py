@@ -103,7 +103,7 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1):
     def makeArgs(lineNumber, maxCount):
         n_arg = "-n" if lineNumber else ""
         m_arg = " -m {maxCount}" if maxCount > -1 else ""
-        return f"{n_arg}{m_arg}"
+        return f"{n_arg}{m_arg} -a"
     args = makeArgs(lineNumber, maxCount)
     command = f"grep {args} \"{regex}\" {filepath}"
     if command == None:
