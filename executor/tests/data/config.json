@@ -21,6 +21,8 @@
     "path" : "/tmp/session.log",
     "timedelta" : {
       "hours" : -1
-    }
+    },
+    "date_format" : "",
+    "date_regex" : ""
   }
 }
