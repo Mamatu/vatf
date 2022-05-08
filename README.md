@@ -38,5 +38,5 @@ git submodule update --init --recursive --remote --force
 apt install parallel libsndfile1
 ```
 ```
-pip install librosa psutil jsonschema matplotlib
+pip install librosa psutil jsonschema matplotlib watchdog
 ```
