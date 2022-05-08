@@ -13,6 +13,9 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 TIMESTAMP_REGEX = DATE_REGEX
 TIMESTAMP_FORMAT = DATE_FORMAT
 
+def count_lines_in_file(path):
+    return int(subprocess.check_output(f"wc -l {path}").split()[0])
+
 def name_and_args():
     caller = inspect.stack()[1][0]
     args, _, _, values = inspect.getargvalues(caller)
@@ -97,7 +100,9 @@ class GrepEntry:
         out = line.split(':', 1)
         return GrepEntry(out[0], out[1], line_offset)
 
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 0):
+def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
+    if fromLine < 1:
+        raise Exception(f"Invalid fromLine value {fromLine}")
     if maxCount < -1:
         raise Exception(f"Invalid value of maxCount {maxCount}. It should be > -1")
     lineNumber = True #hardcode
@@ -141,7 +146,7 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 0):
         remove()
         return out
 
-def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 0):
+def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
     """
     :filepath - filepath for greping
     :grep_regex - regex using to match line by grep
@@ -150,6 +155,8 @@ def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True,
     :maxCount - max count of matched, if it is -1 it will be infinity
     :fromLine - start searching from specific line
     """
+    if fromLine < 1:
+        raise Exception(f"Invalid fromLine value {fromLine}")
     logging.debug(f"{grep_regex_in_line.__name__}: {name_and_args()}")
     out = grep(filepath, grep_regex, removeTmpFiles, maxCount = maxCount, fromLine = fromLine)
     rec = re.compile(match_regex)

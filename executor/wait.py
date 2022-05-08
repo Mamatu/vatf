@@ -26,8 +26,52 @@ class WfrCallbacks:
     def pre_sleep(time):
         pass
 
+_logs_lines_number = {}
+_logs_observers = {}
+
+def _reset_logs_lines_number():
+    global _logs_lines_number
+    _logs_lines_number = {}
+
+def _update_lines_number(path, lines_number):
+    global _logs_lines_number
+    _logs_lines_number[path] = lines_number
+
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+
+class MonitorHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        lines_number = utils.count_lines_in_file(event.src_path)
+        _update_lines_number(event.src_path, lines_number)
+
+def _create_monitor(path):
+    observer = Observer()
+    monitor_handler = MonitorHandler()
+    observer.schedule(monitor_handler, path = path, recursive = False)
+    _logs_observers[path] = observer
+    return observer
+
+def _start_monitor(path):
+    observer = None
+    global _logs_observers
+    try:
+        observer = _logs_observers[path]
+    except KeyError:
+        observer = _create_monitor(path)
+    observer.start()
+
+def _stop_monitor(path):
+    observer = None
+    global _logs_observers
+    try:
+        observer = _logs_observers[path]
+    except KeyError:
+        observer = _create_monitor(path)
+    observer.stop()
+
 @public_api("wait")
-def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = None, callbacks = None):
+def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = datetime.datetime.now, callbacks = None, monitor_changes_in_log = True):
     def convert_to_timedelta(t):
         if not isinstance(t, datetime.timedelta):
             return datetime.timedelta(seconds = t)
@@ -46,43 +90,56 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = None
         if isinstance(time, datetime.timedelta):
             time = time / datetime.timedelta(seconds = 1)
         t.sleep(time)
-    if start_time == None:
-        start_time = datetime.datetime.now()
+    def get_start_time(start_time):
+        if callable(start_time):
+            start_time = start_time()
+        if start_time == None:
+            start_time = datetime.datetime.now()
+        return start_time
     log_path = init_log_path(log_path)
-    if not os_proxy.exists(log_path):
-        raise FileNotFoundError(log_path)
-    pause = convert_to_timedelta(pause)
-    timeout = convert_to_timedelta(timeout)
-    start_real_time = datetime.datetime.now()
-    start_log_time = config.convert_to_log_zone(start_time)
-    logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
-    def calc_delta_time():
-        now = datetime.datetime.now()
-        diff = now - start_real_time
-        return diff
-    while True:
-        out = utils.grep_regex_in_line(log_path, regex, f"({utils.TIMESTAMP_REGEX}).*({regex})")
-        if len(out) > 0:
-            matched = out[-1].matched
-            regex_timestamp = datetime.datetime.strptime(matched[1], utils.TIMESTAMP_FORMAT)
-            logging.debug(f"{wait_for_regex.__name__}: found {len(out)} matches")
-            if regex_timestamp >= start_log_time:
-                logging.debug(f"{wait_for_regex.__name__}: break {regex_timestamp} > {start_log_time}")
-                call(callbacks, "success", regex_timestamp, matched[2])
+    if not os_proxy.exists(log_path): raise FileNotFoundError(log_path)
+    def _wait_for_regex():
+        nonlocal start_time, pause, timeout, log_path
+        start_time = get_start_time(start_time)
+        pause = convert_to_timedelta(pause)
+        timeout = convert_to_timedelta(timeout)
+        start_real_time = datetime.datetime.now()
+        start_log_time = config.convert_to_log_zone(start_time)
+        logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
+        def calc_delta_time():
+            now = datetime.datetime.now()
+            diff = now - start_real_time
+            return diff
+        while True:
+            out = utils.grep_regex_in_line(log_path, regex, f"({utils.TIMESTAMP_REGEX}).*({regex})")
+            if len(out) > 0:
+                matched = out[-1].matched
+                regex_timestamp = datetime.datetime.strptime(matched[1], utils.TIMESTAMP_FORMAT)
+                logging.debug(f"{wait_for_regex.__name__}: found {len(out)} matches")
+                if monitor_changes_in_log:
+                    line_number = out[-1].line_number
+                    _update_lines_number(log_path, line_number)
+                if regex_timestamp >= start_log_time:
+                    logging.debug(f"{wait_for_regex.__name__}: break {regex_timestamp} > {start_log_time}")
+                    call(callbacks, "success", regex_timestamp, matched[2])
+                    return
+            diff = calc_delta_time()
+            if pause:
+                if not diff + pause >= timeout:
+                    _sleep(pause)
+                else:
+                    pause_timeout = timeout - diff
+                    _sleep(pause_timeout)
+            diff = calc_delta_time()
+            if diff > timeout:
+                call(callbacks, "timeout", timeout)
+                logging.debug(f"{wait_for_regex.__name__}: break {diff} > {timeout} timeout")
                 return
-        diff = calc_delta_time()
-        if pause:
-            if not diff + pause >= timeout:
-                _sleep(pause)
-            else:
-                pause_timeout = timeout - diff
-                _sleep(pause_timeout)
-        diff = calc_delta_time()
-        if diff > timeout:
-            call(callbacks, "timeout", timeout)
-            logging.debug(f"{wait_for_regex.__name__}: break {diff} > {timeout} timeout")
-            return
-
+    try:
+        if monitor_changes_in_log: _stop_monitor(log_path)
+        _wait_for_regex()
+    finally:
+        if monitor_changes_in_log: _start_monitor(log_path)
 #def SleepUntilTimeout(timeout):
 #    if isinstance(timeout, str):
 #        timeout = int(timeout)
