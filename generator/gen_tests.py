@@ -1,5 +1,4 @@
 import logging
-import inspect
 
 from vatf.utils import config
 from vatf.utils import os_proxy, config_loader
@@ -102,9 +101,7 @@ def create_test(suite_path, test_name, test):
     _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
-    test_code = inspect.getsourcelines(test)
-    for line in test_code[0][1:]:
-        _write_to_script(line.lstrip())
+    test()
 
 def create_tests(suite_path, **kwargs):
     test_names = []
