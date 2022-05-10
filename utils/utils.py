@@ -14,7 +14,16 @@ TIMESTAMP_REGEX = DATE_REGEX
 TIMESTAMP_FORMAT = DATE_FORMAT
 
 def count_lines_in_file(path):
-    return int(subprocess.check_output(f"wc -l {path}").split()[0])
+    wc_cmd = f"wc -l {path}"
+    logging.debug(f"Launch {wc_cmd}")
+    count = int(subprocess.check_output(wc_cmd).split()[0])
+    logging.debug(f"{wc_cmd} returned {count}")
+    return count
+
+def touch(path):
+    touch_cmd = f"touch {path} ; sync"
+    logging.debug(touch_cmd)
+    os.system(touch_cmd)
 
 def name_and_args():
     caller = inspect.stack()[1][0]
