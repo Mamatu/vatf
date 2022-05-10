@@ -74,6 +74,8 @@ class VaLog:
         va_log = data["va_log"]
         self.path = va_log["path"]
         self.timedelta = datetime.timedelta(**va_log["timedelta"])
+        self.date_regex = va_log["date_regex"]
+        self.date_format = va_log["date_format"]
 
 class Config:
     def __init__(self, config_json_path = None, schema_json_path = None):
@@ -112,6 +114,12 @@ class Config:
         if self.utterance_from_va and self.utterance_from_va.regexes:
             return [(regex.begin, regex.end) for regex in self.utterance_from_va.regexes]
         return []
+    def get_log_path(self):
+        return self.va_log.path
+    def get_date_regex(self):
+        return self.va_log.date_regex
+    def get_date_format(self):
+        return self.va_log.date_format
 
 class ConfigProxy:
     def __init__(self, config_json_path = None, schema_json_path = None):
@@ -141,6 +149,18 @@ class ConfigProxy:
         if not self.config:
             return []
         return self.config.get_regexes_for_sampling()
+    def get_log_path(self):
+        if not self.config:
+            return ""
+        return self.config.get_log_path()
+    def get_date_regex(self):
+        if not self.config:
+            raise Exception("config is not loaded")
+        return self.va_log.date_regex
+    def get_date_format(self):
+        if not self.config:
+            raise Exception("config is not loaded")
+        return self.va_log.date_format
 
 def _abs_path_to_schema():
     import pathlib

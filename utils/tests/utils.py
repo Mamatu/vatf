@@ -129,14 +129,10 @@ class UtilsTests(TestCase):
     def test_grep_line_regex_with_line_two_lines(self):
         testfile_path = self.test_file
         with open(testfile_path, "w") as f:
-            f.write("regex")
-            f.write("\n")
-            f.write("2021-12-19 17:59:17.171 [ 15] I regex")
-            f.write("\n")
-            f.write("regex")
-            f.write("\n")
-            f.write("2021-12-19 17:59:17.172 [ 15] I regex")
-            f.write("\n")
+            f.write("regex\n")
+            f.write("2021-12-19 17:59:17.171 [ 15] I regex\n")
+            f.write("regex\n")
+            f.write("2021-12-19 17:59:17.172 [ 15] I regex\n")
             f.write("regex")
         line_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
         out = utils.grep_regex_in_line(testfile_path, "regex", line_regex)
@@ -145,3 +141,37 @@ class UtilsTests(TestCase):
         self.assertEqual(4, out[1].line_number)
         self.assertEqual("2021-12-19 17:59:17.171", out[0].matched[0])
         self.assertEqual("2021-12-19 17:59:17.172", out[1].matched[0])
+    def test_grep_line_regex_from_line_1(self):
+        testfile_path = self.test_file
+        with open(testfile_path, "w") as f:
+            f.write("2021-12-19 17:59:17.171 [ 15] I regex\n")
+            f.write("2021-12-19 17:59:17.172 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.173 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.174 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.175 [ 15] I regex\n")
+            f.write("2021-12-19 17:59:17.176 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.177 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.178 [ 15] I line")
+        line_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+        out = utils.grep_regex_in_line(testfile_path, "regex", line_regex, fromLine = 3)
+        self.assertEqual(1, len(out))
+        self.assertEqual(5, out[0].line_number)
+    def test_grep_line_regex_from_line_2(self):
+        testfile_path = self.test_file
+        with open(testfile_path, "w") as f:
+            f.write("2021-12-19 17:59:17.171 [ 15] I regex1\n")
+            f.write("2021-12-19 17:59:17.172 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.173 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.174 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.175 [ 15] I regex2\n")
+            f.write("2021-12-19 17:59:17.176 [ 15] I regex3\n")
+            f.write("2021-12-19 17:59:17.177 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.178 [ 15] I line\n")
+            f.write("2021-12-19 17:59:17.179 [ 15] I line")
+        line_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+        out = utils.grep_regex_in_line(testfile_path, "regex", line_regex, fromLine = 5)
+        self.assertEqual(2, len(out))
+        self.assertEqual(5, out[0].line_number)
+        self.assertEqual(6, out[1].line_number)
+        self.assertEqual("2021-12-19 17:59:17.175", out[0].matched[0])
+        self.assertEqual("2021-12-19 17:59:17.176", out[1].matched[0])

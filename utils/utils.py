@@ -13,6 +13,9 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 TIMESTAMP_REGEX = DATE_REGEX
 TIMESTAMP_FORMAT = DATE_FORMAT
 
+def count_lines_in_file(path):
+    return int(subprocess.check_output(f"wc -l {path}").split()[0])
+
 def name_and_args():
     caller = inspect.stack()[1][0]
     args, _, _, values = inspect.getargvalues(caller)
@@ -72,10 +75,11 @@ def get_counter(dirpath, pattern, suffix = None):
 import enum
 
 class GrepEntry:
-    def __init__(self, line_number = None, matched = None):
+    def __init__(self, line_number = None, matched = None, line_offset = 0):
         if line_number:
             try:
                 self.line_number = int(line_number.rstrip())
+                self.line_number = self.line_number + line_offset
             except Exception as ex:
                 logging.error(f"{line_number} cannot be converted to int! ${ex}")
                 raise ex
@@ -92,20 +96,26 @@ class GrepEntry:
     def __str__(self):
         return f"({self.line_number}, {self.matched})"
     @staticmethod
-    def FromSplit(line):
+    def FromSplit(line, line_offset = 0):
         out = line.split(':', 1)
-        return GrepEntry(out[0], out[1])
+        return GrepEntry(out[0], out[1], line_offset)
 
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1):
+def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
+    if fromLine < 1:
+        raise Exception(f"Invalid fromLine value {fromLine}")
     if maxCount < -1:
         raise Exception(f"Invalid value of maxCount {maxCount}. It should be > -1")
     lineNumber = True #hardcode
     def makeArgs(lineNumber, maxCount):
         n_arg = "-n" if lineNumber else ""
         m_arg = " -m {maxCount}" if maxCount > -1 else ""
-        return f"{n_arg}{m_arg}"
+        return f"{n_arg}{m_arg} -a"
     args = makeArgs(lineNumber, maxCount)
-    command = f"grep {args} \"{regex}\" {filepath}"
+    command = f"grep {args} \"{regex}\""
+    if fromLine > 1:
+        command = f"sed -n '{fromLine},$p' {filepath} | {command}"
+    else:
+        command = f"{command} {filepath}"
     if command == None:
         raise Exception("Grep command was failed on initialization")
     logging.debug(f"{grep.__name__}: {command}")
@@ -114,10 +124,11 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1):
         logging.debug(f"{grep.__name__}: ferr {ferr.name}")
         def readlines(f):
             lines = f.readlines()
+            line_offset = 0 if fromLine < 1 else fromLine - 1
             if not lineNumber:
-                lines = [GrepEntry(matched = l) for l in lines]
+                lines = [GrepEntry(matched = l, line_offset = line_offset) for l in lines]
             else:
-                lines = [GrepEntry.FromSplit(l) for l in lines]
+                lines = [GrepEntry.FromSplit(l, line_offset = line_offset) for l in lines]
             return lines
         def remove():
             if removeTmpFiles:
@@ -135,16 +146,19 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1):
         remove()
         return out
 
-def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1):
+def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
     """
     :filepath - filepath for greping
     :grep_regex - regex using to match line by grep
     :match_regex - regex to extract specific data from line
     :removeTmpFiles - remove tmp files when finished
     :maxCount - max count of matched, if it is -1 it will be infinity
+    :fromLine - start searching from specific line
     """
+    if fromLine < 1:
+        raise Exception(f"Invalid fromLine value {fromLine}")
     logging.debug(f"{grep_regex_in_line.__name__}: {name_and_args()}")
-    out = grep(filepath, grep_regex, removeTmpFiles, maxCount = maxCount)
+    out = grep(filepath, grep_regex, removeTmpFiles, maxCount = maxCount, fromLine = fromLine)
     rec = re.compile(match_regex)
     matched_lines = []
     for o in out:
