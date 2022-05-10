@@ -25,11 +25,12 @@ class _Ctx:
 _ctx = None
 
 @public_api("log_snapshot")
-def start(log_path, snapshot_path, now = datetime.datetime.now(), config_path ="./config.json"):
+def start(log_path, snapshot_path, now = datetime.datetime.now, config_path ="./config.json"):
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")
     output_path = mkdir.mkdir_with_counter("./logs/session")
+    if callable(now): now = now()
     _ctx = _Ctx(now = now, snapshot_path = snapshot_path, config_path = config_path, log_path = log_path, output_path = output_path)
 
 def stop():
