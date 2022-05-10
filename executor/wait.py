@@ -45,8 +45,7 @@ class MonitorHandler(FileSystemEventHandler):
         if not src_path in _disabled_observers:
             logging.debug(f"modified {event} {src_path}")
             try:
-                lines_number = utils.count_lines_in_file(src_path)
-                _update_line_number(src_path, lines_number)
+                if os_proxy.exists(event.src_path): _update_line_number(src_path, 1)
             except FileNotFoundError:
                 logging.warning(f"File {src_path} does not exists anymore")
 
@@ -66,7 +65,13 @@ def _reset_logs_lines_number():
     _logs_lines_number = {}
 
 @lock
-def _update_line_number(path, lines_number):
+def _update_line_number(path, offset):
+    global _logs_lines_number
+    lines_number = _logs_lines_number.get(path, 1)
+    _logs_lines_number[path] = lines_number + offset
+
+@lock
+def _set_line_number(path, lines_number):
     global _logs_lines_number
     _logs_lines_number[path] = lines_number
 
@@ -175,7 +180,7 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, callbacks = None)
                 matched = out[-1].matched
                 logging.debug(f"{wait_for_regex.__name__}: found {len(out)} matches")
                 line_number = out[-1].line_number
-                _update_line_number(log_path, line_number)
+                _set_line_number(log_path, line_number)
                 if line_number >= fromLine:
                     call(callbacks, "success", line_number, matched[0])
                     return
