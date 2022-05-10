@@ -1,1 +1,1 @@
-PYTHONPATH=..:$PYTHONPATH python3 "$@"
+PYTHONPATH=$(pwd)/..:$PYTHONPATH python3 "$@"
