@@ -58,7 +58,10 @@ def play_audio(audiofile_id, find_in_audio_files_path = True):
     logging.debug(f"play: {audiofile_id} {rel_path}")
     _play_audio(os_proxy.join(rel_path, audiofile_id))
 
-def play_random_audio(count = 1):
-    audiofiles = get_random_audio_files(count)
+def play_random_audio(audiofiles = None, count = 1):
+    if not audiofiles:
+        audiofiles = get_random_audio_files(count)
+    else:
+        audiofiles = [audiofiles[radom.rangeint(0, len(audiofiles) - 1)] for idx in range(count)]
     for audiofile in audiofiles:
         play_audio(audiofile)
