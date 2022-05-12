@@ -87,7 +87,7 @@ def create_call(module, function_name, *args, **kwargs):
     if not vatf_register.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    _write_to_script(f"{module}.{funcall}")
+    logging.debug(f"Registered {module}.{funcall}")
 
 def _create_header():
     _write_to_script("import os")
@@ -108,8 +108,9 @@ def create_test(suite_path, test_name, test):
     if branch != None and branch != "":
         branch = f"-b {branch}"
     git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
-    code_lines = inspect.getsourcelines(test)
     _create_header()
+    test()
+    code_lines = inspect.getsourcelines(test)
     for line in code_lines[0][1:]:
         line = textwrap.dedent(line)
         _write_to_script(line, newLine = False)
