@@ -62,6 +62,6 @@ def play_random_audio(audiofiles = None, count = 1):
     if not audiofiles:
         audiofiles = get_random_audio_files(count)
     else:
-        audiofiles = [audiofiles[radom.rangeint(0, len(audiofiles) - 1)] for idx in range(count)]
+        audiofiles = [audiofiles[random.randint(0, len(audiofiles) - 1)] for idx in range(count)]
     for audiofile in audiofiles:
         play_audio(audiofile)
