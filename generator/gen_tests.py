@@ -82,12 +82,15 @@ def _write_to_script(line, newLine = True):
     else:
         os_proxy.write_to_file(_test_py_file, line)
 
+def verify_call(call):
+    logging.debug(f"Registered {call}")
+
 def create_call(module, function_name, *args, **kwargs):
     global _test_py_file
     if not vatf_register.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    logging.debug(f"Registered {module}.{funcall}")
+    verify_call(f"{module}.{funcall}")
 
 def _create_header():
     _write_to_script("import os")

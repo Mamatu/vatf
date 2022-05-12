@@ -5,6 +5,7 @@ import sys
 import logging
 import textwrap
 from vatf.generator import gen_tests
+from vatf.vatf_register import public_api
 
 class GenTestsTests(TestCase):
     def __init__(self, arg):
@@ -27,20 +28,31 @@ class GenTestsTests(TestCase):
     @patch("vatf.utils.os_proxy.copy")
     @patch("vatf.generator.gen_tests._create_run_sh_script")
     @patch("vatf.generator.gen_tests._create_header")
-    def test_create_test(self, create_run_sh_script, create_header, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
+    @patch("vatf.generator.gen_tests.verify_call")
+    def test_create_test(self, verify_call, create_run_sh_script, create_header, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
         with patch.object(sys, 'argv', ['', '', 'generator/tests/config.json']):
+            class bar:
+                @public_api('bar')
+                def foo(a, b):
+                    pass
+                @public_api('bar')
+                def foo1(a):
+                    pass
+                @public_api('bar')
+                def foo2(path = ''):
+                    pass
             is_registered.return_value = True
             create_run_sh_script = Mock()
             create_header = Mock()
             def test_body():
                 bar.foo('a', 1)
-                bar.foo(2)
-                bar.foo(path = '/tmp')
+                bar.foo1(2)
+                bar.foo2(path = '/tmp')
             gen_tests.create_test("/tmp/", "test1", test_body)
             #os_proxy_open_to_write.assert_has_calls([call("/tmp/test1/test.py"), call("/tmp/test1/run_test.sh")])
             os_proxy_mkdir.assert_has_calls([call("/tmp/test1"), call("/tmp/test1/assets"), call("/tmp/test1/assets/audio_files")])
             expected_calls = []
-            expected_calls.append(call(ANY, "bar.foo('a', 1)\n"))
-            expected_calls.append(call(ANY, "bar.foo(2)\n"))
-            expected_calls.append(call(ANY, "bar.foo(path = '/tmp')\n"))
-            os_proxy_write_to_file.assert_has_calls(expected_calls)
+            expected_calls.append(call("bar.foo('a', 1)"))
+            expected_calls.append(call("bar.foo1(2)"))
+            expected_calls.append(call("bar.foo2(path = '/tmp')"))
+            verify_call.assert_has_calls(expected_calls)

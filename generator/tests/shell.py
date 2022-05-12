@@ -10,14 +10,14 @@ class ShellTests(TestCase):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
     @patch("vatf.vatf_register.is_registered")
-    @patch("vatf.utils.os_proxy.write_to_file")
-    def test_fg(self, os_proxy_write_to_file, is_registered):
+    @patch("vatf.generator.gen_tests.verify_call")
+    def test_fg(self, verify_call, is_registered):
         is_registered.return_value = True
         shell.fg("echo \"A\"")
-        os_proxy_write_to_file.assert_has_calls([call(ANY, 'shell.fg(\'echo "A"\')\n')])
+        verify_call.assert_has_calls([call('shell.fg(\'echo "A"\')')])
     @patch("vatf.vatf_register.is_registered")
-    @patch("vatf.utils.os_proxy.write_to_file")
-    def test_bg(self, os_proxy_write_to_file, is_registered):
+    @patch("vatf.generator.gen_tests.verify_call")
+    def test_bg(self, verify_call, is_registered):
         is_registered.return_value = True
         shell.bg("echo \"A\"")
-        os_proxy_write_to_file.assert_has_calls([call(ANY, 'shell.bg(\'echo "A"\')\n')])
+        verify_call.assert_has_calls([call('shell.bg(\'echo "A"\')')])
