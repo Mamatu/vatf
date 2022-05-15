@@ -2,7 +2,10 @@ import logging
 
 from vatf.utils import config
 from vatf.utils import os_proxy, config_loader
-from vatf import vatf_register
+from vatf import vatf_api
+
+import inspect
+import textwrap
 
 _test_py_file = None
 _test_name = None
@@ -72,16 +75,32 @@ def get_test_name():
     global _test_name
     return _test_name
 
-def _write_to_script(line):
+def _write_to_script(line, newLine = True):
     global _test_py_file
-    os_proxy.writeln_to_file(_test_py_file, line)
+    if newLine:
+        os_proxy.writeln_to_file(_test_py_file, line)
+    else:
+        os_proxy.write_to_file(_test_py_file, line)
+
+def verify_call(call):
+    logging.debug(f"Registered {call}")
 
 def create_call(module, function_name, *args, **kwargs):
     global _test_py_file
-    if not vatf_register.is_registered(module, function_name):
+    if not vatf_api.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
-    _write_to_script(f"{module}.{funcall}")
+    verify_call(f"{module}.{funcall}")
+
+def _create_header():
+    _write_to_script("import os")
+    _write_to_script(f"os.system('rm -rf vatf')")
+    _write_to_script(f"os.system('{git_clone}')")
+    _write_to_script("from vatf import vatf_api")
+    _write_to_script("from vatf.utils import config")
+    _write_to_script("config.set_config_path('./config.json')")
+    _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
+    _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
 
 def create_test(suite_path, test_name, test):
     _create_test_dir(suite_path, test_name)
@@ -92,16 +111,12 @@ def create_test(suite_path, test_name, test):
     if branch != None and branch != "":
         branch = f"-b {branch}"
     git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
-    _write_to_script("import os")
-    _write_to_script(f"os.system('rm -rf vatf')")
-    _write_to_script(f"os.system('{git_clone}')")
-    _write_to_script("from vatf import vatf_api")
-    _write_to_script("from vatf.utils import config")
-    _write_to_script("config.set_config_path('./config.json')")
-    _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
-    _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
-    _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
+    _create_header()
     test()
+    code_lines = inspect.getsourcelines(test)
+    for line in code_lines[0][1:]:
+        line = textwrap.dedent(line)
+        _write_to_script(line, newLine = False)
 
 def create_tests(suite_path, **kwargs):
     test_names = []

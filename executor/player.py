@@ -1,7 +1,7 @@
 import subprocess
 import logging
 
-from vatf.vatf_register import public_api
+from vatf.vatf_api import public_api
 
 def _cvlc_command(path):
     return f"cvlc {path} --play-and-exit vlc://quit"

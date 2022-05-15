@@ -1,38 +1,92 @@
 from enum import Enum
 
-from vatf.generator import player as gen_player
-from vatf.executor import player as exec_player
+import functools
+import importlib
+import sys
+import types
 
-from vatf.generator import wait as gen_wait
-from vatf.executor import wait as exec_wait
-
-from vatf.generator import shell as gen_shell
-from vatf.executor import shell as exec_shell
-
-from vatf.generator import shell as gen_mkdir
-from vatf.executor import shell as exec_mkdir
-
-from vatf.generator import audio as gen_audio
-from vatf.executor import audio as exec_audio
+from vatf.generator import gen_tests
 
 class API_TYPE(Enum):
     EXECUTOR = 1,
     GENERATOR = 2
 
 _apiType = API_TYPE.GENERATOR
-_player_api = {API_TYPE.GENERATOR : gen_player, API_TYPE.EXECUTOR : exec_player}
-_wait_api = {API_TYPE.GENERATOR : gen_wait, API_TYPE.EXECUTOR : exec_wait}
-_shell_api = {API_TYPE.GENERATOR : gen_shell, API_TYPE.EXECUTOR : exec_shell}
-_mkdir_api = {API_TYPE.GENERATOR : gen_mkdir, API_TYPE.EXECUTOR : exec_mkdir}
-_audio_api = {API_TYPE.GENERATOR : gen_audio, API_TYPE.EXECUTOR : exec_audio}
+_package = {API_TYPE.GENERATOR : "vatf.generator", API_TYPE.EXECUTOR : "vatf.executor"}
+_dynamic_modules = {}
 
-_modules = {"player" : _player_api, "wait" : _wait_api, "shell" : _shell_api, "mkdir" : _mkdir_api, "audio" : _audio_api}
+def _get_module(import_path):
+    global _dynamic_modules
+    module = sys.modules.get(import_path)
+    if not module:
+        module = _dynamic_modules.get(import_path)
+    if not module:
+        raise Exception(f"Module {import_path} was not registered")
+    return module
 
 def set_api_type(apiType):
     global _apiType
     _apiType = apiType
 
+def get_api_type():
+    global _apiType
+    return _apiType
+
 def get_api(module):
-    if not module in _modules:
-        raise Exception(f"Module {module} was not registered")
-    return _modules[module][_apiType]
+    global _package
+    import_path = f"{_package[get_api_type()]}.{module}"
+    return _get_module(import_path)
+
+_generator_registered_api = {}
+
+def _create_generator_module(module_name, import_path):
+    global _dynamic_modules
+    module = types.ModuleType(module_name)
+    _dynamic_modules[import_path] = (module)
+    print(f"Runtime: created module {module_name}, full import path is {import_path}")
+
+def _create_default_generator_wrapper(module_name, f):
+    """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
+    g = types.FunctionType(f.__code__, f.__globals__, name=f.__name__,
+                           argdefs=f.__defaults__,
+                           closure=f.__closure__)
+    def wrapper(*args, **kwargs):
+        gen_tests.create_call(module_name, f.__name__, *args, **kwargs)
+    g = functools.update_wrapper(wrapper, f)
+    g.__kwdefaults__ = f.__kwdefaults__
+    print(f"Runtime: added default generator function {f.__name__} into module {module_name}")
+    return g
+
+def _add_func_to_generator_module_if_not_exists(module_name, func, import_path):
+    module = _get_module(import_path)
+    if not getattr(module, func.__name__, None):
+        func = _create_default_generator_wrapper(module_name, func)
+        setattr(module, func.__name__, func)
+
+def _create_generator_module_if_not_exists(module_name, func, import_path):
+    try:
+        if not _get_module(import_path):
+            _create_generator_module(module_name, import_path)
+    except:
+        _create_generator_module(module_name, import_path)
+    finally:
+        _add_func_to_generator_module_if_not_exists(module_name, func, import_path)
+
+def public_api(module_name):
+    def inner(func):
+        global _generator_registered_api
+        if not module_name in _generator_registered_api:
+            _generator_registered_api[module_name] = {}
+        _generator_registered_api[module_name][func.__name__] = func
+        import_path = _package[API_TYPE.GENERATOR]
+        import_path = f"{import_path}.{module_name}"
+        _create_generator_module_if_not_exists(module_name, func, import_path)
+        return func
+    return inner
+
+def is_registered(module, func):
+    global _generator_registered_api
+    if module in _generator_registered_api:
+        module = _generator_registered_api[module]
+        return func in module
+    return False

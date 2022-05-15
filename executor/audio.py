@@ -1,5 +1,5 @@
 from vatf.executor import shell, mkdir
-from vatf.vatf_register import public_api
+from vatf.vatf_api import public_api
 
 import logging
 
