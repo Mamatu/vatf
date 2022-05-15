@@ -4,7 +4,7 @@ from random import random
 from random import randint
 
 from vatf.utils import utils, os_proxy, config
-from vatf.vatf_register import public_api
+from vatf.vatf_api import public_api
 
 import datetime
 

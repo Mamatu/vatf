@@ -2,7 +2,7 @@ import os
 import re
 
 from vatf.utils import utils
-from vatf.vatf_register import public_api
+from vatf.vatf_api import public_api
 
 import logging
 

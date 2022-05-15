@@ -2,7 +2,7 @@ import logging
 
 from vatf.utils import config
 from vatf.utils import os_proxy, config_loader
-from vatf import vatf_register
+from vatf import vatf_api
 
 import inspect
 import textwrap
@@ -87,7 +87,7 @@ def verify_call(call):
 
 def create_call(module, function_name, *args, **kwargs):
     global _test_py_file
-    if not vatf_register.is_registered(module, function_name):
+    if not vatf_api.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
     verify_call(f"{module}.{funcall}")

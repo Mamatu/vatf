@@ -1,11 +1,14 @@
 from unittest import TestCase
 from unittest.mock import ANY, call, Mock, patch
-import sys
+from vatf.generator import gen_tests
+from vatf.vatf_api import public_api
 
 import logging
 import textwrap
-from vatf.generator import gen_tests
-from vatf.vatf_register import public_api
+import sys
+
+
+from vatf.generator.tests import bar, bar_api
 
 class GenTestsTests(TestCase):
     def __init__(self, arg):
@@ -20,7 +23,7 @@ class GenTestsTests(TestCase):
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2)", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2))
         self.assertEqual("foo('a', 1, ('c', 'd'), a = 'a', b = 2, c = {'e': 9, 'f': 10})", gen_tests.make_pycall("foo", "a", 1, ("c", "d"), a = "a", b = 2, c = {"e": 9, "f": 10}))
     @patch("json.dump")
-    @patch("vatf.vatf_register.is_registered")
+    @patch("vatf.vatf_api.is_registered")
     @patch("vatf.utils.os_proxy.write_to_file")
     @patch("vatf.utils.os_proxy.mkdir")
     @patch("vatf.utils.os_proxy.open_to_read")
@@ -31,25 +34,14 @@ class GenTestsTests(TestCase):
     @patch("vatf.generator.gen_tests.verify_call")
     def test_create_test(self, verify_call, create_run_sh_script, create_header, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
         with patch.object(sys, 'argv', ['', '', 'generator/tests/config.json']):
-            class bar:
-                @public_api('bar')
-                def foo(a, b):
-                    pass
-                @public_api('bar')
-                def foo1(a):
-                    pass
-                @public_api('bar')
-                def foo2(path = ''):
-                    pass
             is_registered.return_value = True
             create_run_sh_script = Mock()
             create_header = Mock()
             def test_body():
-                bar.foo('a', 1)
-                bar.foo1(2)
-                bar.foo2(path = '/tmp')
+                bar_api.foo('a', 1)
+                bar_api.foo1(2)
+                bar_api.foo2(path = '/tmp')
             gen_tests.create_test("/tmp/", "test1", test_body)
-            #os_proxy_open_to_write.assert_has_calls([call("/tmp/test1/test.py"), call("/tmp/test1/run_test.sh")])
             os_proxy_mkdir.assert_has_calls([call("/tmp/test1"), call("/tmp/test1/assets"), call("/tmp/test1/assets/audio_files")])
             expected_calls = []
             expected_calls.append(call("bar.foo('a', 1)"))
