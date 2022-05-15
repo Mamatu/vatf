@@ -119,12 +119,8 @@ def create_test(suite_path, test_name, test):
         _write_to_script(line, newLine = False)
 
 def create_tests(suite_path, **kwargs):
-    test_names = []
     for k,v in kwargs.items():
         if isinstance(v, tuple):
             create_test(suite_path, test_name = k, test = v[0], cleanup = v[1])
         else:
             create_test(suite_path, test_name = k, test = v)
-        test_names.append(k)
-    run_suite_script = os_proxy.join(suite_path, _run_suite)
-    _create(run_suite_script)
