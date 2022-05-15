@@ -26,25 +26,56 @@ class WfrCallbacks:
     def pre_sleep(time):
         pass
 
+_log_path_set = set()
+_disabled_observers = set()
 _logs_lines_number = {}
 _logs_observers = {}
-
-def _reset_logs_lines_number():
-    global _logs_lines_number
-    _logs_lines_number = {}
-
-def _update_lines_number(path, lines_number):
-    global _logs_lines_number
-    _logs_lines_number[path] = lines_number
+_logs_last_line_date = {}
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+import threading
+_watchdog_lock = threading.RLock()
+
 class MonitorHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        lines_number = utils.count_lines_in_file(event.src_path)
-        _update_lines_number(event.src_path, lines_number)
+        if event.is_directory: return
+        src_path = event.src_path
+        if not src_path in _disabled_observers:
+            logging.debug(f"modified {event} {src_path}")
+            try:
+                if os_proxy.exists(event.src_path): _update_line_number(src_path, 1)
+            except FileNotFoundError:
+                logging.warning(f"File {src_path} does not exists anymore")
 
+def lock(func):
+    def wrapper(*args):
+        global _watchdog_lock
+        _watchdog_lock.acquire()
+        try:
+            return func(*args)
+        finally:
+            _watchdog_lock.release()
+    return wrapper
+
+@lock
+def _reset_logs_lines_number():
+    global _logs_lines_number
+    _logs_lines_number = {}
+
+@lock
+def _update_line_number(path, offset):
+    global _logs_lines_number
+    lines_number = _logs_lines_number.get(path, 1)
+    _logs_lines_number[path] = lines_number + offset
+
+@lock
+def _set_line_number(path, lines_number):
+    global _logs_lines_number
+    _logs_lines_number[path] = lines_number
+
+@lock
 def _create_monitor(path):
     observer = Observer()
     monitor_handler = MonitorHandler()
@@ -52,6 +83,12 @@ def _create_monitor(path):
     _logs_observers[path] = observer
     return observer
 
+@lock
+def _check_if_observer_added(path):
+    global _logs_observers
+    return path in _logs_observers
+
+@lock
 def _start_monitor(path):
     observer = None
     global _logs_observers
@@ -60,7 +97,9 @@ def _start_monitor(path):
     except KeyError:
         observer = _create_monitor(path)
     observer.start()
+    return observer
 
+@lock
 def _stop_monitor(path):
     observer = None
     global _logs_observers
@@ -69,9 +108,38 @@ def _stop_monitor(path):
     except KeyError:
         observer = _create_monitor(path)
     observer.stop()
+    return observer
+
+@lock
+def _stop_all_monitors():
+    global _log_path_set
+    for log_path in _log_path_set:
+        _stop_monitor(log_path)
+
+import atexit
+atexit.register(_stop_all_monitors)
+
+@lock
+def _pause_monitor(path):
+    if not _check_if_observer_added(path):
+        _start_monitor(path)
+    global _disabled_observers
+    _disabled_observers.add(path)
+
+@lock
+def _resume_monitor(path):
+    if not _check_if_observer_added(path):
+        _start_monitor(path)
+    global _disabled_observers
+    _disabled_observers.remove(path)
+
+@lock
+def _get_last_monitored_line(path):
+    global _logs_lines_number
+    return _logs_lines_number.get(path, 1)
 
 @public_api("wait")
-def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = datetime.datetime.now, callbacks = None, monitor_changes_in_log = True):
+def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, callbacks = None):
     def convert_to_timedelta(t):
         if not isinstance(t, datetime.timedelta):
             return datetime.timedelta(seconds = t)
@@ -80,7 +148,7 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = date
         if callbacks:
             method = getattr(callbacks, method_name)
             method(*args)
-    def init_log_path(log_path):
+    def get_log_path(log_path):
         if log_path == None:
             return config.get_log_path()
         return log_path
@@ -90,38 +158,31 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = date
         if isinstance(time, datetime.timedelta):
             time = time / datetime.timedelta(seconds = 1)
         t.sleep(time)
-    def get_start_time(start_time):
-        if callable(start_time):
-            start_time = start_time()
-        if start_time == None:
-            start_time = datetime.datetime.now()
-        return start_time
-    log_path = init_log_path(log_path)
-    if not os_proxy.exists(log_path): raise FileNotFoundError(log_path)
+    def _init_log_path():
+        nonlocal log_path
+        log_path = get_log_path(log_path)
+        if not os_proxy.exists(log_path): raise FileNotFoundError(log_path)
+        global _log_path_set
+        _log_path_set.add(log_path)
     def _wait_for_regex():
-        nonlocal start_time, pause, timeout, log_path
-        start_time = get_start_time(start_time)
+        nonlocal pause, timeout, log_path
         pause = convert_to_timedelta(pause)
         timeout = convert_to_timedelta(timeout)
         start_real_time = datetime.datetime.now()
-        start_log_time = config.convert_to_log_zone(start_time)
-        logging.debug(f"start_time: {start_time} start_log_time: {start_log_time}")
         def calc_delta_time():
             now = datetime.datetime.now()
             diff = now - start_real_time
             return diff
         while True:
-            out = utils.grep_regex_in_line(log_path, regex, f"({utils.TIMESTAMP_REGEX}).*({regex})")
+            fromLine = _get_last_monitored_line(log_path)
+            out = utils.grep_regex_in_line(log_path, grep_regex = regex, match_regex = regex, fromLine = fromLine)
             if len(out) > 0:
                 matched = out[-1].matched
-                regex_timestamp = datetime.datetime.strptime(matched[1], utils.TIMESTAMP_FORMAT)
                 logging.debug(f"{wait_for_regex.__name__}: found {len(out)} matches")
-                if monitor_changes_in_log:
-                    line_number = out[-1].line_number
-                    _update_lines_number(log_path, line_number)
-                if regex_timestamp >= start_log_time:
-                    logging.debug(f"{wait_for_regex.__name__}: break {regex_timestamp} > {start_log_time}")
-                    call(callbacks, "success", regex_timestamp, matched[2])
+                line_number = out[-1].line_number
+                _set_line_number(log_path, line_number)
+                if line_number >= fromLine:
+                    call(callbacks, "success", line_number, matched[0])
                     return
             diff = calc_delta_time()
             if pause:
@@ -136,49 +197,8 @@ def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, start_time = date
                 logging.debug(f"{wait_for_regex.__name__}: break {diff} > {timeout} timeout")
                 return
     try:
-        if monitor_changes_in_log: _stop_monitor(log_path)
+        _init_log_path()
+        _pause_monitor(log_path)
         _wait_for_regex()
     finally:
-        if monitor_changes_in_log: _start_monitor(log_path)
-#def SleepUntilTimeout(timeout):
-#    if isinstance(timeout, str):
-#        timeout = int(timeout)
-#    logging.info(f"{SleepUntilTimeout.__name__}: {timeout}")
-#    t.sleep(timeout)
-#
-#def _convert_to_utc(date):
-#    if config.log_timestamp_in_utc:
-#        return utils.convert_to_utc(date)
-#    return date
-#
-#def SleepUntilRegex(regex, path_to_log, timeout = 10, delta_time = 0.5):
-#    logging.info(f"{SleepUntilRegex.__name__}: {regex} {path_to_log} {timeout} {delta_time}")
-#    if not os.path.exists(path_to_log):
-#        raise Exception(f"{path_to_log} does not exist")
-#    if delta_time == None:
-#        delta_time = 0.5
-#    import  datetime
-#    start_function_timestamp = _convert_to_utc(datetime.datetime.now())
-#    logging.info(f"{SleepUntilRegex.__name__}: function start timestamp {start_function_timestamp}")
-#    time_idx = 0
-#    while True:
-#        out = utils.grep_regex_in_line(path_to_log, regex, utils.TIMESTAMP_REGEX)
-#        if len(out) > 0:
-#            regex_timestamp = datetime.datetime.strptime(out[-1].matched[0], utils.TIMESTAMP_FORMAT)
-#            logging.info(f"{SleepUntilRegex.__name__}: found {len(out)} matches")
-#            if regex_timestamp >= start_function_timestamp:
-#                logging.info(f"{SleepUntilRegex.__name__}: {regex_timestamp} > {start_function_timestamp} --break")
-#                break
-#        if delta_time != None:
-#            logging.info(f"{SleepUntilRegex.__name__}: sleep on {delta_time}")
-#            t.sleep(delta_time)
-#            time_idx = time_idx + delta_time
-#        if timeout != None:
-#            if time_idx >= timeout:
-#                logging.info(f"{SleepUntilRegex.__name__}: timeout {timeout} reached --break")
-#                break
-#def main(args):
-#    if args.regex:
-#        SleepUntilRegex(regex = args.regex, timeout = args.timeout, delta_time = args.delta, path_to_log = args.path_to_log)
-#    elif args.timeout:
-#        SleepUntilTimeout(args.timeout)
+        _resume_monitor(log_path)
