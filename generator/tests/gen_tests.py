@@ -1,12 +1,11 @@
+import logging
 from unittest import TestCase
 from unittest.mock import ANY, call, Mock, patch
 from vatf.generator import gen_tests
 from vatf.vatf_api import public_api
 
-import logging
 import textwrap
 import sys
-
 
 from vatf.generator.tests import bar, bar_api
 

@@ -1,8 +1,8 @@
+import logging
 from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
-import logging
 import textwrap
 from vatf.generator import player
 from vatf.utils import os_proxy

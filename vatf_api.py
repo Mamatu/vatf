@@ -43,6 +43,7 @@ def _create_generator_module(module_name, import_path):
     global _dynamic_modules
     module = types.ModuleType(module_name)
     _dynamic_modules[import_path] = (module)
+    print(f"Runtime: created module {module_name}, full import path is {import_path}")
 
 def _create_default_generator_wrapper(module_name, f):
     """Based on http://stackoverflow.com/a/6528148/190597 (Glenn Maynard)"""
@@ -53,6 +54,7 @@ def _create_default_generator_wrapper(module_name, f):
         gen_tests.create_call(module_name, f.__name__, *args, **kwargs)
     g = functools.update_wrapper(wrapper, f)
     g.__kwdefaults__ = f.__kwdefaults__
+    print(f"Runtime: added default generator function {f.__name__} into module {module_name}")
     return g
 
 def _add_func_to_generator_module_if_not_exists(module_name, func, import_path):
@@ -64,7 +66,6 @@ def _add_func_to_generator_module_if_not_exists(module_name, func, import_path):
 def _create_generator_module_if_not_exists(module_name, func, import_path):
     try:
         if not _get_module(import_path):
-        #if not importlib.util.find_spec(import_path):
             _create_generator_module(module_name, import_path)
     except:
         _create_generator_module(module_name, import_path)

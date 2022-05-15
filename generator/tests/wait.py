@@ -1,7 +1,7 @@
+import logging
 from unittest import TestCase
 from unittest.mock import ANY, call, Mock, patch
 
-import logging
 import textwrap
 from vatf.generator import wait
 
