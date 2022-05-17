@@ -97,11 +97,10 @@ def _create_header():
     if branch != None and branch != "":
         branch = f"-b {branch}"
     git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
-    _write_to_script("from vatf import vatf_init")
     _write_to_script("import os")
     _write_to_script(f"os.system('rm -rf vatf')")
     _write_to_script(f"os.system('{git_clone}')")
-    _write_to_script("from vatf import vatf_api")
+    _write_to_script("from vatf import vatf_init, vatf_api")
     _write_to_script("from vatf.utils import config")
     _write_to_script("config.set_config_path('./config.json')")
     _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
