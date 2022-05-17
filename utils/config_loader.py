@@ -120,6 +120,10 @@ class Config:
         return self.va_log.date_regex
     def get_date_format(self):
         return self.va_log.date_format
+    def get_shell_command(self):
+        return self.va_log.command.shell
+    def get_shell_command_restart_timeout(self):
+        return self.va_log.command.restart_timeout
 
 class ConfigProxy:
     def __init__(self, config_json_path = None, schema_json_path = None):
@@ -161,6 +165,14 @@ class ConfigProxy:
         if not self.config:
             raise Exception("config is not loaded")
         return self.va_log.date_format
+    def get_shell_command(self):
+        if not self.config:
+            return None
+        return self.config.get_shell_command()
+    def get_shell_command_restart_timeout(self):
+        if not self.config:
+            return None
+        return self.config.get_shell_command_restart_timeout()
 
 def _abs_path_to_schema():
     import pathlib

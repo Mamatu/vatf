@@ -60,6 +60,20 @@
         "type" : "string",
         "description" : "path to log file"
       },
+      "command" : {
+        "type" : "object",
+        "description" : "json object which describe command to collect log",
+        "properties" : {
+          "shell" : {
+            "type" : "string",
+            "description" : "shell command to collect log"
+          },
+          "restart_timeout" : {
+            "type" : "number",
+            "description" : "number of milliseconds to restart shell command if file doesn't receive new data"
+          }
+        }
+      },
       "timedelta" : {
         "type" : "object",
         "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",

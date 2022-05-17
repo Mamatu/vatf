@@ -25,7 +25,7 @@ class _Ctx:
 _ctx = None
 
 @public_api("log_snapshot")
-def start(log_path, snapshot_path, now = datetime.datetime.now, config_path ="./config.json"):
+def start(config_path ="./config.json"):
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")
