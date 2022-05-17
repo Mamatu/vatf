@@ -97,6 +97,7 @@ def _create_header():
     if branch != None and branch != "":
         branch = f"-b {branch}"
     git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
+    _write_to_script("from vatf import vatf_init")
     _write_to_script("import os")
     _write_to_script(f"os.system('rm -rf vatf')")
     _write_to_script(f"os.system('{git_clone}')")
