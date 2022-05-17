@@ -15,6 +15,10 @@ _apiType = API_TYPE.GENERATOR
 _package = {API_TYPE.GENERATOR : "vatf.generator", API_TYPE.EXECUTOR : "vatf.executor"}
 _dynamic_modules = {}
 
+def get_package(apiType):
+    global _package
+    return _package[apiType]
+
 def _get_module(import_path):
     global _dynamic_modules
     module = sys.modules.get(import_path)
@@ -78,7 +82,7 @@ def public_api(module_name):
         if not module_name in _generator_registered_api:
             _generator_registered_api[module_name] = {}
         _generator_registered_api[module_name][func.__name__] = func
-        import_path = _package[API_TYPE.GENERATOR]
+        import_path = get_package(API_TYPE.GENERATOR)
         import_path = f"{import_path}.{module_name}"
         _create_generator_module_if_not_exists(module_name, func, import_path)
         return func

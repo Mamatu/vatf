@@ -93,6 +93,10 @@ def create_call(module, function_name, *args, **kwargs):
     verify_call(f"{module}.{funcall}")
 
 def _create_header():
+    branch = config.get_vatf_branch_to_clone()
+    if branch != None and branch != "":
+        branch = f"-b {branch}"
+    git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
     _write_to_script("import os")
     _write_to_script(f"os.system('rm -rf vatf')")
     _write_to_script(f"os.system('{git_clone}')")
@@ -107,10 +111,6 @@ def create_test(suite_path, test_name, test):
     _create_run_sh_script(suite_path, test_name)
     _copy_config(suite_path, test_name)
     global _test_py_file
-    branch = config.get_vatf_branch_to_clone()
-    if branch != None and branch != "":
-        branch = f"-b {branch}"
-    git_clone = f'git clone {branch} https://github.com/Mamatu/vatf.git'
     _create_header()
     test()
     code_lines = inspect.getsourcelines(test)
