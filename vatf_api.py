@@ -66,6 +66,8 @@ def _add_func_to_generator_module_if_not_exists(module_name, func, import_path):
     if not getattr(module, func.__name__, None):
         func = _create_default_generator_wrapper(module_name, func)
         setattr(module, func.__name__, func)
+    else:
+        print(f"Static: found static defined {func} in {module_name}")
 
 def _create_generator_module_if_not_exists(module_name, func, import_path):
     try:
