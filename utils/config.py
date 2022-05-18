@@ -83,3 +83,17 @@ def convert_to_system_zone(dt):
     if _cfg_loader:
         return _cfg_loader.convert_to_system_zone(dt)
     return dt
+
+def get_shell_command(self):
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.get_shell_command()
+    return None
+
+def get_shell_command_restart_timeout(self):
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.get_shell_command_restart_timeout()
+    return None
