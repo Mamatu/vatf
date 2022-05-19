@@ -6,12 +6,35 @@ import errno
 import datetime
 import logging
 import textwrap
+import time
+import threading
 import os
 
 import sys
 
 from vatf.executor import log_snapshot
 from vatf.utils import utils, config
+
+_counter = None
+def _log_generator(filepath, lines):
+    global _counter
+    if not _counter:
+        _counter = 0
+    while _counter <= lines:
+        log_line = f"line{_counter + 1}"
+        now = datetime.datetime.now()
+        line = f"{now} {log_line}\n"
+        log_file = open(filepath, "a")
+        log_file.write(line)
+        log_file.flush()
+        log_file.close()
+        time.sleep(0.0001)
+        _counter = _counter + 1
+
+def _log_generator_thread(filepath, lines):
+    t = threading.Thread(target = _log_generator, args = (filepath,lines,))
+    t.start()
+    return t
 
 class LogSnapshotTests(TestCase):
     def __init__(self, arg):
@@ -31,23 +54,11 @@ class LogSnapshotTests(TestCase):
         return path
     def test_log_with_timestamps(self):
         log_path = utils.get_temp_filepath()
-        log_file = open(log_path, "a")
-        utils.touch(log_path)
-        def log_generator():
-            nonlocal log_file
-            counter = 0
-            while counter <= 40:
-                log_line = f"line{counter + 1}"
-                now = datetime.datetime.now()
-                line = f"{now} {log_line}\n"
-                log_file.write(line)
-                log_file.flush()
-                logging.debug(f"Write {line} into {log_path}")
-                time.sleep(0.1)
-                counter = counter + 1
-        t = threading.Thread(target = log_generator)
-        convert_to_log_zone.side_effect = lambda dt: dt #ToDo: To overload config loading, it should be removed in the future
-        t.start()
-        log_snapshot.start()
+        log_path_1 = utils.get_temp_filepath()
+        t = _log_generator_thread(log_path, 2253)
+        utils.touch(log_path_1)
+        log_snapshot.start(log_path_1, f"while true; do bash -c \"cat {log_path} >> {log_path_1}; sync\"; sleep 0.01; done", 10)
+        time.sleep(1)
+        with open(log_path_1, "r") as f:
+            self.assertTrue(2253, len(f.readlines()))
         t.join()
-        log_file.close()
