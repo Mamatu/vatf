@@ -72,7 +72,8 @@
             "type" : "number",
             "description" : "number of milliseconds to restart shell command if file doesn't receive new data"
           }
-        }
+        },
+	"required" : ["command", "restart_timeout"]
       },
       "timedelta" : {
         "type" : "object",
@@ -117,7 +118,7 @@
         "description" : "date regex of timestamp in log for instance: [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
       }
     },
-    "required" : ["path", "strformat", "date_format", "date_regex"]
+    "required" : ["path", "command", "strformat", "date_format", "date_regex"]
   },
   "utterance_to_va" : {
     "type" : "object",
