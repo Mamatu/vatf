@@ -14,14 +14,16 @@ TIMESTAMP_REGEX = DATE_REGEX
 TIMESTAMP_FORMAT = DATE_FORMAT
 
 def lock(mutex):
-    def wrapper(func):
-        nonlocal mutex
-        mutex.acquire()
-        try:
-            return func()
-        finally:
-            mutex.release()
-    return wrapper
+    def wrap(func):
+        def wrapper(*args, **kwargs):
+            nonlocal mutex
+            mutex.acquire()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                mutex.release()
+        return wrapper
+    return wrap
 
 def count_lines_in_file(path):
     wc_cmd = f"wc -l {path}"
