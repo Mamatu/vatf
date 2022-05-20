@@ -176,7 +176,7 @@ class ConfigProxy:
 
 def _abs_path_to_schema():
     import pathlib
-    path = pathlib.Path(__file__).parent.resolve()
+    path = pathlib.Path(__file__).parent.parent.resolve()
     return os_proxy.join(path, "schemas/config.schema.json")
 
 def load(config_json_path = "./config.json", schema_json_path = _abs_path_to_schema()):
