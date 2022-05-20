@@ -9,6 +9,8 @@ class WaitTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
+    def setUp(self):
+        logging.getLogger().setLevel(logging.INFO)
     @patch("vatf.vatf_api.is_registered")
     @patch("vatf.generator.gen_tests.verify_call")
     def test_sleep(self, verify_call, is_registered):

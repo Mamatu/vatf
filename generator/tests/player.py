@@ -11,6 +11,8 @@ class PlayerTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
+    def setUp(self):
+        logging.getLogger().setLevel(logging.INFO)
     @patch("vatf.utils.config.get_pathes_to_audio_files_in_system")
     @patch("vatf.utils.os_proxy.exists")
     @patch("vatf.utils.os_proxy.isfile")

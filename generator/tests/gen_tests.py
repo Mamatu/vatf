@@ -13,6 +13,8 @@ class GenTestsTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
+    def setUp(self):
+        logging.getLogger().setLevel(logging.INFO)
     def test_make_pycall(self):
         self.assertEqual("foo()", gen_tests.make_pycall("foo"))
         self.assertEqual("foo('a')", gen_tests.make_pycall("foo", "a"))
