@@ -11,7 +11,7 @@ from vatf.vatf_api import public_api
 
 from vatf.utils import logger_thread
 from vatf.utils import utils, os_proxy
-from vatf.utils.utils import lock
+from vatf.utils.thread import lock, make_repeat_timer, enable_lock_debug_mode
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -20,6 +20,7 @@ from threading import Timer, RLock
 
 @public_api("log_snapshot")
 def start(log_path, shell_cmd, restart_timeout):
+    print("pre start")
     if shell_cmd:
         _setup_command(shell_cmd, restart_timeout, log_path)
         _start_command()
@@ -27,6 +28,7 @@ def start(log_path, shell_cmd, restart_timeout):
         _start_observer(log_path, restart_timeout)
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
+    print("post start")
 
 @public_api("log_snapshot")
 def start_from_config():
@@ -48,8 +50,10 @@ _observer = None
 _timer = None
 _timepoint = None
 _mutex = RLock()
+_timepoint_mutex = RLock()
 _restart_timeout = None
 _restart_command = None
+_repeat_timer = None
 _log_path = None
 _shell_cmd = None
 _shell_cmd_process = None
@@ -60,9 +64,9 @@ def _setup_command(shell_cmd, restart_timeout, log_path):
     _log_path = log_path
     _shell_cmd = shell_cmd
 
+@lock(_timepoint_mutex)
 def _start_command():
     global _shell_cmd, _shell_cmd_process, _restart_command
-    @lock(_mutex)
     def restart():
         global _shell_cmd_process, _shell_cmd
         if _shell_cmd_process: shell.kill(_shell_cmd_process)
@@ -77,32 +81,48 @@ def _stop_command():
         _shell_cmd_process = None
 
 def _start_timer():
+    global _repeat_timer
     #from https://stackoverflow.com/a/48741004
-    class _RepeatTimer(Timer):
-        def run(self):
-            while not self.finished.wait(self.interval):
-                self.function(*self.args, **self.kwargs)
-    @lock(_mutex)
+    @lock(_timepoint_mutex)
     def timepoint_observer():
         global _timepoint, _restart_command, _restart_timeout
+        print("a1")
         _current_timepoint = time.time()
-        if _timepoint and abs(_current_timepoint - _timepoint) * 1000 > _restart_timeout:
+        elapsed_time = abs(_current_timepoint - _timepoint) * 1000 
+        print("a2")
+        logging.info(f"elipsed time {elapsed_time}")
+        if _timepoint and elapsed_time > _restart_timeout:
+            print("a2a")
             _restart_command()
+            print("a2aa")
+        print("a3")
         _timepoint = _current_timepoint
+        print("a4")
+    _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = _restart_timeout)
+    _repeat_timer.start()
+
+@lock(_timepoint_mutex)
+def _remove_restart_command():
+    global _restart_command
+    _restart_command = None
+
+def _stop_timer():
+    global _repeat_timer
+    _repeat_timer.cancel()
 
 def _start_observer(log_path, restart_timeout):
     global _observer, _timer
     class _MonitorHandler(FileSystemEventHandler):
         def __init__(self, log_path, on_log_modified):
+            FileSystemEventHandler.__init__(self)
             self.log_path = log_path
             self.on_log_modified = on_log_modified
         def on_modified(self, event):
             if event.is_directory: return
             if event.src_path == self.log_path:
-                #if self.on_log_modified == None: import pdb; pdb.set_trace()
                 self.on_log_modified()
     observer = Observer()
-    @lock(_mutex)
+    @lock(_timepoint_mutex)
     def update_timepoint():
         global _timepoint
         _timepoint = time.time()
@@ -111,18 +131,23 @@ def _start_observer(log_path, restart_timeout):
     observer.schedule(monitor_handler, path = log_path, recursive = False)
     observer.start()
 
-@lock(_mutex)
 def _stop_observer():
     global _observer
     if _observer:
+        _remove_restart_command()
         _observer.stop()
         _observer.join()
         _observer = None
 
 @lock(_mutex)
 def stop():
+    print("pre stop1")
     _stop_observer()
+    print("pre stop2")
     _stop_command()
+    print("pre stop3")
+    _stop_timer()
+    print("post stop")
 
-import atexit
-atexit.register(stop)
+#import atexit
+#atexit.register(stop)

@@ -7,7 +7,7 @@ import subprocess
 
 import atexit
 from threading import RLock
-from vatf.utils.utils import lock
+from vatf.utils.thread import lock
 
 
 _popens = []
@@ -49,7 +49,7 @@ def kill(process):
         for child in children:
             child.kill()
         process.terminate()
-        logging.debug(f"Killed and terminated process {process.pid} with children")
+        logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
 
 @public_api("shell")
