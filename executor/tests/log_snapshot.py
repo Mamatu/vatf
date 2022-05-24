@@ -23,21 +23,28 @@ def _reset():
     _counter = None
     _generated_lines = []
 
+from vatf.utils import debug
+
 def _log_generator(filepath, lines_count, custom_sleep = None):
     global _counter, _generated_lines
     if not _counter:
         _counter = 0
     while _counter < lines_count:
-        log_line = f"line{_counter + 1}"
+        line = f"line{_counter + 1}"
         now = datetime.datetime.now()
-        line = f"{now} {log_line}\n"
+        line = f"{now} {line}\n"
         _generated_lines.append(line)
         log_file = open(filepath, "a")
         log_file.write(line)
         log_file.flush()
         log_file.close()
-        if custom_sleep and _counter in custom_sleep:
-            time.sleep(custom_sleep[_counter])
+        it = None
+        if custom_sleep:
+            sleep_duration = custom_sleep.get(_counter)
+            if sleep_duration:
+                debug.pi(f"sleep_duration {sleep_duration}")
+                time.sleep(sleep_duration)
+                debug.pi(f"after sleep_duration {sleep_duration}")
         _counter = _counter + 1
 
 def _log_generator_thread(filepath, lines, custom_sleep = None):
@@ -63,7 +70,6 @@ class LogSnapshotTests(TestCase):
         return path
     def test_log_with_timestamps(self):
         global _generated_lines
-        print("pre test_log_with_timestamps")
         log_path = utils.get_temp_filepath()
         log_path_1 = utils.get_temp_filepath()
         logging.info(f"{log_path} -> {log_path_1}")
@@ -74,7 +80,6 @@ class LogSnapshotTests(TestCase):
         t.start()
         log_snapshot.start(log_path_1, f"while true; do bash -c \"cat {log_path} > {log_path_1}; sync\"; done", 500)
         t.join()
-        time.sleep(0.5)
         log_snapshot.stop()
         with open(log_path_1, "r") as f:
             rlines = f.readlines()
@@ -82,25 +87,21 @@ class LogSnapshotTests(TestCase):
             self.assertEqual(lines_count, len(_generated_lines))
             for idx in range(len(rlines)):
                 self.assertEqual(rlines[idx], _generated_lines[idx])
-        print("post test_log_with_timestamps")
     @patch("vatf.executor.log_snapshot._restart_command")
     def test_log_with_timestamps_timeout(self, _restart_command):
         global _generated_lines
-        print("pre test_log_with_timestamps_timeout")
         log_path = utils.get_temp_filepath()
         log_path_1 = utils.get_temp_filepath()
         logging.info(f"{log_path} -> {log_path_1}")
         lines_count = 1113
         utils.touch(log_path)
         utils.touch(log_path_1)
-        t = _log_generator_thread(log_path, lines_count, {500: 2})
+        t = _log_generator_thread(log_path_1, lines_count, {500: 2})
         t.start()
-        log_snapshot.start(log_path_1, f"while true; do bash -c \"cat {log_path} > {log_path_1}; sleep 0.01; sync\"; done", 500)
+        log_snapshot.start(log_path_1, f"while true; do sleep 0.01; sync; done", 500)
         t.join()
-        time.sleep(0.5)
         log_snapshot.stop()
-        _restart_command.assert_has_calls(call())
-        print("post test_log_with_timestamps_timeout")
+        _restart_command.assert_any_call()
         with open(log_path_1, "r") as f:
             rlines = f.readlines()
             self.assertEqual(lines_count, len(rlines))

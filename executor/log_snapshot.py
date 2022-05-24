@@ -18,9 +18,10 @@ from watchdog.events import FileSystemEventHandler
 
 from threading import Timer, RLock
 
+from vatf.utils import debug
+
 @public_api("log_snapshot")
 def start(log_path, shell_cmd, restart_timeout):
-    print("pre start")
     if shell_cmd:
         _setup_command(shell_cmd, restart_timeout, log_path)
         _start_command()
@@ -28,7 +29,6 @@ def start(log_path, shell_cmd, restart_timeout):
         _start_observer(log_path, restart_timeout)
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
-    print("post start")
 
 @public_api("log_snapshot")
 def start_from_config():
@@ -64,15 +64,16 @@ def _setup_command(shell_cmd, restart_timeout, log_path):
     _log_path = log_path
     _shell_cmd = shell_cmd
 
-@lock(_timepoint_mutex)
 def _start_command():
-    global _shell_cmd, _shell_cmd_process, _restart_command
-    def restart():
-        global _shell_cmd_process, _shell_cmd
-        if _shell_cmd_process: shell.kill(_shell_cmd_process)
-        _shell_cmd_process = shell.bg(_shell_cmd)
-    _restart_command = restart
-    restart()
+    global _timepoint_mutex
+    with _timepoint_mutex:
+        global _shell_cmd, _shell_cmd_process, _restart_command
+        def restart():
+            global _shell_cmd_process, _shell_cmd
+            if _shell_cmd_process: shell.kill(_shell_cmd_process)
+            _shell_cmd_process = shell.bg(_shell_cmd)
+        _restart_command = restart
+        restart()
 
 def _stop_command():
     global _shell_cmd_process
@@ -85,20 +86,17 @@ def _start_timer():
     #from https://stackoverflow.com/a/48741004
     @lock(_timepoint_mutex)
     def timepoint_observer():
-        global _timepoint, _restart_command, _restart_timeout
-        print("a1")
+        global _repeat_timer
+        global _timepoint
+        global _restart_command, _restart_timeout
         _current_timepoint = time.time()
         elapsed_time = abs(_current_timepoint - _timepoint) * 1000 
-        print("a2")
-        logging.info(f"elipsed time {elapsed_time}")
+        debug.pi(f"elapsed_time {elapsed_time} _restart_timeout {_restart_timeout}")
         if _timepoint and elapsed_time > _restart_timeout:
-            print("a2a")
+            debug.pi(f"_restart_command")
             _restart_command()
-            print("a2aa")
-        print("a3")
-        _timepoint = _current_timepoint
-        print("a4")
-    _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = _restart_timeout)
+            _timepoint = _current_timepoint
+    _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
     _repeat_timer.start()
 
 @lock(_timepoint_mutex)
@@ -126,28 +124,30 @@ def _start_observer(log_path, restart_timeout):
     def update_timepoint():
         global _timepoint
         _timepoint = time.time()
+        debug.pi(f"_timepoint {_timepoint}")
     monitor_handler = _MonitorHandler(_log_path, update_timepoint)
     _observer = observer
     observer.schedule(monitor_handler, path = log_path, recursive = False)
     observer.start()
 
+from vatf.utils import debug
 def _stop_observer():
     global _observer
     if _observer:
+        debug.pi()
         _remove_restart_command()
+        debug.pi()
         _observer.stop()
+        debug.pi()
         _observer.join()
+        debug.pi()
         _observer = None
+        debug.pi()
 
-@lock(_mutex)
 def stop():
-    print("pre stop1")
     _stop_observer()
-    print("pre stop2")
     _stop_command()
-    print("pre stop3")
     _stop_timer()
-    print("post stop")
 
-#import atexit
-#atexit.register(stop)
+import atexit
+atexit.register(stop)
