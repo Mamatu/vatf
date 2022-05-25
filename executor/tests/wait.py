@@ -23,6 +23,7 @@ class WaitTests(TestCase):
         TestCase.__init__(self, arg)
     def setUp(self):
         from vatf.utils import config
+        logging.getLogger().setLevel(logging.INFO)
         config._reset()
     def create_file(self, mode, data = None):
         path = utils.get_temp_filepath()

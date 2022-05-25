@@ -22,6 +22,7 @@ class PlayTests(TestCase):
         TestCase.__init__(self, arg)
     def setUp(self):
         from vatf.utils import config
+        logging.getLogger().setLevel(logging.INFO)
         config._reset()
     @patch("subprocess.Popen")
     def test_play_audio(self, subprocess_popen_mock):

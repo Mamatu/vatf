@@ -63,11 +63,13 @@ def get_vatf_branch_to_clone():
         return _cfg_loader.get_vatf_branch_to_clone()
     return ""
 
-def get_log_path():
+def get_log_path(session_path):
     _load_config()
     global _cfg_loader
     if _cfg_loader:
-        return _cfg_loader.get_log_path()
+        log_path = _cfg_loader.get_log_path()
+        log_path.format(session_path = session_path)
+        return log_path
     return ""
 
 def convert_to_log_zone(dt):
@@ -83,3 +85,19 @@ def convert_to_system_zone(dt):
     if _cfg_loader:
         return _cfg_loader.convert_to_system_zone(dt)
     return dt
+
+def get_shell_command():
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        shell_command = _cfg_loader.get_shell_command()
+        shell_command = shell_command.format(session_path = session_path)
+        return shell_command
+    return None
+
+def get_shell_command_restart_timeout():
+    _load_config()
+    global _cfg_loader
+    if _cfg_loader:
+        return _cfg_loader.get_shell_command_restart_timeout()
+    return None
