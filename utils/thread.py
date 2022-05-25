@@ -1,18 +1,14 @@
 import threading
 
 _lock_debug_mode = False
-from vatf.utils import debug
 
 def lock(mutex, debug_mode = None):
     def wrap(func):
-        debug.pi()
         def wrapper(*args, **kwargs):
             nonlocal mutex
             with mutex:
                 return func(*args, **kwargs)
-        debug.pi()
         return wrapper
-    debug.pi()
     return wrap
 
 class _RepeatTimer(threading.Timer):

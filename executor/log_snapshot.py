@@ -70,7 +70,8 @@ def _start_command():
         global _shell_cmd, _shell_cmd_process, _restart_command
         def restart():
             global _shell_cmd_process, _shell_cmd
-            if _shell_cmd_process: shell.kill(_shell_cmd_process)
+            if _shell_cmd_process:
+                shell.kill(_shell_cmd_process)
             _shell_cmd_process = shell.bg(_shell_cmd)
         _restart_command = restart
         restart()
@@ -91,9 +92,7 @@ def _start_timer():
         global _restart_command, _restart_timeout
         _current_timepoint = time.time()
         elapsed_time = abs(_current_timepoint - _timepoint) * 1000 
-        debug.pi(f"elapsed_time {elapsed_time} _restart_timeout {_restart_timeout}")
         if _timepoint and elapsed_time > _restart_timeout:
-            debug.pi(f"_restart_command")
             _restart_command()
             _timepoint = _current_timepoint
     _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
@@ -124,7 +123,6 @@ def _start_observer(log_path, restart_timeout):
     def update_timepoint():
         global _timepoint
         _timepoint = time.time()
-        debug.pi(f"_timepoint {_timepoint}")
     monitor_handler = _MonitorHandler(_log_path, update_timepoint)
     _observer = observer
     observer.schedule(monitor_handler, path = log_path, recursive = False)
@@ -134,15 +132,10 @@ from vatf.utils import debug
 def _stop_observer():
     global _observer
     if _observer:
-        debug.pi()
         _remove_restart_command()
-        debug.pi()
         _observer.stop()
-        debug.pi()
         _observer.join()
-        debug.pi()
         _observer = None
-        debug.pi()
 
 def stop():
     _stop_observer()
