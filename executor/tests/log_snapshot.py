@@ -78,7 +78,7 @@ class LogSnapshotTests(TestCase):
         t.start()
         log_snapshot.start(log_path_1, f"while true; do bash -c \"cat {log_path} > {log_path_1}; sync\"; done", 500)
         t.join()
-        time.sleep(1)
+        time.sleep(5)
         log_snapshot.stop()
         with open(log_path_1, "r") as f:
             rlines = f.readlines()
@@ -99,7 +99,7 @@ class LogSnapshotTests(TestCase):
         t.start()
         log_snapshot.start(log_path_1, f"while true; do sleep 0.01; sync; done", 500)
         t.join()
-        time.sleep(1)
+        time.sleep(5)
         log_snapshot.stop()
         #_restart_command.assert_any_call()
         with open(log_path_1, "r") as f:
