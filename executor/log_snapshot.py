@@ -141,6 +141,7 @@ def _stop_observer():
         _observer.join()
         _observer = None
 
+@public_api("log_snapshot")
 def stop():
     _stop_observer()
     _stop_command()
