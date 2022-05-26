@@ -105,7 +105,8 @@ def _remove_restart_command():
 
 def _stop_timer():
     global _repeat_timer
-    _repeat_timer.cancel()
+    if _repeat_timer:
+        _repeat_timer.cancel()
 
 def _start_observer(log_path, restart_timeout):
     global _observer, _timer
