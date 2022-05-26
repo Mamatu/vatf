@@ -18,7 +18,7 @@ from watchdog.events import FileSystemEventHandler
 
 from threading import Timer, RLock
 
-from vatf.utils import debug
+from vatf.utils import config, debug
 
 @public_api("log_snapshot")
 def start(log_path, shell_cmd, restart_timeout):
