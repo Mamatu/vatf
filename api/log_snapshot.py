@@ -8,3 +8,6 @@ def start(log_path, shell_cmd, restart_timeout):
 
 def start_from_config():
     _get_api().start_from_config()
+
+def stop():
+    _get_api().stop()
