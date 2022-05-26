@@ -91,7 +91,6 @@ def get_shell_command():
     global _cfg_loader
     if _cfg_loader:
         shell_command = _cfg_loader.get_shell_command()
-        shell_command = shell_command.format(session_path = session_path)
         return shell_command
     return None
 
