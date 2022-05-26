@@ -103,7 +103,7 @@ def _create_header():
     _write_to_script("from vatf import vatf_init, vatf_api")
     _write_to_script("from vatf.utils import config")
     _write_to_script("config.set_config_path('./config.json')")
-    _write_to_script("from vatf.api import audio, player, wait, shell, mkdir")
+    _write_to_script("from vatf.api import audio, player, wait, shell, mkdir, log_snapshot")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
 
 def create_test(suite_path, test_name, test):
