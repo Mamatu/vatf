@@ -24,6 +24,22 @@ def set_config_path(path):
     global _cfg_path
     _cfg_path = path
 
+_extra_kv = {}
+
+def set_extra(key, value):
+    global _extra_kv
+    _extra_kv = {key, value}
+
+def _handle_extra(func):
+    def wrapper():
+        line = func()
+        global _extra_kv
+        for k,v in _extra_kv:
+            line = line.format(k = v)
+        return line
+    return wrapper
+
+@_handle_extra
 def get_config_path():
     global _cfg_path
     config_path = _cfg_path
@@ -31,6 +47,7 @@ def get_config_path():
         config_path = sys.argv[2]
     return config_path
 
+@_handle_extra
 def get_pathes_to_audio_files_in_system():
     _load_config()
     global _cfg_loader
@@ -38,9 +55,11 @@ def get_pathes_to_audio_files_in_system():
         return _cfg_loader.get_pathes_audio_files()
     return []
 
+@_handle_extra
 def get_path_to_generated_suite():
     return sys.argv[1]
 
+@_handle_extra
 def get_path_to_generated_test():
     from vatf.generator import gen_tests
     test_name = gen_tests.get_test_name()
@@ -48,14 +67,17 @@ def get_path_to_generated_test():
         raise Exception("None test is processed")
     return os_proxy.join(get_path_to_generated_suite(), test_name)
 
+@_handle_extra
 def get_relative_path_to_audio_files_in_test():
     return "assets/audio_files"
 
+@_handle_extra
 def get_absolute_path_to_audio_files_in_test():
     test_path = get_path_to_generated_test()
     audio_files_path = get_relative_path_to_audio_files_in_test()
     return os_proxy.join(test_path, audio_files_path)
 
+@_handle_extra
 def get_vatf_branch_to_clone():
     _load_config()
     global _cfg_loader
@@ -63,6 +85,7 @@ def get_vatf_branch_to_clone():
         return _cfg_loader.get_vatf_branch_to_clone()
     return ""
 
+@_handle_extra
 def get_log_path(session_path):
     _load_config()
     global _cfg_loader
@@ -72,6 +95,7 @@ def get_log_path(session_path):
         return log_path
     return ""
 
+@_handle_extra
 def convert_to_log_zone(dt):
     _load_config()
     global _cfg_loader
@@ -79,6 +103,7 @@ def convert_to_log_zone(dt):
         return _cfg_loader.convert_to_log_zone(dt)
     return dt
 
+@_handle_extra
 def convert_to_system_zone(dt):
     _load_config()
     global _cfg_loader
@@ -86,6 +111,7 @@ def convert_to_system_zone(dt):
         return _cfg_loader.convert_to_system_zone(dt)
     return dt
 
+@_handle_extra
 def get_shell_command():
     _load_config()
     global _cfg_loader
@@ -94,6 +120,7 @@ def get_shell_command():
         return shell_command
     return None
 
+@_handle_extra
 def get_shell_command_restart_timeout():
     _load_config()
     global _cfg_loader

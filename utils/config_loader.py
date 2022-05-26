@@ -70,9 +70,10 @@ class UtteranceToVA:
 
 class Command():
     def __init__(self, data):
-        data = data["command"]
-        self.shell = data["shell"]
-        self.restart_timeout = int(data["restart_timeout"])
+        if "command" in data:
+            data = data["command"]
+            self.shell = data["shell"]
+            self.restart_timeout = int(data["restart_timeout"])
 
 class VaLog:
     def __init__(self, data):

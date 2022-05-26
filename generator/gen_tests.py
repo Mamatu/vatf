@@ -106,21 +106,27 @@ def _create_header():
     _write_to_script("from vatf.api import audio, player, wait, shell, mkdir, log_snapshot")
     _write_to_script("vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)")
 
-def create_test(suite_path, test_name, test):
+def create_test(suite_path, test_name, test, set_up = None, tear_down = None):
+    def execute(_callable, code_lines):
+        _callable()
+        _code_lines = inspect.getsourcelines(_callable)
+        code_lines = code_lines + _code_lines[0][1:]
     _create_test_dir(suite_path, test_name)
     _create_run_sh_script(suite_path, test_name)
     _copy_config(suite_path, test_name)
     global _test_py_file
     _create_header()
-    test()
-    code_lines = inspect.getsourcelines(test)
-    for line in code_lines[0][1:]:
+    code_lines = []
+    if set_up: execute(set_up, code_lines)
+    execute(test, code_lines)
+    if tear_down: execute(tear_down, code_lines)
+    for line in code_lines:
         line = textwrap.dedent(line)
         _write_to_script(line, newLine = False)
 
-def create_tests(suite_path, **kwargs):
+def create_tests(suite_path, set_up = None, tear_down = None, **kwargs):
     for k,v in kwargs.items():
         if isinstance(v, tuple):
-            create_test(suite_path, test_name = k, test = v[0], cleanup = v[1])
+            create_test(suite_path, test_name = k, set_up = set_up, tear_down = tear_down, test = v[0], cleanup = v[1])
         else:
-            create_test(suite_path, test_name = k, test = v)
+            create_test(suite_path, test_name = k, test = v, set_up = set_up, tear_down = tear_down)
