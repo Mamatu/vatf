@@ -124,6 +124,8 @@ def _start_observer(log_path, restart_timeout):
     def update_timepoint():
         global _timepoint
         _timepoint = time.time()
+    if not os_proxy.exists(_log_path):
+        utils.touch(_log_path)
     monitor_handler = _MonitorHandler(_log_path, update_timepoint)
     _observer = observer
     observer.schedule(monitor_handler, path = log_path, recursive = False)
