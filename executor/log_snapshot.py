@@ -91,10 +91,11 @@ def _start_timer():
         global _timepoint
         global _restart_command, _restart_timeout
         _current_timepoint = time.time()
-        elapsed_time = abs(_current_timepoint - _timepoint) * 1000 
-        if _timepoint and elapsed_time > _restart_timeout:
-            _restart_command()
-            _timepoint = _current_timepoint
+        if _timepoint:
+            elapsed_time = abs(_current_timepoint - _timepoint) * 1000
+            if _timepoint and elapsed_time > _restart_timeout:
+                _restart_command()
+                _timepoint = _current_timepoint
     _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
     _repeat_timer.start()
 
