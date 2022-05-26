@@ -40,7 +40,7 @@ def start_from_config():
     if not ((shell_cmd != None and restart_timeout != None) or (shell_cmd == None and restart_timeout == None)):
         raise Exception("shell_cmd and restart_timeout must be defined or both not defined")
     session_path = mkdir.mkdir_with_counter("./logs/session")
-    log_path = command.get_log_path()
+    log_path = config.get_log_path(session_path)
     log_path = log_path.format(session_path = session_path)
     shell_cmd = shell_cmd.format(session_path = session_path)
     start(log_path, shell_cmd, restart_timeout)
