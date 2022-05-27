@@ -71,7 +71,10 @@ def _start_command():
         def restart():
             global _shell_cmd_process, _shell_cmd
             if _shell_cmd_process:
-                shell.kill(_shell_cmd_process)
+                try:
+                    shell.kill(_shell_cmd_process)
+                except psutil.NoSuchProcess as nsp:
+                    logging.warn(f"WARNING! {str(nsp)}")
             _shell_cmd_process = shell.bg(_shell_cmd)
         _restart_command = restart
         restart()
