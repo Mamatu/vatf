@@ -31,14 +31,14 @@ def get_creation_date(path):
         logging.info(f"Cannot open {path} due to {ex} in text mode. Reads date stat")
         return read_date_stat()
 
-def GetRecordingStartDate(path_to_recording, path_to_recording_date):
+def get_recording_start_date(path_to_recording, path_to_recording_date):
     if path_to_recording_date:
         return get_creation_date(path_to_recording_date)
     if path_to_recording:
         return get_creation_date(path_to_recording)
 
-def ExctractSample(start_regex_timestamp, end_regex_timestamp, recording_start_timestamp, audioData, sr, samples_path, sample_format = "ogg"):
-    logging.info(f"{ExctractSample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
+def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_timestamp, audioData, sr, samples_path, sample_format = "ogg"):
+    logging.info(f"{extract_sample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
     if recording_start_timestamp > end_regex_timestamp:
         return None
     start_timestamp = start_regex_timestamp - recording_start_timestamp
@@ -65,7 +65,7 @@ def _convert_pcm_to_ogg(recording_path, audioConfig):
     vatf.utils.ffmpeg.convert(recording_path, output_path, audioConfig)
     return output_path
 
-def ExtractSamples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg"):
+def extract_samples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg"):
     import librosa
     audio = []
     sr = None
@@ -84,7 +84,7 @@ def ExtractSamples(recording_start_timestamp, regexes, recording_path, samples_p
     for start_end in regexes:
         start_timestmap = datetime.datetime.strptime(start_end[0].matched[0], utils.DATE_FORMAT)
         end_timestamp = datetime.datetime.strptime(start_end[1].matched[0], utils.DATE_FORMAT)
-        sample_path = ExctractSample(start_timestmap, end_timestamp, recording_start_timestamp, audio, sr, samples_path, sample_format = sample_format)
+        sample_path = extract_sample(start_timestmap, end_timestamp, recording_start_timestamp, audio, sr, samples_path, sample_format = sample_format)
         if sample_path != None:
             sample_paths.append(sample_path)
         else:
@@ -92,7 +92,7 @@ def ExtractSamples(recording_start_timestamp, regexes, recording_path, samples_p
     logging.info(f"Extracted {len(sample_paths)} samples. {not_matched_samples_count} samples could not extract (not in recording)")
     return sample_paths
 
-def FindStartEndRegexes(path_to_log, start_regex, end_regex, from_line, max_count):
+def find_start_end_regexes(path_to_log, start_regex, end_regex, from_line, max_count):
     start_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = start_regex, match_regex = utils.DATE_REGEX, maxCount = max_count)
     end_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = end_regex, match_regex = utils.DATE_REGEX, maxCount = max_count)
     regexes = [(start_regexes[i], end_regexes[i]) for i in range(0, len(start_regexes))]
@@ -116,7 +116,7 @@ def _checks_args(args):
 
 def main(args):
     _checks_args(args)
-    start_date = GetRecordingStartDate(args.path_to_recording, args.path_to_recording_date)
+    start_date = get_recording_start_date(args.path_to_recording, args.path_to_recording_date)
     start_date = config.ConvertToLogZone(start_date)
     if not args.start_regex and not args.end_regex:
         regexes = config.GetRegexesForSampling()
@@ -129,7 +129,7 @@ def main(args):
     maxCount = -1
     if args.count:
         maxCount = args.count
-    regexes = FindStartEndRegexes(args.path_to_log, args.start_regex, args.end_regex, args.from_line, maxCount)
+    regexes = find_start_end_regexes(args.path_to_log, args.start_regex, args.end_regex, args.from_line, maxCount)
     if args.path_to_search_lines:
         with open(args.lines_save_to, "w") as f:
             array = []
@@ -137,5 +137,5 @@ def main(args):
                 array.append(start_end[0].line_number)
                 array.append(start_end[1].line_number)
             f.write("\n".join(array))
-    sample_pathes = ExtractSamples(start_date, regexes, args.path_to_recording, args.path_to_samples)
+    sample_pathes = extract_samples(start_date, regexes, args.path_to_recording, args.path_to_samples)
     logging.info(f"Created: {sample_pathes}")

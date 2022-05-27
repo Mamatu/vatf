@@ -42,7 +42,7 @@ class SamplingTests(TestCase):
     def test_find_start_end_regexes(self):
         start_regex = "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"
         end_regex = "DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true"
-        regexes = sampling.FindStartEndRegexes("executor/tests/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
+        regexes = sampling.find_start_end_regexes("executor/tests/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
         self.assertEqual("2021-12-22 18:32:58.850", regexes[0][0].matched[0])
         self.assertEqual("2021-12-22 18:33:02.292", regexes[0][1].matched[0])
         self.assertEqual("2021-12-22 18:33:14.189", regexes[1][0].matched[0])
@@ -50,12 +50,12 @@ class SamplingTests(TestCase):
         logging.debug(f"Found regexes[0]: {regexes[0][0]}, {regexes[0][1]}")
         logging.debug(f"Found regexes[1]: {regexes[1][0]}, {regexes[1][1]}")
     def test_extract_samples(self):
-        recording_start_date = sampling.GetRecordingStartDate("executor/tests/data/sampling/test_audio.pcm", "executor/tests/data/sampling/test_audio.pcm.date")
+        recording_start_date = sampling.get_recording_start_date("executor/tests/data/sampling/test_audio.pcm", "executor/tests/data/sampling/test_audio.pcm.date")
         self.assertEqual(datetime.datetime.strptime("2021-12-22 18:32:54.932014", sampling.DATE_FORMAT), recording_start_date)
         start_regex = "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"
         end_regex = "DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true"
-        regexes = sampling.FindStartEndRegexes("executor/tests/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
-        samples = sampling.ExtractSamples(recording_start_date, regexes, "executor/tests/data/sampling/test_audio.wav", "/tmp/", sample_format = "wav")
+        regexes = sampling.find_start_end_regexes("executor/tests/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
+        samples = sampling.extract_samples(recording_start_date, regexes, "executor/tests/data/sampling/test_audio.wav", "/tmp/", sample_format = "wav")
         import hashlib
         self.assertTrue(len(samples) == 2)
         def checksum(path):
