@@ -17,7 +17,7 @@ They include playing audio files, audio inputs and outputs of test station recor
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 
 ## Voice Assistance Test Framework - Utils
-This part of vatf contains common utilities which can be used in vatf_executor and vatf_generator.
+This part of vatf contains common utilities which are used in vatf.executor and vatf.generator.
 
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 
@@ -32,6 +32,6 @@ git submodule update --init --recursive --remote --force
 ```
 
 ### Generator and executor
-Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed. All recordings, logs and etc. for the test are stored in this directory. Test code is copied and executed with some replacements in vatf api what allows to verify of syntax is correct and there are no runtime errors.
-
-Executor run test.
+Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed.
+All recordings, logs and etc. for the test are stored in this directory. Test code is executed in generator with overloaded vatf api (functions with @public\_api decorator) by
+"empty implementation" only for syntax and errors verification.
