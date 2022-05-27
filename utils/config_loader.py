@@ -68,6 +68,13 @@ class UtteranceToVA:
             return UtteranceToVA(data)
         return None
 
+class Command():
+    def __init__(self, data):
+        if "command" in data:
+            data = data["command"]
+            self.shell = data["shell"]
+            self.restart_timeout = int(data["restart_timeout"])
+
 class VaLog:
     def __init__(self, data):
         import datetime
@@ -76,6 +83,7 @@ class VaLog:
         self.timedelta = datetime.timedelta(**va_log["timedelta"])
         self.date_regex = va_log["date_regex"]
         self.date_format = va_log["date_format"]
+        self.command = Command(va_log)
 
 class Config:
     def __init__(self, config_json_path = None, schema_json_path = None):

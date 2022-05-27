@@ -18,7 +18,7 @@ from watchdog.events import FileSystemEventHandler
 
 from threading import Timer, RLock
 
-from vatf.utils import debug
+from vatf.utils import config, debug
 
 @public_api("log_snapshot")
 def start(log_path, shell_cmd, restart_timeout):
@@ -40,10 +40,16 @@ def start_from_config():
     if not ((shell_cmd != None and restart_timeout != None) or (shell_cmd == None and restart_timeout == None)):
         raise Exception("shell_cmd and restart_timeout must be defined or both not defined")
     session_path = mkdir.mkdir_with_counter("./logs/session")
-    log_path = command.get_log_path()
+    log_path = config.get_log_path(session_path)
     log_path = log_path.format(session_path = session_path)
     shell_cmd = shell_cmd.format(session_path = session_path)
     start(log_path, shell_cmd, restart_timeout)
+
+@public_api("log_snapshot")
+def stop():
+    _stop_observer()
+    _stop_command()
+    _stop_timer()
 
 _ctx = None
 _observer = None
@@ -71,7 +77,10 @@ def _start_command():
         def restart():
             global _shell_cmd_process, _shell_cmd
             if _shell_cmd_process:
-                shell.kill(_shell_cmd_process)
+                try:
+                    shell.kill(_shell_cmd_process)
+                except psutil.NoSuchProcess as nsp:
+                    logging.warn(f"WARNING! {str(nsp)}")
             _shell_cmd_process = shell.bg(_shell_cmd)
         _restart_command = restart
         restart()
@@ -91,10 +100,11 @@ def _start_timer():
         global _timepoint
         global _restart_command, _restart_timeout
         _current_timepoint = time.time()
-        elapsed_time = abs(_current_timepoint - _timepoint) * 1000 
-        if _timepoint and elapsed_time > _restart_timeout:
-            _restart_command()
-            _timepoint = _current_timepoint
+        if _timepoint:
+            elapsed_time = abs(_current_timepoint - _timepoint) * 1000
+            if _timepoint and elapsed_time > _restart_timeout:
+                _restart_command()
+                _timepoint = _current_timepoint
     _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
     _repeat_timer.start()
 
@@ -105,7 +115,8 @@ def _remove_restart_command():
 
 def _stop_timer():
     global _repeat_timer
-    _repeat_timer.cancel()
+    if _repeat_timer:
+        _repeat_timer.cancel()
 
 def _start_observer(log_path, restart_timeout):
     global _observer, _timer
@@ -123,6 +134,8 @@ def _start_observer(log_path, restart_timeout):
     def update_timepoint():
         global _timepoint
         _timepoint = time.time()
+    if not os_proxy.exists(_log_path):
+        utils.touch(_log_path)
     monitor_handler = _MonitorHandler(_log_path, update_timepoint)
     _observer = observer
     observer.schedule(monitor_handler, path = log_path, recursive = False)
@@ -136,11 +149,6 @@ def _stop_observer():
         _observer.stop()
         _observer.join()
         _observer = None
-
-def stop():
-    _stop_observer()
-    _stop_command()
-    _stop_timer()
 
 import atexit
 atexit.register(stop)
