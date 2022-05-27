@@ -45,6 +45,12 @@ def start_from_config():
     shell_cmd = shell_cmd.format(session_path = session_path)
     start(log_path, shell_cmd, restart_timeout)
 
+@public_api("log_snapshot")
+def stop():
+    _stop_observer()
+    _stop_command()
+    _stop_timer()
+
 _ctx = None
 _observer = None
 _timer = None
@@ -143,12 +149,6 @@ def _stop_observer():
         _observer.stop()
         _observer.join()
         _observer = None
-
-@public_api("log_snapshot")
-def stop():
-    _stop_observer()
-    _stop_command()
-    _stop_timer()
 
 import atexit
 atexit.register(stop)
