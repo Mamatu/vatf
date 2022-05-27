@@ -3,11 +3,11 @@ import datetime
 import os
 import re
 
-from vatf_utils import ac
-from vatf_utils import utils
-from vatf_utils import config
+from vatf.utils import ac
+from vatf.utils import utils
+from vatf.utils import config
 
-import vatf_utils
+import vatf.utils
 
 DATE_REGEX = utils.DATE_REGEX
 DATE_FORMAT = utils.DATE_FORMAT
@@ -15,7 +15,7 @@ DATE_FORMAT = utils.DATE_FORMAT
 TIMESTAMP_REGEX = utils.TIMESTAMP_REGEX
 TIMESTAMP_FORMAT = utils.TIMESTAMP_FORMAT
 
-def GetCreationDate(path):
+def get_creation_date(path):
     if not os.path.exists(path):
         raise FileNotFoundError(path)
     read_date_stat = lambda: utils.get_modification_date(path)
@@ -33,9 +33,9 @@ def GetCreationDate(path):
 
 def GetRecordingStartDate(path_to_recording, path_to_recording_date):
     if path_to_recording_date:
-        return GetCreationDate(path_to_recording_date)
+        return get_creation_date(path_to_recording_date)
     if path_to_recording:
-        return GetCreationDate(path_to_recording)
+        return get_creation_date(path_to_recording)
 
 def ExctractSample(start_regex_timestamp, end_regex_timestamp, recording_start_timestamp, audioData, sr, samples_path, sample_format = "ogg"):
     logging.info(f"{ExctractSample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
@@ -59,13 +59,13 @@ def ExctractSample(start_regex_timestamp, end_regex_timestamp, recording_start_t
     return sample_path
 
 def _convert_pcm_to_ogg(recording_path, audioConfig):
-    import vatf_utils.ffmpeg
+    from vatf.utils import ffmpeg
     output_path = utils.get_temp_filepath()
     output_path = f"{output_path}.ogg"
-    vatf_utils.ffmpeg.convert(recording_path, output_path, audioConfig)
+    vatf.utils.ffmpeg.convert(recording_path, output_path, audioConfig)
     return output_path
 
-def ExtractSamples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf_utils.ac.AudioConfig(vatf_utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg"):
+def ExtractSamples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg"):
     import librosa
     audio = []
     sr = None
