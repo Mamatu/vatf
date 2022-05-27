@@ -21,7 +21,7 @@ This part of vatf contains common utilities which can be used in vatf_executor a
 
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 
-#### Dependencies
+### Dependencies
 
 Remember about update all submodules
 
@@ -30,3 +30,8 @@ apt install parallel libsndfile1
 pip install librosa psutil jsonschema matplotlib watchdog
 git submodule update --init --recursive --remote --force
 ```
+
+### Generator and executor
+Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed. All recordings, logs and etc. for the test are stored in this directory. Test code is copied and executed with some replacements in vatf api what allows to verify of syntax is correct and there are no runtime errors.
+
+Executor run test.
