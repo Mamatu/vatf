@@ -127,6 +127,6 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None):
 def create_tests(suite_path, set_up = None, tear_down = None, **kwargs):
     for k,v in kwargs.items():
         if isinstance(v, tuple):
-            create_test(suite_path, test_name = k, set_up = set_up, tear_down = tear_down, test = v[0], cleanup = v[1])
+            create_test(suite_path, test_name = k, set_up = set_up, tear_down = tear_down, test = v[0])
         else:
             create_test(suite_path, test_name = k, test = v, set_up = set_up, tear_down = tear_down)
