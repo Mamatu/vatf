@@ -35,3 +35,6 @@ git submodule update --init --recursive --remote --force
 Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed.
 All recordings, logs and etc. for the test are stored in this directory. Test code is executed in generator with overloaded vatf api (functions with @public\_api decorator) by
 "empty implementation" only for syntax and errors verification. Next, the code is copied into test file `test.py` with switching vatf api into executor mode. You can modify this file. 
+
+### vatf init
+In every test file is required to import `vatf_init.py` which initializes starndard executor api.
