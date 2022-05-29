@@ -18,7 +18,7 @@ class SamplingTests(TestCase):
         TestCase.__init__(self, arg)
     def setUp(self):
         from vatf.utils import config
-        config._reset()
+        config.reset()
     def test_get_creation_date_empty(self):
         p = os_proxy.create_file("tw")
         expectedDate = utils.get_modification_date(p)

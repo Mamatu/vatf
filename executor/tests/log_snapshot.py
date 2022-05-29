@@ -55,7 +55,7 @@ class LogSnapshotTests(TestCase):
     def setUp(self):
         from vatf.utils import config
         logging.getLogger().setLevel(logging.INFO)
-        config._reset()
+        config.reset()
         _reset()
     def create_file(self, mode, data = None):
         path = utils.get_temp_filepath()

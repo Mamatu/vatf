@@ -1,65 +1,56 @@
-import abc
-import sys
-
+import inspect
 import logging
+import sys
 
 from vatf.utils import config_loader, os_proxy
 
-_cfg_loader = None
-_cfg_path = None
+_loaded_config = None
+_config_pathes = []
 
-def _load_config():
-    global _cfg_loader, _cfg_path
-    if not _cfg_loader:
-        path = get_config_path()
-        if path:
-            _cfg_loader = config_loader.load(path)
+def load(path):
+    global _loaded_config
+    loaded_config = config_loader.load(path)
+    if not _loaded_config:
+        _loaded_config = loaded_config
+    else:
+        _loaded_config = _loaded_config + loaded_config
+    _config_pathes.append(path)
 
-def _reset():
-    global _cfg_loader, _cfg_path
-    _cfg_path = None
-    _cfg_loader = None
+def reset():
+    global _loaded_config, _config_pathes
+    _loaded_config = None
+    _config_pathes = []
 
-def set_config_path(path):
-    global _cfg_path
-    _cfg_path = path
+def get_config_pathes():
+    global _config_pathes
+    return _config_pathes.copy()
 
-_extra_kv = {}
+def get_configs_basename():
+    global _config_pathes
+    return [os_proxy.basename(config) for config in _config_pathes]
 
-def set_extra(key, value):
-    global _extra_kv
-    _extra_kv = {key, value}
-
-def _handle_extra(func):
+def _handle_format(func):
     def wrapper():
         line = func()
-        global _extra_kv
-        for k,v in _extra_kv:
+        global _loaded_config
+        for k,v in inspect.getmembers(_loaded_config):
             line = line.format(k = v)
         return line
     return wrapper
 
-@_handle_extra
-def get_config_path():
-    global _cfg_path
-    config_path = _cfg_path
-    if not config_path and len(sys.argv) > 2:
-        config_path = sys.argv[2]
-    return config_path
-
-@_handle_extra
+@_handle_format
 def get_pathes_to_audio_files_in_system():
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_pathes_audio_files()
+    global _loaded_config
+    if _loaded_config:
+        return _loaded_config.get_pathes_audio_files()
     return []
 
-@_handle_extra
+@_handle_format
 def get_path_to_generated_suite():
     return sys.argv[1]
 
-@_handle_extra
+@_handle_format
 def get_path_to_generated_test():
     from vatf.generator import gen_tests
     test_name = gen_tests.get_test_name()
@@ -67,63 +58,63 @@ def get_path_to_generated_test():
         raise Exception("None test is processed")
     return os_proxy.join(get_path_to_generated_suite(), test_name)
 
-@_handle_extra
+@_handle_format
 def get_relative_path_to_audio_files_in_test():
     return "assets/audio_files"
 
-@_handle_extra
+@_handle_format
 def get_absolute_path_to_audio_files_in_test():
     test_path = get_path_to_generated_test()
     audio_files_path = get_relative_path_to_audio_files_in_test()
     return os_proxy.join(test_path, audio_files_path)
 
-@_handle_extra
+@_handle_format
 def get_vatf_branch_to_clone():
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_vatf_branch_to_clone()
+    global _loaded_config
+    if _loaded_config:
+        return _loaded_config.get_vatf_branch_to_clone()
     return ""
 
-@_handle_extra
+@_handle_format
 def get_log_path(session_path):
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        log_path = _cfg_loader.get_log_path()
+    global _loaded_config
+    if _loaded_config:
+        log_path = _loaded_config.get_log_path()
         log_path.format(session_path = session_path)
         return log_path
     return ""
 
-@_handle_extra
+@_handle_format
 def convert_to_log_zone(dt):
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.convert_to_log_zone(dt)
+    global _loaded_config
+    if _loaded_config:
+        return _loaded_config.convert_to_log_zone(dt)
     return dt
 
-@_handle_extra
+@_handle_format
 def convert_to_system_zone(dt):
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.convert_to_system_zone(dt)
+    global _loaded_config
+    if _loaded_config:
+        return _loaded_config.convert_to_system_zone(dt)
     return dt
 
-@_handle_extra
+@_handle_format
 def get_shell_command():
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        shell_command = _cfg_loader.get_shell_command()
+    global _loaded_config
+    if _loaded_config:
+        shell_command = _loaded_config.get_shell_command()
         return shell_command
     return None
 
-@_handle_extra
+@_handle_format
 def get_shell_command_restart_timeout():
     _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_shell_command_restart_timeout()
+    global _loaded_config
+    if _loaded_config:
+        return _loaded_config.get_shell_command_restart_timeout()
     return None

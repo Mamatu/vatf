@@ -1,7 +1,8 @@
+import logging
+import inspect
 import json
 import jsonschema
 from jsonschema import validate
-import logging
 import os
 
 from vatf.utils import os_proxy
@@ -11,8 +12,8 @@ class Vatf:
         vatf = data["vatf"]
         self.branch = vatf["branch"]
     @staticmethod
-    def create(data):
-        if not "vatf" in data:
+    def load(data):
+        if not data or not "vatf" in data:
             return None
         return Vatf(data)
 
@@ -34,6 +35,10 @@ class Assets:
         self.data = data
         assets = data['assets']
         self.audio = Audio(assets)
+    def load(data):
+        if not data or not "assets" in data:
+            return None
+        return Assets(data)
 
 class UtteranceRegexInLog:
     def __init__(self, data):
@@ -49,8 +54,8 @@ class UtteranceFromVA:
             if regexes:
                 self.regexes = [UtteranceRegexInLog(r) for r in regexes]
     @staticmethod
-    def create(data):
-        if 'utterance_from_va' in data:
+    def load(data):
+        if data and 'utterance_from_va' in data:
             return UtteranceFromVA(data)
         return None
 
@@ -63,17 +68,21 @@ class UtteranceToVA:
             if regexes:
                 self.regexes = [UtteranceRegexInLog(r) for r in regexes]
     @staticmethod
-    def create(data):
-        if 'utterance_to_va' in data:
+    def load(data):
+        if data and 'utterance_to_va' in data:
             return UtteranceToVA(data)
         return None
 
 class Command():
     def __init__(self, data):
+        data = data["command"]
+        self.shell = data["shell"]
+        self.restart_timeout = int(data["restart_timeout"])
+    @staticmethod
+    def load(data):
         if "command" in data:
-            data = data["command"]
-            self.shell = data["shell"]
-            self.restart_timeout = int(data["restart_timeout"])
+            return Command(data)
+        return None
 
 class VaLog:
     def __init__(self, data):
@@ -83,104 +92,71 @@ class VaLog:
         self.timedelta = datetime.timedelta(**va_log["timedelta"])
         self.date_regex = va_log["date_regex"]
         self.date_format = va_log["date_format"]
-        self.command = Command(va_log)
+        self.command = Command.load(va_log)
+    @staticmethod
+    def load(data):
+        if data and 'va_log' in data:
+            return VaLog(data)
+        return None
+
+class Format:
+    def __init__(self, data):
+        _format = data['format']
+        for item in _format:
+            setattr(self, item['key'], item['value'])
+    @staticmethod
+    def load(data):
+        if data and 'format' in data:
+            return Format(data)
+        return None
 
 class Config:
-    def __init__(self, config_json_path = None, schema_json_path = None):
+    def __init__(self, data = None):
+        self.vatf = Vatf.load(data)
+        self.assets = Assets.load(data)
+        self.va_log = VaLog.load(data)
+        self.utterance_from_va = UtteranceFromVA.load(data)
+        self.utterance_to_va = UtteranceToVA.load(data)
+        if self.assets and self.assets.audio and self.assets.audio.path:
+            self.searched_audio_files_pathes = self.assets.audio.path
+        else:
+            self.searched_audio_files_pathes = None
+        self.format = Format.load(data)
+    def _get_not_none(self, orig, other):
+        xor = lambda a,b: (a and not b) or (not a and b)
+        outcome = orig
+        if not xor(orig, other):
+            if orig:
+                raise Exception(f"{orig.__name__} cannot be merged")
+            if other:
+                raise Exception(f"{other.__name__} cannot be merged")
+        else:
+            if other:
+                outcome = other
+        return outcome
+    def _merge(self, orig, other):
+        outcome = orig
+        for value, key in inspect.getmembers(other):
+            setattr(outcome, value, key)
+    def __add__(self, other):
+        outcome = Config()
+        outcome.vatf = self._get_not_none(self.vatf, other.vatf)
+        outcome.assets = self._get_not_none(self.assets, other.assets)
+        outcome.va_log = self._get_not_none(self.va_log, other.va_log)
+        outcome.utterance_from_va = self._get_not_none(self.utterance_from_va, other.utterance_from_va)
+        outcome.utterance_to_va = self._get_not_none(self.utterance_to_va, other.utterance_to_va)
+        outcome.format = self._merge(self.format, other.format)
+        return outcome
+    @staticmethod
+    def load(config_json_path = None, schema_json_path = None):
         with open(config_json_path) as f:
             logging.debug(f"Reads {config_json_path}")
             data = json.load(f)
-            self.data = data
             if schema_json_path:
                 with open(schema_json_path) as schema:
                     logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
                     validate(data, schema=json.load(schema))
-            self.vatf = Vatf.create(data)
-            self.assets = Assets(data)
-            self.va_log = VaLog(data)
-            self.utterance_from_va = UtteranceFromVA.create(data)
-            self.utterance_to_va = UtteranceToVA.create(data)
-            self.searched_audio_files_pathes = self.assets.audio.path
-    def get_copy(self):
-        import copy
-        return copy.deepcopy(self)
-    def get_vatf_branch_to_clone(self):
-        if self.vatf == None:
-            return ""
-        return self.vatf.branch
-    def get_pathes_audio_files(self):
-        return [self.assets.audio.path]
-    def _convert_to_zone(self, dt, op):
-        if self.va_log and self.va_log.timedelta:
-            return op(dt, self.va_log.timedelta)
-        return dt
-    def convert_to_log_zone(self, dt):
-        return self._convert_to_zone(dt, lambda d1, d2: d1 + d2)
-    def convert_to_system_zone(self, dt):
-        return self._convert_to_zone(dt, lambda d1, d2: d1 - d2)
-    def get_regexes_for_sampling(self):
-        if self.utterance_from_va and self.utterance_from_va.regexes:
-            return [(regex.begin, regex.end) for regex in self.utterance_from_va.regexes]
-        return []
-    def get_log_path(self):
-        return self.va_log.path
-    def get_date_regex(self):
-        return self.va_log.date_regex
-    def get_date_format(self):
-        return self.va_log.date_format
-    def get_shell_command(self):
-        return self.va_log.command.shell
-    def get_shell_command_restart_timeout(self):
-        return self.va_log.command.restart_timeout
-
-class ConfigProxy:
-    def __init__(self, config_json_path = None, schema_json_path = None):
-        self.config = None
-        if config_json_path and os_proxy.exists(config_json_path):
-            self.config = Config(config_json_path, schema_json_path)
-    def get_copy(self):
-        import copy
-        return copy.deepcopy(self)
-    def get_vatf_branch_to_clone(self):
-        if not self.config:
-            return ""
-        return self.config.get_vatf_branch_to_clone()
-    def get_pathes_audio_files(self):
-        if not self.config:
-            return []
-        return self.config.get_pathes_audio_files()
-    def convert_to_log_zone(self, dt):
-        if not self.config:
-            return dt
-        return self.config.convert_to_log_zone(dt)
-    def convert_to_system_zone(self, dt):
-        if not self.config:
-            return dt
-        return self.config.convert_to_system_zone(dt)
-    def get_regexes_for_sampling(self):
-        if not self.config:
-            return []
-        return self.config.get_regexes_for_sampling()
-    def get_log_path(self):
-        if not self.config:
-            return ""
-        return self.config.get_log_path()
-    def get_date_regex(self):
-        if not self.config:
-            raise Exception("config is not loaded")
-        return self.va_log.date_regex
-    def get_date_format(self):
-        if not self.config:
-            raise Exception("config is not loaded")
-        return self.va_log.date_format
-    def get_shell_command(self):
-        if not self.config:
-            return None
-        return self.config.get_shell_command()
-    def get_shell_command_restart_timeout(self):
-        if not self.config:
-            return None
-        return self.config.get_shell_command_restart_timeout()
+        return Config(data)
 
 def _abs_path_to_schema():
     import pathlib
@@ -188,4 +164,4 @@ def _abs_path_to_schema():
     return os_proxy.join(path, "schemas/config.schema.json")
 
 def load(config_json_path = "./config.json", schema_json_path = _abs_path_to_schema()):
-    return ConfigProxy(config_json_path, schema_json_path)
+    return Config.load(config_json_path, schema_json_path)
