@@ -13,4 +13,5 @@
   utils/tests/utils.py \
   utils/tests/thread.py \
   executor/tests/log_snapshot.py \
-  executor/tests/sampling.py
+  executor/tests/sampling.py \
+  api/tests/test.py
