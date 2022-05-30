@@ -145,7 +145,7 @@ class Config:
         outcome.va_log = self._get_not_none(self.va_log, other.va_log)
         outcome.utterance_from_va = self._get_not_none(self.utterance_from_va, other.utterance_from_va)
         outcome.utterance_to_va = self._get_not_none(self.utterance_to_va, other.utterance_to_va)
-        outcome.format = self._merge(self.format, other.format)
+        #outcome.format = self._merge(self.format, other.format)
         return outcome
     @staticmethod
     def load(config_json_path = None, schema_json_path = None):

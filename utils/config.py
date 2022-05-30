@@ -40,7 +40,6 @@ def _handle_format(func):
 
 @_handle_format
 def get_pathes_to_audio_files_in_system():
-    _load_config()
     global _loaded_config
     if _loaded_config:
         return _loaded_config.get_pathes_audio_files()
@@ -70,15 +69,13 @@ def get_absolute_path_to_audio_files_in_test():
 
 @_handle_format
 def get_vatf_branch_to_clone():
-    _load_config()
     global _loaded_config
     if _loaded_config:
-        return _loaded_config.get_vatf_branch_to_clone()
+        return _loaded_config.vatf.branch
     return ""
 
 @_handle_format
 def get_log_path(session_path):
-    _load_config()
     global _loaded_config
     if _loaded_config:
         log_path = _loaded_config.get_log_path()
@@ -88,7 +85,6 @@ def get_log_path(session_path):
 
 @_handle_format
 def convert_to_log_zone(dt):
-    _load_config()
     global _loaded_config
     if _loaded_config:
         return _loaded_config.convert_to_log_zone(dt)
@@ -96,7 +92,6 @@ def convert_to_log_zone(dt):
 
 @_handle_format
 def convert_to_system_zone(dt):
-    _load_config()
     global _loaded_config
     if _loaded_config:
         return _loaded_config.convert_to_system_zone(dt)
@@ -104,7 +99,6 @@ def convert_to_system_zone(dt):
 
 @_handle_format
 def get_shell_command():
-    _load_config()
     global _loaded_config
     if _loaded_config:
         shell_command = _loaded_config.get_shell_command()
@@ -113,7 +107,6 @@ def get_shell_command():
 
 @_handle_format
 def get_shell_command_restart_timeout():
-    _load_config()
     global _loaded_config
     if _loaded_config:
         return _loaded_config.get_shell_command_restart_timeout()
