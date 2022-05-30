@@ -111,15 +111,16 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None):
         _callable()
         _code_lines = inspect.getsourcelines(_callable)
         code_lines = code_lines + _code_lines[0][1:]
+        return code_lines
     _create_test_dir(suite_path, test_name)
     _create_run_sh_script(suite_path, test_name)
     _copy_config(suite_path, test_name)
     global _test_py_file
     _create_header()
     code_lines = []
-    if set_up: execute(set_up, code_lines)
-    execute(test, code_lines)
-    if tear_down: execute(tear_down, code_lines)
+    if set_up: code_lines = execute(set_up, code_lines)
+    code_lines = execute(test, code_lines)
+    if tear_down: code_lines = execute(tear_down, code_lines)
     for line in code_lines:
         line = textwrap.dedent(line)
         _write_to_script(line, newLine = False)
