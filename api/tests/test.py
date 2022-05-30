@@ -41,4 +41,5 @@ class TestTests(TestCase):
             test_code = lines[len(test_py_header):]
             self.assertEqual("print(\"set_up\")\n", test_code[0])
             self.assertEqual("print(\"Test_2\")\n", test_code[1])
-            self.assertEqual("print(\"tear_down\")\n", test_code[2])
+            self.assertTrue("wait.sleep(1)\n" == test_code[2] or "wait.sleep(2)\n" == test_code[2])
+            self.assertEqual("print(\"tear_down\")\n", test_code[3])
