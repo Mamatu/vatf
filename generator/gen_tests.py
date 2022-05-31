@@ -99,6 +99,15 @@ def create_call(module, function_name, *args, **kwargs):
     funcall = make_pycall(function_name, *args, **kwargs)
     verify_call(f"{module}.{funcall}")
 
+_lines_to_replace = {}
+
+def replace_call(module, function_name, *args, **kwargs, func_to_replace):
+    global _test_py_file, _lines_to_replace
+    if not vatf_api.is_registered(module, function_name):
+        raise Exception(f"{function_name} is not registered as function of executing api")
+    funcall = make_pycall(function_name, *args, **kwargs)
+    _lines_to_replace[func_to_replace] = funcall
+
 def get_test_py_header(config_pathes = None):
     if config_pathes is None:
         config_pathes = config.get_configs_basename()
@@ -143,6 +152,8 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None, co
         line = textwrap.dedent(line)
         _write_to_script(line, newLine = False)
     config.reset()
+    global _lines_to_replace
+    _lines_to_replace = {}
 
 def create_tests(suite_path, set_up = None, tear_down = None, **kwargs):
     for k,v in kwargs.items():
