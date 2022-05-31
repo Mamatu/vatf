@@ -6,9 +6,9 @@ import datetime
 import logging
 import os
 
-from vatf.utils import config_loader
+from vatf.utils import config, config_loader
 
-class ConfigLoaderTests(TestCase):
+class ConfigTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
@@ -28,16 +28,16 @@ class ConfigLoaderTests(TestCase):
         self.assertEqual("end_utterance", c.config.utterance_from_va.regexes[0].end)
         self.assertEqual(None, c.config.utterance_to_va)
     def test_convert_to_log_zone(self):
-        c = config_loader.load("utils/tests/config.json")
+        config.load("utils/tests/config.json")
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         dt = datetime.datetime.strptime("2022-01-20 12:30:34.564879", date_format)
-        dt = c.config.convert_to_log_zone(dt)
+        dt = config.convert_to_log_zone(dt)
         self.assertEqual("2022-01-20 11:30:34.564879", dt.strftime(date_format))
-        dt = c.config.convert_to_system_zone(dt)
+        dt = config.convert_to_system_zone(dt)
         self.assertEqual("2022-01-20 12:30:34.564879", dt.strftime(date_format))
     def test_get_regexes_for_sampling(self):
         c = config_loader.load("utils/tests/config.json")
-        regexes = c.config.get_regexes_for_sampling()
+        regexes = c.config.utterance_from_va.regexes
         self.assertEqual(1, len(regexes))
         self.assertEqual(2, len(regexes[0]))
         self.assertEqual("start_utterance", regexes[0][0])

@@ -40,6 +40,8 @@ def _create_assets_dir(suite_path, test_name):
     os_proxy.mkdir(os_proxy.join(assets_path, "audio_files"))
 
 def _process_configs(suite_path, test_name, config_pathes):
+    if config_pathes is None:
+        config_pathes = []
     if isinstance(config_pathes, str):
         config_pathes = [config_pathes]
     for config_path in config_pathes:
@@ -97,8 +99,9 @@ def create_call(module, function_name, *args, **kwargs):
     funcall = make_pycall(function_name, *args, **kwargs)
     verify_call(f"{module}.{funcall}")
 
-def get_test_py_header():
-    config_pathes = config.get_config_pathes()
+def get_test_py_header(config_pathes = None):
+    if config_pathes is None:
+        config_pathes = config.get_configs_basename()
     header1 = [
         "import os",
         "os.system('rm -rf vatf')",
@@ -106,7 +109,7 @@ def get_test_py_header():
         "from vatf import vatf_init, vatf_api",
         "from vatf.utils import config"
     ]
-    header2 = [f"config.load('./{config}.json')" for config in config_pathes],
+    header2 = [f"config.load('./{config}')" for config in config_pathes]
     header3 = [
         "from vatf.api import audio, player, wait, shell, mkdir, log_snapshot",
         "vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)"
@@ -115,8 +118,10 @@ def get_test_py_header():
 
 def _create_header():
     branch = config.get_vatf_branch_to_clone()
-    if branch != None and branch != "":
+    if branch is not None and branch != "":
         branch = f"-b {branch}"
+    else:
+        branch = ""
     for line in get_test_py_header():
         _write_to_script(line.format(branch = branch))
 
