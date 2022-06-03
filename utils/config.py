@@ -35,19 +35,19 @@ def get_config():
     return copy.deepcopy(_loaded_config)
 
 def _handle_format(func):
-    def wrapper():
-        line = func()
+    def wrapper(*args, **kwargs):
+        line = func(*args, **kwargs)
         global _loaded_config
         for k,v in inspect.getmembers(_loaded_config):
-            if line:
+            if line and isinstance(line, str):
                 line = line.format(k = v)
         return line
     return wrapper
 
 def _handle_none(func):
-    def wrapper():
+    def wrapper(*args, **kwargs):
         try:
-            return func()
+            return func(*args, **kwargs)
         except AttributeError:
             return None
     return wrapper
@@ -102,21 +102,21 @@ def get_log_path(session_path):
         return log_path
     return ""
 
-@_handle_format
-@_handle_none
-def convert_to_log_zone(dt):
+def _convert_to_zone(dt, op):
     global _loaded_config
-    if _loaded_config:
-        return _loaded_config.convert_to_log_zone(dt)
+    if _loaded_config.va_log and _loaded_config.va_log.timedelta:
+        return op(dt, _loaded_config.va_log.timedelta)
     return dt
 
 @_handle_format
 @_handle_none
+def convert_to_log_zone(dt):
+    return _convert_to_zone(dt, lambda d1, d2: d1 + d2)
+
+@_handle_format
+@_handle_none
 def convert_to_system_zone(dt):
-    global _loaded_config
-    if _loaded_config:
-        return _loaded_config.convert_to_system_zone(dt)
-    return dt
+    return _convert_to_zone(dt, lambda d1, d2: d1 - d2)
 
 @_handle_format
 @_handle_none

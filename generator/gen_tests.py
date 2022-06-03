@@ -101,12 +101,13 @@ def create_call(module, function_name, *args, **kwargs):
 
 _lines_to_replace = {}
 
-def replace_call(module, function_name, *args, **kwargs, func_to_replace):
+def replace_call(module, function_name, func_to_replace, *args, **kwargs):
     global _test_py_file, _lines_to_replace
     if not vatf_api.is_registered(module, function_name):
         raise Exception(f"{function_name} is not registered as function of executing api")
     funcall = make_pycall(function_name, *args, **kwargs)
     _lines_to_replace[func_to_replace] = funcall
+    verify_call(f"{module}.{funcall}")
 
 def get_test_py_header(config_pathes = None):
     if config_pathes is None:
