@@ -7,7 +7,6 @@ import datetime
 import time
 
 from vatf.api import shell, mkdir
-from vatf.vatf_api import public_api
 
 from vatf.utils import logger_thread
 from vatf.utils import utils, os_proxy
@@ -43,7 +42,6 @@ def start_from_config():
     shell_cmd = shell_cmd.format(session_path = session_path)
     start(log_path, shell_cmd, restart_timeout)
 
-@public_api("log_snapshot")
 def stop():
     _stop_observer()
     _stop_command()

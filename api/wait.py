@@ -4,15 +4,12 @@ from random import random
 from random import randint
 
 from vatf.utils import utils, os_proxy, config
-from vatf.vatf_api import public_api
 
 import datetime
 
-@public_api("wait")
 def sleep(duration):
     t.sleep(duration)
 
-@public_api("wait")
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 
@@ -138,7 +135,6 @@ def _get_last_monitored_line(path):
     global _logs_lines_number
     return _logs_lines_number.get(path, 1)
 
-@public_api("wait")
 def wait_for_regex(regex, log_path, timeout = 10, pause = 0.5, callbacks = None):
     def convert_to_timedelta(t):
         if not isinstance(t, datetime.timedelta):

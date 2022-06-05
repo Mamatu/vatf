@@ -2,15 +2,12 @@ import os
 import re
 
 from vatf.utils import utils
-from vatf.vatf_api import public_api
 
 import logging
 
-@public_api("mkdir")
 def _mkdir(path):
     os.makedirs(path)
 
-@public_api("mkdir")
 def mkdir_with_counter(path):
     top = os.path.basename(path)
     dir = os.path.dirname(path)

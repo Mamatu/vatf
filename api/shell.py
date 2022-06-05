@@ -1,5 +1,4 @@
 from vatf.utils import utils
-from vatf.vatf_api import public_api
 import logging
 import os
 import psutil
@@ -12,7 +11,6 @@ from vatf.utils.thread import lock
 
 _popens = []
 
-@public_api("shell")
 def fg(command):
     os.system(command)
 
@@ -52,7 +50,6 @@ def kill(process):
         logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
 
-@public_api("shell")
 def bg(command):
     process = subprocess.Popen(command, shell=True)
     logging.debug(f"Run process {process.pid} in background for command {command}")
