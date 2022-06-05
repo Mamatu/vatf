@@ -17,7 +17,7 @@ They include playing audio files, audio inputs and outputs of test station recor
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 
 ## Voice Assistance Test Framework - Utils
-This part of vatf contains common utilities which are used in vatf.executor and vatf.generator.
+This part of vatf contains common utilities which are used in vatf.api and vatf.generator.
 
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 

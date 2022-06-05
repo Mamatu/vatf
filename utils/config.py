@@ -41,13 +41,6 @@ def get_pathes_to_audio_files_in_system():
 def get_path_to_generated_suite():
     return sys.argv[1]
 
-def get_path_to_generated_test():
-    from vatf.generator import gen_tests
-    test_name = gen_tests.get_test_name()
-    if test_name == None:
-        raise Exception("None test is processed")
-    return os_proxy.join(get_path_to_generated_suite(), test_name)
-
 def get_relative_path_to_audio_files_in_test():
     return "assets/audio_files"
 

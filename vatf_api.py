@@ -5,14 +5,12 @@ import importlib
 import sys
 import types
 
-from vatf.generator import gen_tests
-
 class API_TYPE(Enum):
     EXECUTOR = 1,
     GENERATOR = 2
 
 _apiType = API_TYPE.GENERATOR
-_package = {API_TYPE.GENERATOR : "vatf.generator", API_TYPE.EXECUTOR : "vatf.executor"}
+_package = {API_TYPE.GENERATOR : "vatf.generator", API_TYPE.EXECUTOR : "vatf.api"}
 _dynamic_modules = {}
 
 def get_package(apiType):
