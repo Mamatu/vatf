@@ -19,7 +19,7 @@ This part of vatf contains common utilities which are used in vatf.api and vatf.
 Remember about update all submodules
 
 ```
-apt install parallel libsndfile1
+apt install parallel libsndfile1 vlc
 pip install librosa psutil jsonschema matplotlib watchdog
 git submodule update --init --recursive --remote --force
 ```

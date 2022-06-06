@@ -50,123 +50,139 @@
           "required" : ["path"]
         }
       }
-    }
-  },
-  "va_log" : {
-    "type" : "object",
-    "description" : "voice assitance debug log configuration",
-    "properties" : {
-      "path" : {
-        "type" : "string",
-        "description" : "path to log file. Values which can be used here are: {session_path}"
-      },
-      "command" : {
-        "type" : "object",
-        "description" : "json object which describe command to collect log",
-        "properties" : {
-          "shell" : {
-            "type" : "string",
-            "description" : "shell command to collect log. Values which can be used here are: {session_path}"
+    },
+    "va_log" : {
+      "type" : "object",
+      "description" : "voice assitance debug log configuration",
+      "properties" : {
+        "path" : {
+          "type" : "string",
+          "description" : "path to log file. Values which can be used here are: {session_path}"
+        },
+        "command" : {
+          "type" : "object",
+          "description" : "json object which describe command to collect log",
+          "properties" : {
+            "shell" : {
+              "type" : "string",
+              "description" : "shell command to collect log. Values which can be used here are: {session_path}"
+            },
+            "restart_timeout" : {
+              "type" : "number",
+              "description" : "number of milliseconds to restart shell command if file doesn't receive new data"
+            }
           },
-          "restart_timeout" : {
-            "type" : "number",
-            "description" : "number of milliseconds to restart shell command if file doesn't receive new data"
+  	      "required" : ["shell", "restart_timeout"]
+        },
+        "timedelta" : {
+          "type" : "object",
+          "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
+          "properties" : {
+            "days" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "seconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "microseconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "milliseconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "minutes" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "hours" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "weeks" : {
+              "type" : "number",
+              "default" : 0
+            }
           }
         },
-	"required" : ["command", "restart_timeout"]
-      },
-      "timedelta" : {
-        "type" : "object",
-        "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
-        "properties" : {
-          "days" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "seconds" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "microseconds" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "milliseconds" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "minutes" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "hours" : {
-            "type" : "number",
-            "default" : 0
-          },
-          "weeks" : {
-            "type" : "number",
-            "default" : 0
-          }
+        "date_format" : {
+          "type" : "string",
+          "description" : "dare format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"
+        },
+        "date_regex" : {
+          "type" : "string",
+          "description" : "date regex of timestamp in log for instance: [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
         }
       },
-      "date_format" : {
-        "type" : "string",
-        "description" : "dare format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"
-      },
-      "date_regex" : {
-        "type" : "string",
-        "description" : "date regex of timestamp in log for instance: [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+      "required" : ["path", "date_format", "date_regex"]
+    },
+    "utterance_to_va" : {
+      "type" : "object",
+      "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
+      "properties" : {
+        "regexes" : {
+          "type" : "array",
+          "description" : "array of regexes",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "begin" : {
+                "type" : "string",
+                "description" : "regex defines begin of utterance"
+              },
+              "end" : {
+                "type" : "string",
+                "description" : "regex defines end of utterance"
+              }
+            }
+          },
+          "minItems" : 1,
+          "maxItems" : 1
+        }
       }
     },
-    "required" : ["path", "command", "strformat", "date_format", "date_regex"]
-  },
-  "utterance_to_va" : {
-    "type" : "object",
-    "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
-    "properties" : {
-      "regexes" : {
-        "type" : "array",
-        "description" : "array of regexes",
-        "items" : {
-          "type" : "object",
-          "properties" : {
-            "begin" : {
-              "type" : "string",
-              "description" : "regex defines begin of utterance"
-            },
-            "end" : {
-              "type" : "string",
-              "description" : "regex defines end of utterance"
+    "utterance_from_va" : {
+      "type" : "object",
+      "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
+      "properties" : {
+        "regexes" : {
+          "type" : "array",
+          "description" : "array of regexes",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "begin" : {
+                "type" : "string",
+                "description" : "regex defines begin of utterance"
+              },
+              "end" : {
+                "type" : "string",
+                "description" : "regex defines end of utterance"
+              }
             }
-          }
-        },
-        "minItems" : 1,
-        "maxItems" : 1
+          },
+          "minItems" : 1,
+          "maxItems" : 1
+        }
       }
-    }
-  },
-  "utterance_from_va" : {
-    "type" : "object",
-    "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
-    "properties" : {
-      "regexes" : {
-        "type" : "array",
-        "description" : "array of regexes",
-        "items" : {
-          "type" : "object",
-          "properties" : {
-            "begin" : {
-              "type" : "string",
-              "description" : "regex defines begin of utterance"
-            },
-            "end" : {
-              "type" : "string",
-              "description" : "regex defines end of utterance"
-            }
+    },
+    "format" : {
+      "type" : "array",
+      "description" : "expression to use format the config. To use expression use {} like in f-string https://peps.python.org/pep-0498",
+      "items" : {
+        "type" : "object",
+        "description" : "object which contains two fileds: key and value",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
           }
-        },
-        "minItems" : 1,
-        "maxItems" : 1
+        }
       }
     }
   }
