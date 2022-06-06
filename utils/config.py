@@ -94,10 +94,10 @@ def get_vatf_branch_to_clone():
 
 @_handle_format
 @_handle_none
-def get_log_path(session_path):
+def get_log_path():
     global _loaded_config
     if _loaded_config:
-        log_path = _loaded_config.get_log_path()
+        log_path = _loaded_config.va_log.path
         log_path.format(session_path = session_path)
         return log_path
     return ""
