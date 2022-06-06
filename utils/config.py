@@ -1,136 +1,56 @@
-import copy
-import inspect
 import logging
-import sys
 
-from vatf.utils import config_loader, os_proxy
+import json
+import jsonschema
+from types import SimpleNamespace
 
-_loaded_config = None
-_config_pathes = []
+from vatf.utils import os_proxy
 
-def load(path):
-    global _loaded_config
-    loaded_config = config_loader.load(path)
-    if not _loaded_config:
-        _loaded_config = loaded_config
-    else:
-        _loaded_config = _loaded_config + loaded_config
-    _config_pathes.append(path)
+def _abs_path_to_schema():
+    import pathlib
+    path = pathlib.Path(__file__).parent.parent.resolve()
+    return os_proxy.join(path, "schemas/config.schema.json")
 
-def reset():
-    global _loaded_config, _config_pathes
-    _loaded_config = None
-    _config_pathes = []
+def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
+    if isinstance(config_json_pathes, str):
+        config_json_pathes = [config_json_pathes]
+    data = None
+    array = []
+    for config_json_path in config_json_pathes:
+        with open(config_json_path) as f:
+            logging.debug(f"Reads {config_json_path}")
+            data = json.load(f)
+            if schema_json_path:
+                with open(schema_json_path) as schema:
+                    logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
+                    jsonschema.validate(data, schema = json.load(schema))
+        with open(config_json_path) as f:
+            data = json.load(f, object_hook = lambda d: SimpleNamespace(**d))
+            array.append(data)
+    for item in array:
+        if data is None:
+            data = item.__dict__
+        else:
+            data.__dict__.update(item.__dict__)
+    return data
 
-def get_config_pathes():
-    global _config_pathes
-    return _config_pathes.copy()
-
-def get_configs_basename():
-    global _config_pathes
-    return [os_proxy.basename(config) for config in _config_pathes]
-
-def get_config():
-    global _loaded_config
-    return copy.deepcopy(_loaded_config)
-
-def _handle_format(func):
-    def wrapper(*args, **kwargs):
-        line = func(*args, **kwargs)
-        global _loaded_config
-        for k,v in inspect.getmembers(_loaded_config):
-            if line and isinstance(line, str):
-                line = line.format(k = v)
-        return line
-    return wrapper
-
-def _handle_none(func):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except AttributeError:
-            return None
-    return wrapper
-
-@_handle_format
-@_handle_none
-def get_pathes_to_audio_files_in_system():
-    global _loaded_config
-    if _loaded_config:
-        return _loaded_config.get_pathes_audio_files()
-    return []
-
-@_handle_format
-@_handle_none
-def get_path_to_generated_suite():
-    return sys.argv[1]
-
-@_handle_format
-@_handle_none
-def get_path_to_generated_test():
-    from vatf.generator import gen_tests
-    test_name = gen_tests.get_test_name()
-    if test_name == None:
-        raise Exception("None test is processed")
-    return os_proxy.join(get_path_to_generated_suite(), test_name)
-
-@_handle_format
-@_handle_none
-def get_relative_path_to_audio_files_in_test():
-    return "assets/audio_files"
-
-@_handle_format
-@_handle_none
-def get_absolute_path_to_audio_files_in_test():
-    test_path = get_path_to_generated_test()
-    audio_files_path = get_relative_path_to_audio_files_in_test()
-    return os_proxy.join(test_path, audio_files_path)
-
-@_handle_format
-@_handle_none
-def get_vatf_branch_to_clone():
-    global _loaded_config
-    return _loaded_config.vatf.branch
-
-@_handle_format
-@_handle_none
-def get_log_path():
-    global _loaded_config
-    if _loaded_config:
-        log_path = _loaded_config.va_log.path
-        log_path.format(session_path = session_path)
-        return log_path
-    return ""
-
-def _convert_to_zone(dt, op):
-    global _loaded_config
-    if _loaded_config.va_log and _loaded_config.va_log.timedelta:
-        return op(dt, _loaded_config.va_log.timedelta)
-    return dt
-
-@_handle_format
-@_handle_none
-def convert_to_log_zone(dt):
-    return _convert_to_zone(dt, lambda d1, d2: d1 + d2)
-
-@_handle_format
-@_handle_none
-def convert_to_system_zone(dt):
-    return _convert_to_zone(dt, lambda d1, d2: d1 - d2)
-
-@_handle_format
-@_handle_none
-def get_shell_command():
-    global _loaded_config
-    if _loaded_config:
-        shell_command = _loaded_config.get_shell_command()
-        return shell_command
-    return None
-
-@_handle_format
-@_handle_none
-def get_shell_command_restart_timeout():
-    global _loaded_config
-    if _loaded_config:
-        return _loaded_config.get_shell_command_restart_timeout()
-    return None
+def load(config_json_pathes, schema_json_path = _abs_path_to_schema()):
+    if isinstance(config_json_pathes, str):
+        config_json_pathes = [config_json_pathes]
+    data = load_raw(config_json_pathes, schema_json_path)
+    def process_format(obj, format_dict):
+        if hasattr(obj, "__dict__"):
+            for k,v in obj.__dict__.items():
+                process_format(v, format_dict)
+                if isinstance(v, str):
+                    v = v.format(**format_dict)
+                    setattr(obj, k, v)
+    def make_dict(data_format):
+        _dict = {}
+        for kv in data_format:
+            _dict[kv.key] = kv.value
+        return _dict
+    if data.format:
+        format_dict = make_dict(data.format)
+        process_format(data, format_dict)
+    return data

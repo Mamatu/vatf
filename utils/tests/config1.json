@@ -20,11 +20,5 @@
         "end" : "end_utterance"
       }
     ]
-  },
-  "format" : [
-    {
-      "key" : "ip",
-      "value" : "172.0.0.1"
-    } 
-  ]
+  }
 }
