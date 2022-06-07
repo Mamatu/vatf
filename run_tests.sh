@@ -8,6 +8,5 @@
   utils/tests/rosa.py \
   utils/tests/utils.py \
   utils/tests/thread.py \
-  api/tests/log_snapshot.py \
-  api/tests/sampling.py && \
-./python.sh -m pytest utils/tests/config.py
+  api/tests/log_snapshot.py && \
+./python.sh -m pytest api/tests/sampling.py utils/tests/config.py
