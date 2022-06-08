@@ -34,7 +34,7 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
             data.__dict__.update(item.__dict__)
     return data
 
-def load(config_json_pathes, schema_json_path = _abs_path_to_schema()):
+def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
     if isinstance(config_json_pathes, str):
         config_json_pathes = [config_json_pathes]
     data = load_raw(config_json_pathes, schema_json_path)
@@ -50,7 +50,9 @@ def load(config_json_pathes, schema_json_path = _abs_path_to_schema()):
         for kv in data_format:
             _dict[kv.key] = kv.value
         return _dict
+    format_dict = {}
     if hasattr(data, "format") and data.format:
         format_dict = make_dict(data.format)
-        process_format(data, format_dict)
+    format_dict.update(custom_format)
+    process_format(data, format_dict)
     return data
