@@ -50,7 +50,7 @@ def load(config_json_pathes, schema_json_path = _abs_path_to_schema()):
         for kv in data_format:
             _dict[kv.key] = kv.value
         return _dict
-    if data.format:
+    if hasattr(data, "format") and data.format:
         format_dict = make_dict(data.format)
         process_format(data, format_dict)
     return data
