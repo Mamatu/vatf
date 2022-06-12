@@ -50,8 +50,8 @@ def kill(process):
         logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
 
-def bg(command):
-    process = subprocess.Popen(command, shell=True)
+def bg(command, shell = True):
+    process = subprocess.Popen(command, shell = shell)
     logging.debug(f"Run process {process.pid} in background for command {command}")
     _register_process(process)
     atexit.register(kill, process)

@@ -19,28 +19,26 @@ from threading import Timer, RLock
 
 from vatf.utils import config, debug
 
-def start(log_path, shell_cmd, restart_timeout):
+def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
     if shell_cmd:
-        _setup_command(shell_cmd, restart_timeout, log_path)
+        _setup_command(shell_cmd, None, log_path)
         _start_command()
         _start_timer()
-        _start_observer(log_path, restart_timeout)
+        if restart_timeout:
+            _start_observer(log_path, restart_timeout)
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
 
-def start_from_config():
+def start_from_config(config_path, monitorFileLines = True):
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")
-    shell_cmd = config.get_shell_command()
-    restart_timeout = config.get_shell_command_restart_timeout()
-    if not ((shell_cmd != None and restart_timeout != None) or (shell_cmd == None and restart_timeout == None)):
-        raise Exception("shell_cmd and restart_timeout must be defined or both not defined")
-    session_path = mkdir.mkdir_with_counter("./logs/session")
-    log_path = config.get_log_path(session_path)
-    log_path = log_path.format(session_path = session_path)
-    shell_cmd = shell_cmd.format(session_path = session_path)
-    start(log_path, shell_cmd, restart_timeout)
+    session_path = mkdir.get_count_path("./logs/session")
+    config = config.load(config_path, {"session_path": session_path})
+    shell_cmd = config.get(config, "va_log.command")
+    log_path = config.get(session_path, "va_log.path")
+    mkdir.mkdir_with_counter("./logs/session")
+    start(log_path, shell_cmd)
 
 def stop():
     _stop_observer()
@@ -88,21 +86,23 @@ def _stop_command():
         _shell_cmd_process = None
 
 def _start_timer():
-    global _repeat_timer
-    #from https://stackoverflow.com/a/48741004
-    @lock(_timepoint_mutex)
-    def timepoint_observer():
+    global _restart_timeout
+    if _restart_timeout:
         global _repeat_timer
-        global _timepoint
-        global _restart_command, _restart_timeout
-        _current_timepoint = time.time()
-        if _timepoint:
-            elapsed_time = abs(_current_timepoint - _timepoint) * 1000
-            if _timepoint and elapsed_time > _restart_timeout:
-                _restart_command()
-                _timepoint = _current_timepoint
-    _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
-    _repeat_timer.start()
+        #from https://stackoverflow.com/a/48741004
+        @lock(_timepoint_mutex)
+        def timepoint_observer():
+            global _repeat_timer
+            global _timepoint
+            global _restart_command, _restart_timeout
+            _current_timepoint = time.time()
+            if _timepoint:
+                elapsed_time = abs(_current_timepoint - _timepoint) * 1000
+                if _timepoint and elapsed_time > _restart_timeout:
+                    _restart_command()
+                    _timepoint = _current_timepoint
+        _repeat_timer = make_repeat_timer(function = timepoint_observer, interval = float(_restart_timeout) / 4000)
+        _repeat_timer.start()
 
 @lock(_timepoint_mutex)
 def _remove_restart_command():

@@ -56,3 +56,20 @@ def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to
     format_dict.update(custom_format)
     process_format(data, format_dict)
     return data
+
+def get(data, arg, raiseIfNotFound = True):
+    if isinstance(arg, str):
+        arg = arg.split(".")
+    attr = None
+    def process_attr(data):
+        front = arg.pop(0)
+        if front:
+            attr = getattr(data, front, None)
+        if len(arg) == 0:
+            return attr
+        else:
+            return process_attr(attr)
+    output = process_attr(data)
+    if output is None and raiseIfNotFound:
+        raise AttributeError(f"Attr {arg} not found in config")
+    return output
