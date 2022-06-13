@@ -11,8 +11,6 @@ import sys
 from vatf.api import log_snapshot, shell
 from vatf.utils import utils, config
 
-from dlt import dlt
-
 _counter = None
 _generated_lines = []
 _dlt_daemon = None
