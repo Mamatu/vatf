@@ -1,5 +1,5 @@
 #!/bin/bash
-./make_dlt.sh
+./make_dlt.sh && \
 ./python.sh -m unittest \
   api/tests/mkdir.py \
   api/tests/player.py \
