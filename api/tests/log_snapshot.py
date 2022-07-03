@@ -28,7 +28,7 @@ def _dlt(command):
 
 def _dlt_example_user(payload, log_level = 2, count = 1):
     global _dlt_example_user_path
-    os.system(f"LD_LIBRARY_PATH={_dlt_rootfs}/lib {_dlt_example_user_path} -n {count} -l {log_level} \"{payload}\"")
+    os.system(f"LD_LIBRARY_PATH={_dlt_rootfs}/lib {_dlt_example_user_path} -n 1 -d 0 \"{payload}\"")
 
 from vatf.utils import debug
 
@@ -64,10 +64,10 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
             while _counter < lines_count and not self.stopped:
                 line = f"line{_counter + 1}"
                 now = datetime.datetime.now()
-                line = f"{now} {line}\n"
+                line = f"{now} {line}"
                 print(line)
                 _generated_lines.append(line)
-                _dlt_example_user(line)
+                _dlt_example_user(line, count = 1)
                 it = None
                 if self.stopped:
                     break
@@ -84,12 +84,13 @@ def test_log_with_timestamps():
         global _generated_lines, _dlt_receive_path
         log_path = utils.get_temp_filepath()
         log_path_1 = utils.get_temp_filepath()
-        logging.info(f"{log_path} -> {log_path_1}")
-        lines_count = 1113
+        print(f"Dlt -> {log_path_1}")
+        lines_count = 1000
         utils.touch(log_path)
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1", 500)
+        #log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST log' > {log_path_1}", 500)
+        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 > {log_path_1}", 500)
         time.sleep(5)
         log_snapshot.stop()
         with open(log_path_1, "r") as f:
