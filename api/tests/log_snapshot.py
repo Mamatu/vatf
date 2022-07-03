@@ -79,19 +79,26 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
     _generator_thread = GeneratorThread(log_path, lines_count, custom_sleep)
     _generator_thread.start()
 
+def sleep_until_lines_in_file(path, count):
+    while True:
+        f = open(path, "r")
+        lines = f.readlines()
+        if len(lines) >= count:
+            break
+
 def test_log_with_timestamps():
     try:
         global _generated_lines, _dlt_receive_path
         log_path = utils.get_temp_filepath()
         log_path_1 = utils.get_temp_filepath()
         print(f"Dlt -> {log_path_1}")
-        lines_count = 1000
+        lines_count = 1060
         utils.touch(log_path)
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        #log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST log' > {log_path_1}", 500)
-        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 > {log_path_1}", 500)
-        time.sleep(5)
+        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST log' > {log_path_1}", 500)
+        #log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 > {log_path_1}", 500)
+        sleep_until_lines_in_file(log_path_1, 1000)
         log_snapshot.stop()
         with open(log_path_1, "r") as f:
             rlines = f.readlines()
