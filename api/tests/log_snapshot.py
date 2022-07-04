@@ -28,7 +28,7 @@ def _dlt(command):
 
 def _dlt_example_user(payload, log_level = 2, count = 1):
     global _dlt_example_user_path
-    os.system(f"LD_LIBRARY_PATH={_dlt_rootfs}/lib {_dlt_example_user_path} -n 1 -d 0 \"{payload}\"")
+    os.system(f"LD_LIBRARY_PATH={_dlt_rootfs}/lib {_dlt_example_user_path} -n {count} -d 0 \"{payload}\"")
 
 from vatf.utils import debug
 
@@ -48,8 +48,10 @@ def teardown_module():
     shell.kill(_dlt_daemon)
     _dlt_daemon = None
 
+_test_end_indicator = "test end"
+
 def _log_generator_run(log_path, lines_count, custom_sleep = None):
-    global _generator_thread
+    global _generator_thread, _test_end_indicator
     class GeneratorThread(threading.Thread):
         def __init__(self, filepath, lines, custom_sleep):
             threading.Thread.__init__(self)
@@ -65,7 +67,6 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                 line = f"line{_counter + 1}"
                 now = datetime.datetime.now()
                 line = f"{now} {line}"
-                print(line)
                 _generated_lines.append(line)
                 _dlt_example_user(line, count = 1)
                 it = None
@@ -76,36 +77,53 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                     if sleep_duration:
                         time.sleep(sleep_duration)
                 _counter = _counter + 1
+            for x in range(10):
+                now = datetime.datetime.now()
+                line = f"{now} {_test_end_indicator}"
+                _dlt_example_user(line, count = 10)
     _generator_thread = GeneratorThread(log_path, lines_count, custom_sleep)
     _generator_thread.start()
 
 def sleep_until_lines_in_file(path, count):
     while True:
-        f = open(path, "r")
-        lines = f.readlines()
-        if len(lines) >= count:
-            break
+        with open(path, "r") as f:
+            lines = f.readlines()
+            if len(lines) >= count:
+                break
 
 def test_log_with_timestamps():
     try:
-        global _generated_lines, _dlt_receive_path
+        global _generated_lines, _dlt_receive_path, _test_end_indicator
         log_path = utils.get_temp_filepath()
         log_path_1 = utils.get_temp_filepath()
-        print(f"Dlt -> {log_path_1}")
-        lines_count = 1060
+        print(f"DLT -> {log_path_1}")
+        lines_count = 2
         utils.touch(log_path)
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST log' > {log_path_1}", 500)
+        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", 500)
         #log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 > {log_path_1}", 500)
-        sleep_until_lines_in_file(log_path_1, 1000)
+        sleep_until_lines_in_file(log_path_1, lines_count)
         log_snapshot.stop()
+        print("_generated_lines")
+        print(_generated_lines)
+        lines = []
         with open(log_path_1, "r") as f:
-            rlines = f.readlines()
-            assert lines_count == len(rlines)
-            assert lines_count == len(_generated_lines)
-            for idx in range(len(rlines)):
-                assert rlines[idx] == _generated_lines[idx]
+            lines = f.readlines()
+        def expected(line, is_last):
+            print(f"Line: {line}")
+            global _generated_lines
+            for gline in _generated_lines:
+                if gline in line:
+                    return True
+                if _test_end_indicator in line:
+                    return True
+            print(f"False: {line}")
+            if is_last:
+                return True
+            return False
+        not_expected = [x for x in lines if not expected(x, lines.index(x) == len(lines) - 1)]
+        assert 0 == len(not_expected)
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
