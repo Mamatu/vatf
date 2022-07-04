@@ -1,3 +1,4 @@
+
 import logging
 from unittest import TestCase
 from unittest.mock import ANY, call, Mock, patch
@@ -7,7 +8,7 @@ from vatf.vatf_api import public_api
 import textwrap
 import sys
 
-from vatf.generator.tests import bar, bar_api
+from vatf.generator.uts import bar, bar_api
 
 class GenTestsTests(TestCase):
     def __init__(self, arg):
@@ -33,7 +34,7 @@ class GenTestsTests(TestCase):
     @patch("vatf.generator.gen_tests._create_run_sh_script")
     @patch("vatf.generator.gen_tests._create_header")
     @patch("vatf.generator.gen_tests.verify_call")
-    def test_create_test(self, verify_call, create_run_sh_script, create_header, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
+    def _create_test(self, verify_call, create_run_sh_script, create_header, os_proxy_copy, os_proxy_open_to_write, os_proxy_open_to_read, os_proxy_mkdir, os_proxy_write_to_file, is_registered, json_dump):
         with patch.object(sys, 'argv', ['', '', 'generator/tests/config.json']):
             is_registered.return_value = True
             create_run_sh_script = Mock()

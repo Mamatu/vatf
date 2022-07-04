@@ -17,7 +17,7 @@ from watchdog.events import FileSystemEventHandler
 
 from threading import Timer, RLock
 
-from vatf.utils import config, debug
+from vatf.utils import debug
 
 def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
     if shell_cmd:
@@ -29,10 +29,15 @@ def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
 
-def start_from_config(config_path, monitorFileLines = True):
+def start_from_config(monitorFileLines = True, config = None):
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")
+    if not config:
+        from vatf.utils import configs
+        config = configs.get()
+    elif isinstance(config, "str"):
+        config = Configs([config])
     session_path = mkdir.get_count_path("./logs/session")
     config = config.load(config_path, {"session_path": session_path})
     shell_cmd = config.get(config, "va_log.command")

@@ -8,9 +8,8 @@ import os
 
 import sys
 
-from vatf.api import log_snapshot, shell
-from vatf.utils import utils, config
-from vatf import vatf_init
+from vatf.executor import log_snapshot, shell
+from vatf.utils import utils
 
 _counter = None
 _generated_lines = []

@@ -11,29 +11,23 @@ class WaitTests(TestCase):
         TestCase.__init__(self, arg)
     def setUp(self):
         logging.getLogger().setLevel(logging.INFO)
-    @patch("vatf.vatf_api.is_registered")
-    @patch("vatf.generator.gen_tests.verify_call")
-    def test_sleep(self, verify_call, is_registered):
-        is_registered.return_value = True
-        wait.sleep(1)
-        verify_call.assert_has_calls([call("wait.sleep(1)")])
-    @patch("vatf.vatf_api.is_registered")
-    @patch("vatf.generator.gen_tests.verify_call")
-    def test_sleep_random_generator_stage(self, verify_call, is_registered):
-        is_registered.return_value = True
-        wait.sleep_random(1, 2, wait.RandomStage.GENERATOR)
-        expected1 = call('wait.sleep(1)')
-        expected2 = call('wait.sleep(2)')
-        self.assertTrue(verify_call.call_args_list == [expected1] or verify_call.call_args_list == [expected2])
-    @patch("vatf.vatf_api.is_registered")
-    @patch("vatf.generator.gen_tests.verify_call")
-    def test_sleep_random_executor_stage(self, verify_call, is_registered):
-        is_registered.return_value = True
-        wait.sleep_random(1, 2, wait.RandomStage.EXECUTOR)
-        verify_call.assert_has_calls([call("wait.sleep_random(1, 2)")])
-    @patch("vatf.vatf_api.is_registered")
-    @patch("vatf.generator.gen_tests.verify_call")
-    def test_wait_for_regex(self, verify_call, is_registered):
-        is_registered.return_value = True
-        wait.wait_for_regex(".*", "/tmp/tmp.log", timeout = 10, pause = 0.5)
-        verify_call.assert_has_calls([call("wait.wait_for_regex('.*', '/tmp/tmp.log', timeout = 10, pause = 0.5)")])
+    #@patch("vatf.vatf_api.is_registered")
+    #@patch("vatf.generator.gen_tests.verify_call")
+    #def test_sleep_random_generator_stage(self, verify_call, is_registered):
+    #    is_registered.return_value = True
+    #    wait.sleep_random(1, 2, wait.RandomStage.GENERATOR)
+    #    expected1 = call('wait.sleep(1)')
+    #    expected2 = call('wait.sleep(2)')
+    #    self.assertTrue(verify_call.call_args_list == [expected1] or verify_call.call_args_list == [expected2])
+    #@patch("vatf.vatf_api.is_registered")
+    #@patch("vatf.generator.gen_tests.verify_call")
+    #def test_sleep_random_executor_stage(self, verify_call, is_registered):
+    #    is_registered.return_value = True
+    #    wait.sleep_random(1, 2, wait.RandomStage.EXECUTOR)
+    #    verify_call.assert_has_calls([call("wait.sleep_random(1, 2)")])
+    #@patch("vatf.vatf_api.is_registered")
+    #@patch("vatf.generator.gen_tests.verify_call")
+    #def test_wait_for_regex(self, verify_call, is_registered):
+    #    is_registered.return_value = True
+    #    wait.wait_for_regex(".*", "/tmp/tmp.log", timeout = 10, pause = 0.5)
+    #    verify_call.assert_has_calls([call("wait.wait_for_regex('.*', '/tmp/tmp.log', timeout = 10, pause = 0.5)")])

@@ -34,9 +34,13 @@ def get_api_type():
     global _apiType
     return _apiType
 
-def get_api(module):
+def get_api(module, custom_package = None):
     global _package
-    import_path = f"{_package[get_api_type()]}.{module}"
+    import_path = None
+    if custom_package == None:
+        import_path = f"{_package[get_api_type()]}.{module}"
+    else:
+        import_path = f"{custom_package}.{module}"
     return _get_module(import_path)
 
 _generator_registered_api = {}

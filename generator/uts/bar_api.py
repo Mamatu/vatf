@@ -1,7 +1,7 @@
 from vatf import vatf_api
 
 def _get_api():
-    return vatf_api.get_api("bar")
+    return vatf_api.get_api("bar", custom_package = "vatf.generator.uts")
 
 def foo(a, b):
    return  _get_api().foo(a, b)

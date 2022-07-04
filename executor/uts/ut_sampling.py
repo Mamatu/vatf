@@ -15,8 +15,6 @@ from vatf.executor import mkdir, sampling
 def setUp():
     from vatf import vatf_api
     vatf_api.set_api_type(vatf_api.EXECUTOR)
-    from vatf.utils import config
-    config.reset()
 
 def test_get_creation_date_empty():
     p = os_proxy.create_file("tw")

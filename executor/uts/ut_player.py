@@ -8,7 +8,7 @@ import logging
 import textwrap
 import os
 
-from vatf.api import player, mkdir
+from vatf.executor import player, mkdir
 
 class PopenMock:
     def __init__(self):
@@ -23,7 +23,6 @@ class PlayTests(TestCase):
     def setUp(self):
         from vatf import vatf_api
         vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
-        from vatf.utils import config
         logging.getLogger().setLevel(logging.INFO)
     @patch("subprocess.Popen")
     def test_play_audio(self, subprocess_popen_mock):

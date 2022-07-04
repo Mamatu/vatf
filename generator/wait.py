@@ -1,7 +1,6 @@
 from random import random
 from random import randint
 from vatf.generator import gen_tests
-from vatf.utils import config
 
 from enum import Enum
 

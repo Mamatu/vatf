@@ -1,6 +1,6 @@
 import logging
 
-from vatf.utils import config
+from vatf.utils import configs
 from vatf.utils import os_proxy
 from vatf import vatf_api
 
@@ -44,8 +44,7 @@ def _process_configs(suite_path, test_name, config_pathes):
         config_pathes = []
     if isinstance(config_pathes, str):
         config_pathes = [config_pathes]
-    for config_path in config_pathes:
-        config.load(config_path)
+    cfgs = configs.Configs(config_pathes)
     for config_path in config_pathes:
         with os_proxy.open_to_read(config_path) as cfg:
             config_basename = os_proxy.basename(config_path)
@@ -152,7 +151,6 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None, co
     for line in code_lines:
         line = textwrap.dedent(line)
         _write_to_script(line, newLine = False)
-    config.reset()
     global _lines_to_replace
     _lines_to_replace = {}
 

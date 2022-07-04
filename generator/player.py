@@ -7,13 +7,13 @@ from enum import Enum
 import random
 
 from vatf.generator import gen_tests
-from vatf.utils import os_proxy, config
+from vatf.utils import os_proxy
 
 def _play_audio(path):
     gen_tests.create_call("player", "play_audio", path = path)
 
-def get_random_audio_files(count = 1):
-    dirs = config.get_pathes_to_audio_files_in_system()
+def get_random_audio_files(path, count = 1):
+    dirs = [path]
     audiofiles = []
     files = []
     for c in range(count):
