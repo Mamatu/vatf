@@ -16,7 +16,7 @@ def test_get():
     assert config.get(data, "attr1.attr3", False) == None
 
 def test_load_config_raw():
-    c = config.load_raw("utils/tests/config.json")
+    c = config.load_raw("utils/uts/config.json")
     assert c.assets.audio.path == "./assets/audio_files"
     assert c.va_log.path == "/tmp/session.log"
     assert c.va_log.command == "receive {ip}"
@@ -29,7 +29,7 @@ def test_load_config_raw():
     assert c.format[0].value ==  "172.0.0.1"
 
 def test_load_config():
-    c = config.load("utils/tests/config.json")
+    c = config.load("utils/uts/config.json")
     assert c.assets.audio.path == "./assets/audio_files"
     assert c.va_log.path == "/tmp/session.log"
     assert c.va_log.command == "receive 172.0.0.1"
@@ -44,7 +44,7 @@ def test_load_config():
     assert config.get(c, "va_log.date_regex1", False) == None
 
 def test_load_config_with_custom_format():
-    c = config.load("utils/tests/config_custom.json", {"session_name" : "session_1"})
+    c = config.load("utils/uts/config_custom.json", {"session_name" : "session_1"})
     assert c.assets.audio.path == "./assets/audio_files"
     assert c.va_log.path == "/session_1/session.log"
     assert c.va_log.command == "receive 172.0.0.1"
@@ -59,7 +59,7 @@ def test_load_config_with_custom_format():
     assert config.get(c, "va_log.date_regex1", False) == None
 
 def test_load_two_configs():
-    c = config.load(["utils/tests/config1.json", "utils/tests/config2.json"])
+    c = config.load(["utils/uts/config1.json", "utils/uts/config2.json"])
     assert c.assets.audio.path == "./assets/audio_files"
     assert c.va_log.path == "/tmp/session.log"
     assert c.va_log.command == "receive 172.0.0.1"

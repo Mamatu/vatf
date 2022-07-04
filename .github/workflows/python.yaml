@@ -17,4 +17,4 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install parallel libsndfile1 vlc dlt-tools python3-dlt && python -m pip install --upgrade pip && pip install pytest librosa psutil jsonschema matplotlib watchdog pydlt && git submodule update --init --recursive
       - name: Run tests
-        run: ./run_tests.sh
+        run: ./run_uts.sh
