@@ -3,7 +3,6 @@ import threading
 import logging
 
 from vatf.utils import utils
-from vatf.utils import config_loader
 
 class LoggerThread(threading.Thread):
     def __init__(self, now, inpath, outpath, config_path, delta = 0.5):

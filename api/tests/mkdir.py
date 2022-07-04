@@ -8,7 +8,7 @@ import logging
 import textwrap
 import os
 
-from vatf.executor import mkdir
+from vatf.api import mkdir
 
 class MkdirTests(TestCase):
     def __init__(self, arg):
@@ -17,7 +17,6 @@ class MkdirTests(TestCase):
     def setUp(self):
         from vatf.utils import config
         logging.getLogger().setLevel(logging.INFO)
-        config._reset()
     @patch("os.makedirs")
     @patch("os.listdir")
     def test_mkdir_with_counter(self, os_listdir_mock, os_makedirs_mock):

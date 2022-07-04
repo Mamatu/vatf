@@ -1,26 +1,14 @@
 {
   "assets" : {
     "audio" : {
-      "path":"/tmp/assets/audio_files",
-      "files":[
-      {
-        "name": "track1.wav",
-        "tags":[
-          "track1"
-        ]
-      },
-      {
-        "name":"track2.wav",
-        "tags":[
-          "track2"
-        ]
-      }]
+      "path":"./assets/audio_files"
     }
   },
   "va_log": {
     "path" : "/tmp/session.log",
+    "command" : "receive {ip}",
     "timedelta" : {
-      "hours" : 1
+      "hours" : -1
     },
     "date_format" : "%Y-%m-%d %H:%M:%S.%f",
     "date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
@@ -32,6 +20,5 @@
         "end" : "end_utterance"
       }
     ]
-  },
-  "" : {}
+  }
 }

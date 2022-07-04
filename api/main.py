@@ -2,7 +2,7 @@ import argparse
 import sys
 import logging
 
-parser = argparse.ArgumentParser(description='vatf_executor - to execute test')
+parser = argparse.ArgumentParser(description='vatf.api - to execute test')
 subparsers = parser.add_subparsers(help='sub-command help')
 parser_play = subparsers.add_parser('play', help='play help')
 parser_play.add_argument('--path', type=str, help='Path to audio file')

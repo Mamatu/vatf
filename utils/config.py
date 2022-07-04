@@ -1,102 +1,75 @@
-import abc
-import sys
-
 import logging
 
-from vatf.utils import config_loader, os_proxy
+import json
+import jsonschema
+from types import SimpleNamespace
 
-_cfg_loader = None
-_cfg_path = None
+from vatf.utils import os_proxy
 
-def _load_config():
-    global _cfg_loader, _cfg_path
-    if not _cfg_loader:
-        path = get_config_path()
-        if path:
-            _cfg_loader = config_loader.load(path)
+def _abs_path_to_schema():
+    import pathlib
+    path = pathlib.Path(__file__).parent.parent.resolve()
+    return os_proxy.join(path, "schemas/config.schema.json")
 
-def _reset():
-    global _cfg_loader, _cfg_path
-    _cfg_path = None
-    _cfg_loader = None
+def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
+    if isinstance(config_json_pathes, str):
+        config_json_pathes = [config_json_pathes]
+    data = None
+    array = []
+    for config_json_path in config_json_pathes:
+        with open(config_json_path) as f:
+            logging.debug(f"Reads {config_json_path}")
+            data = json.load(f)
+            if schema_json_path:
+                with open(schema_json_path) as schema:
+                    logging.debug(f"Validation {config_json_path} by use schema {schema.name}")
+                    jsonschema.validate(data, schema = json.load(schema))
+        with open(config_json_path) as f:
+            data = json.load(f, object_hook = lambda d: SimpleNamespace(**d))
+            array.append(data)
+    for item in array:
+        if data is None:
+            data = item.__dict__
+        else:
+            data.__dict__.update(item.__dict__)
+    return data
 
-def set_config_path(path):
-    global _cfg_path
-    _cfg_path = path
+def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
+    if isinstance(config_json_pathes, str):
+        config_json_pathes = [config_json_pathes]
+    data = load_raw(config_json_pathes, schema_json_path)
+    def process_format(obj, format_dict):
+        if hasattr(obj, "__dict__"):
+            for k,v in obj.__dict__.items():
+                process_format(v, format_dict)
+                if isinstance(v, str):
+                    v = v.format(**format_dict)
+                    setattr(obj, k, v)
+    def make_dict(data_format):
+        _dict = {}
+        for kv in data_format:
+            _dict[kv.key] = kv.value
+        return _dict
+    format_dict = {}
+    if hasattr(data, "format") and data.format:
+        format_dict = make_dict(data.format)
+    format_dict.update(custom_format)
+    process_format(data, format_dict)
+    return data
 
-def get_config_path():
-    global _cfg_path
-    config_path = _cfg_path
-    if not config_path and len(sys.argv) > 2:
-        config_path = sys.argv[2]
-    return config_path
-
-def get_pathes_to_audio_files_in_system():
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_pathes_audio_files()
-    return []
-
-def get_path_to_generated_suite():
-    return sys.argv[1]
-
-def get_path_to_generated_test():
-    from vatf.generator import gen_tests
-    test_name = gen_tests.get_test_name()
-    if test_name == None:
-        raise Exception("None test is processed")
-    return os_proxy.join(get_path_to_generated_suite(), test_name)
-
-def get_relative_path_to_audio_files_in_test():
-    return "assets/audio_files"
-
-def get_absolute_path_to_audio_files_in_test():
-    test_path = get_path_to_generated_test()
-    audio_files_path = get_relative_path_to_audio_files_in_test()
-    return os_proxy.join(test_path, audio_files_path)
-
-def get_vatf_branch_to_clone():
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_vatf_branch_to_clone()
-    return ""
-
-def get_log_path(session_path):
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        log_path = _cfg_loader.get_log_path()
-        log_path.format(session_path = session_path)
-        return log_path
-    return ""
-
-def convert_to_log_zone(dt):
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.convert_to_log_zone(dt)
-    return dt
-
-def convert_to_system_zone(dt):
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.convert_to_system_zone(dt)
-    return dt
-
-def get_shell_command():
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        shell_command = _cfg_loader.get_shell_command()
-        return shell_command
-    return None
-
-def get_shell_command_restart_timeout():
-    _load_config()
-    global _cfg_loader
-    if _cfg_loader:
-        return _cfg_loader.get_shell_command_restart_timeout()
-    return None
+def get(data, arg, raiseIfNotFound = True):
+    if isinstance(arg, str):
+        arg = arg.split(".")
+    attr = None
+    def process_attr(data):
+        front = arg.pop(0)
+        if front:
+            attr = getattr(data, front, None)
+        if len(arg) == 0:
+            return attr
+        else:
+            return process_attr(attr)
+    output = process_attr(data)
+    if output is None and raiseIfNotFound:
+        raise AttributeError(f"Attr {arg} not found in config")
+    return output
