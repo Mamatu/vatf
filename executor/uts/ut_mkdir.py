@@ -15,6 +15,8 @@ class MkdirTests(TestCase):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
     def setUp(self):
+        from vatf import vatf_api
+        vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
         from vatf.utils import config
         logging.getLogger().setLevel(logging.INFO)
     @patch("os.makedirs")

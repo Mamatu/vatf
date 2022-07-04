@@ -1,27 +1,11 @@
 {
   "assets" : {
     "audio" : {
-      "path":"./assets/audio_files",
-      "files":[
-      {
-        "name": "track1.wav",
-        "tags":[
-          "track1"
-        ]
-      },
-      {
-        "name":"track2.wav",
-        "tags":[
-          "track2"
-        ]
-      }]
+      "path":"./assets/audio_files"
     }
   },
-  "va_log": {
-    "command" : {
-      "shell" : "log_receiver from {ip}",
-      "restart_timeout" : 1000
-    },
+  "log": {
+    "command" : "",
     "path" : "/tmp/session.log",
     "timedelta" : {
       "hours" : -1

@@ -1,1 +1,2 @@
-from vatf.api import audio, mkdir, player, shell, wait, log_snapshot
+from vatf.generator import player, wait
+from vatf.executor import audio, mkdir, player, shell, wait, log_snapshot

@@ -1,7 +1,7 @@
 {
   "assets" : {
     "audio" : {
-      "path":"./assets/audio_files",
+      "path":"/tmp/assets/audio_files",
       "files":[
       {
         "name": "track1.wav",
@@ -18,21 +18,20 @@
     }
   },
   "va_log": {
-    "command" : {
-      "shell" : "log_receiver from {ip}",
-      "restart_timeout" : 1000
-    },
     "path" : "/tmp/session.log",
     "timedelta" : {
-      "hours" : -1
+      "hours" : 1
     },
     "date_format" : "%Y-%m-%d %H:%M:%S.%f",
     "date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
   },
-  "format" : [
-    {
-      "key" : "ip",
-      "value" : "192.168.0.0"
-    }
-  ]
+  "utterance_from_va" : {
+    "regexes" : [
+      {
+        "begin" : "start_utterance",
+        "end" : "end_utterance"
+      }
+    ]
+  },
+  "" : {}
 }

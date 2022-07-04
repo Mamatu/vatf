@@ -10,6 +10,7 @@ import sys
 
 from vatf.api import log_snapshot, shell
 from vatf.utils import utils, config
+from vatf import vatf_init
 
 _counter = None
 _generated_lines = []
@@ -33,6 +34,8 @@ def _dlt_example_user(payload, log_level = 2, count = 1):
 from vatf.utils import debug
 
 def setup_module():
+    from vatf import vatf_api
+    vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
     global _dlt_daemon_path
     global _dlt_daemon
     if not _dlt_daemon is None:
@@ -102,23 +105,18 @@ def test_log_with_timestamps():
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
         log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", 500)
-        #log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 > {log_path_1}", 500)
         sleep_until_lines_in_file(log_path_1, lines_count)
         log_snapshot.stop()
-        print("_generated_lines")
-        print(_generated_lines)
         lines = []
         with open(log_path_1, "r") as f:
             lines = f.readlines()
         def expected(line, is_last):
-            print(f"Line: {line}")
             global _generated_lines
             for gline in _generated_lines:
                 if gline in line:
                     return True
                 if _test_end_indicator in line:
                     return True
-            print(f"False: {line}")
             if is_last:
                 return True
             return False
@@ -127,24 +125,3 @@ def test_log_with_timestamps():
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
-#def test_log_with_timestamps_timeout():
-#    global _generated_lines
-#    log_path = utils.get_temp_filepath()
-#    log_path_1 = utils.get_temp_filepath()
-#    logging.info(f"{log_path} -> {log_path_1}")
-#    lines_count = 1113
-#    utils.touch(log_path)
-#    utils.touch(log_path_1)
-#    t = _log_generator_thread(log_path_1, lines_count, {500: 2})
-#    t.start()
-#    log_snapshot.start(log_path_1, f"while true; do sleep 0.01; sync; done", 500)
-#    t.join()
-#    time.sleep(5)
-#    log_snapshot.stop()
-#    #_restart_command.assert_any_call()
-#    #with open(log_path_1, "r") as f:
-#    #    rlines = f.readlines()
-#    #    self.assertEqual(lines_count, len(rlines))
-#    #    self.assertEqual(lines_count, len(_generated_lines))
-#    #    for idx in range(len(rlines)):
-#    #        self.assertEqual(rlines[idx], _generated_lines[idx])
