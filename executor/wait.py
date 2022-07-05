@@ -1,15 +1,18 @@
+from vatf import vatf_api
 import time as t
 import logging
 from random import random
 from random import randint
 
-from vatf.utils import utils, os_proxy, config
+from vatf.utils import utils, os_proxy, config_loader
 
 import datetime
 
+@vatf_api.public_api("wait")
 def sleep(duration):
     t.sleep(duration)
 
+@vatf_api.public_api("wait")
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 

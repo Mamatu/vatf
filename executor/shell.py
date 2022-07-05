@@ -1,3 +1,4 @@
+from vatf import vatf_api
 from vatf.utils import utils
 import logging
 import os
@@ -8,9 +9,9 @@ import atexit
 from threading import RLock
 from vatf.utils.thread import lock
 
-
 _popens = []
 
+@vatf_api.public_api("shell")
 def fg(command):
     os.system(command)
 
@@ -40,6 +41,7 @@ def _unregister_process(process):
     global _active_processes
     _active_processes.remove(process)
 
+@vatf_api.public_api("shell")
 def kill(process):
     if _check_and_unregister(process):
         parent = psutil.Process(process.pid)
@@ -50,6 +52,7 @@ def kill(process):
         logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
 
+@vatf_api.public_api("shell")
 def bg(command, shell = True):
     process = subprocess.Popen(command, shell = shell)
     logging.debug(f"Run process {process.pid} in background for command {command}")

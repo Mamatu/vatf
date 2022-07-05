@@ -1,3 +1,4 @@
+from vatf import vatf_api
 import subprocess
 import logging
 
@@ -13,6 +14,7 @@ def cvlc_play_audio(path):
     proc = subprocess.Popen(command, shell=True)
     proc.wait()
 
+@vatf_api.public_api("player")
 def play_audio(*args, **kwargs):
     if "path" in kwargs:
         cvlc_play_audio(kwargs["path"])

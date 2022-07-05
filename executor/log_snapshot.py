@@ -1,6 +1,7 @@
 """
 Takes the snapshot of log between start and stop method.
 """
+from vatf import vatf_api
 import logging
 
 import datetime
@@ -20,6 +21,7 @@ from threading import Timer, RLock
 from vatf.utils import debug
 from vatf.utils import config_handler
 
+@vatf_api.public_api("log_snapshot")
 def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
     if shell_cmd:
         _setup_command(shell_cmd, None, log_path)
@@ -30,6 +32,7 @@ def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
 
+@vatf_api.public_api("log_snapshot")
 def start_from_config(monitorFileLines = True, **kwargs):
     global _ctx
     if _ctx:
