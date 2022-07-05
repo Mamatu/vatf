@@ -2,16 +2,18 @@ _configs = None
 
 class _Configs:
     def __init__(self, configs = None):
+        if isinstance(configs, str):
+            configs = [configs]
         self.configs = []
         if configs:
             for config in configs:
                 self.load(config)
     def load(self, path):
         from vatf.utils import config_loader
-        self.configs.appends(config_loader.load(path))
+        self.configs.append(config_loader.load(path))
     def get(self, var, raiseIfNotFound = True):
         from vatf.utils import config_loader
-        for config in configs:
+        for config in self.configs:
             attr = config_loader.get(config, var, False)
             if attr:
                 return attr
@@ -20,8 +22,13 @@ class _Configs:
         return None
 
 def init_configs(config_pathes):
+    global _configs
     _configs = _Configs(config_pathes)
     return _configs
+
+def reset_configs():
+    global _configs
+    _configs = None
 
 def get():
     return _configs
@@ -58,15 +65,18 @@ def handle(config_attrs, **kwargs):
     is_config = "config" in kwargs.keys()
     is_config_attrs = "config_attrs" in kwargs.keys()
     true_list = [is_config_path, is_config, is_config_attrs]
-    true_list = true_list + is_config_attrs
     true_list = [x for x in true_list if x]
     if len(true_list) > 1:
         raise Exception("kwargs can contain only one: config, config_path or config attrs")
     _dict = {}
-    if len(true_list) == 0:
-        return handle_global_config(config_attrs)
+    if is_config_attrs:
+        config_attrs = kwargs["config_path_attrs"]
+        return _handle_config_attrs(config_attrs, config_attrs)
+    if is_config_path:
+        config_path = kwargs["config_path"]
+        return _handle_config_path(config_attrs, config_path)
     if is_config:
         config = kwargs["config"]
-        return handle_config(config_attrs, config)
-
-
+        return _handle_config(config_attrs, config)
+    if len(true_list) == 0:
+        return _handle_global_config(config_attrs)

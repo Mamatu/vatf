@@ -70,3 +70,13 @@ def test_load_two_configs():
     assert c.utterance_from_va.regexes[0].end == "end_utterance"
     assert c.format[0].key ==  "ip"
     assert c.format[0].value ==  "172.0.0.1"
+
+def test_handler_global_config():
+    from vatf.utils import config_handler
+    config_handler.init_configs("utils/uts/config.json")
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo()
