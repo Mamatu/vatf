@@ -124,3 +124,35 @@ def test_log_with_timestamps():
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
+
+def test_log_with_timestamps_config():
+    try:
+        global _generated_lines, _dlt_receive_path, _test_end_indicator
+        log_path = utils.get_temp_filepath()
+        log_path_1 = utils.get_temp_filepath()
+        print(f"DLT -> {log_path_1}")
+        lines_count = 2
+        utils.touch(log_path)
+        utils.touch(log_path_1)
+        _log_generator_run(log_path, lines_count)
+        log_snapshot.start_from_config(log_path_1, config_attrs = {"va_log.command" : f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", "va_log.path" : log_path_1})
+        sleep_until_lines_in_file(log_path_1, lines_count)
+        log_snapshot.stop()
+        lines = []
+        with open(log_path_1, "r") as f:
+            lines = f.readlines()
+        def expected(line, is_last):
+            global _generated_lines
+            for gline in _generated_lines:
+                if gline in line:
+                    return True
+                if _test_end_indicator in line:
+                    return True
+            if is_last:
+                return True
+            return False
+        not_expected = [x for x in lines if not expected(x, lines.index(x) == len(lines) - 1)]
+        assert 0 == len(not_expected)
+    except Exception as ex:
+        print(ex, file=sys.stderr)
+        assert False
