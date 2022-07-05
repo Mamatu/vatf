@@ -76,6 +76,7 @@ def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to
     format_dict = {}
     if hasattr(c.data, "format") and c.data.format:
         format_dict = make_dict(c.data.format)
-    format_dict.update(custom_format)
+    if custom_format:
+        format_dict.update(custom_format)
     process_format(c.data, format_dict)
     return c

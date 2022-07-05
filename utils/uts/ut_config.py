@@ -78,7 +78,7 @@ def test_load_two_configs():
 def _handler_global_config():
     config_handler.init_configs("utils/uts/config.json")
     def foo(**kwargs):
-        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"session_name" : "tmp"}, **kwargs)
         assert output["assets.audio.path"] == "./assets/audio_files"
         assert output["va_log.command"] == "receive 172.0.0.1"
         assert output["va_log.path"] == "/tmp/session.log"
@@ -91,3 +91,82 @@ def test_handler_config_path():
         assert output["va_log.command"] == "receive 172.0.0.1"
         assert output["va_log.path"] == "/tmp/session.log"
     foo(config_path = "utils/uts/config.json")
+
+def test_handler_config():
+    config = config_loader.load("utils/uts/config.json")
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config = config)
+
+def test_handler_config_attrs():
+    config_attrs = {"assets.audio.path" : "./assets/audio_files", "va_log.command" : "receive 172.0.0.1", "va_log.path" : "/tmp/session.log"}
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config_attrs = config_attrs)
+
+def _handler_global_config_custom():
+    config_handler.init_configs("utils/uts/config_custom.json")
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo()
+
+def test_handler_config_path_custom():
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"session_name" : "tmp"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config_path = "utils/uts/config_custom.json")
+
+def test_handler_config_custom():
+    config = config_loader.load("utils/uts/config_custom.json", custom_format = {"session_name" : "tmp"})
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"session_name" : "tmp"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config = config)
+
+def _handler_global_config_custom_format():
+    config_handler.init_configs("utils/uts/config_custom_without_format.json")
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"ip" : "172.0.0.1"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo()
+
+def test_handler_config_path_custom_format():
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config_path = "utils/uts/config_custom_without_format.json")
+
+def test_handler_config_custom_format():
+    config = config_loader.load("utils/uts/config_custom_without_format.json", custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"})
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config = config)
+
+def test_handler_config_attrs_custom_format():
+    config_attrs = {"assets.audio.path" : "./assets/audio_files", "va_log.command" : "receive {ip}", "va_log.path" : "/tmp/session.log"}
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"ip" : "172.0.0.1"}, **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo(config_attrs = config_attrs)
