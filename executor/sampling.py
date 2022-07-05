@@ -5,7 +5,6 @@ import re
 
 from vatf.utils import ac
 from vatf.utils import utils
-from vatf.utils import config
 
 import vatf.utils
 

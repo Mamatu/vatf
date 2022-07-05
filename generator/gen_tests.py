@@ -1,6 +1,6 @@
 import logging
 
-from vatf.utils import configs
+from vatf.utils import config_handler
 from vatf.utils import os_proxy
 from vatf import vatf_api
 
@@ -44,7 +44,7 @@ def _process_configs(suite_path, test_name, config_pathes):
         config_pathes = []
     if isinstance(config_pathes, str):
         config_pathes = [config_pathes]
-    cfgs = configs.Configs(config_pathes)
+    config_handler.init_configs(config_pathes)
     for config_path in config_pathes:
         with os_proxy.open_to_read(config_path) as cfg:
             config_basename = os_proxy.basename(config_path)

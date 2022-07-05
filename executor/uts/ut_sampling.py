@@ -12,10 +12,6 @@ import os
 from vatf.utils import utils, os_proxy
 from vatf.executor import mkdir, sampling
 
-def setUp():
-    from vatf import vatf_api
-    vatf_api.set_api_type(vatf_api.EXECUTOR)
-
 def test_get_creation_date_empty():
     p = os_proxy.create_file("tw")
     expectedDate = utils.get_modification_date(p)
