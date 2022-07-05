@@ -79,7 +79,7 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                     if sleep_duration:
                         time.sleep(sleep_duration)
                 _counter = _counter + 1
-            for x in range(1):
+            for x in range(10):
                 now = datetime.datetime.now()
                 line = f"{now} {_test_end_indicator}"
                 _dlt_example_user(line, count = 100)
