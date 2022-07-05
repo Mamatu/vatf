@@ -70,8 +70,8 @@ def handle(config_attrs, **kwargs):
         raise Exception("kwargs can contain only one: config, config_path or config attrs")
     _dict = {}
     if is_config_attrs:
-        config_attrs = kwargs["config_path_attrs"]
-        return _handle_config_attrs(config_attrs, config_attrs)
+        kw_config_attrs = kwargs["config_attrs"]
+        return _handle_config_attrs(config_attrs, kw_config_attrs)
     if is_config_path:
         config_path = kwargs["config_path"]
         return _handle_config_path(config_attrs, config_path)

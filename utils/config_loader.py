@@ -11,6 +11,29 @@ def _abs_path_to_schema():
     path = pathlib.Path(__file__).parent.parent.resolve()
     return os_proxy.join(path, "schemas/config.schema.json")
 
+def get_attr(data, attr, raiseIfNotFound = True):
+    if isinstance(attr, str):
+        attr = attr.split(".")
+    _attr = attr.copy()
+    def process_attr(data):
+        front = attr.pop(0)
+        if front:
+            value = getattr(data, front, None)
+        if len(attr) == 0:
+            return value
+        else:
+            return process_attr(value)
+    output = process_attr(data)
+    if output is None and raiseIfNotFound:
+        raise AttributeError(f"Attr {'.'.join(_attr)} not found in config")
+    return output
+
+class _Config:
+    def __init__(self, data):
+        self.data = data
+    def get(self, arg, raiseIfNotFound = True):
+        return get_attr(self.data, arg, raiseIfNotFound = raiseIfNotFound)
+
 def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
     if isinstance(config_json_pathes, str):
         config_json_pathes = [config_json_pathes]
@@ -32,12 +55,12 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
             data = item.__dict__
         else:
             data.__dict__.update(item.__dict__)
-    return data
+    return _Config(data)
 
 def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
     if isinstance(config_json_pathes, str):
         config_json_pathes = [config_json_pathes]
-    data = load_raw(config_json_pathes, schema_json_path)
+    c = load_raw(config_json_pathes, schema_json_path)
     def process_format(obj, format_dict):
         if hasattr(obj, "__dict__"):
             for k,v in obj.__dict__.items():
@@ -51,25 +74,8 @@ def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to
             _dict[kv.key] = kv.value
         return _dict
     format_dict = {}
-    if hasattr(data, "format") and data.format:
-        format_dict = make_dict(data.format)
+    if hasattr(c.data, "format") and c.data.format:
+        format_dict = make_dict(c.data.format)
     format_dict.update(custom_format)
-    process_format(data, format_dict)
-    return data
-
-def get(data, arg, raiseIfNotFound = True):
-    if isinstance(arg, str):
-        arg = arg.split(".")
-    attr = None
-    def process_attr(data):
-        front = arg.pop(0)
-        if front:
-            attr = getattr(data, front, None)
-        if len(arg) == 0:
-            return attr
-        else:
-            return process_attr(attr)
-    output = process_attr(data)
-    if output is None and raiseIfNotFound:
-        raise AttributeError(f"Attr {arg} not found in config")
-    return output
+    process_format(c.data, format_dict)
+    return c
