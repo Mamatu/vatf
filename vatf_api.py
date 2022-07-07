@@ -9,7 +9,7 @@ class API_TYPE(Enum):
     EXECUTOR = 1,
     GENERATOR = 2
 
-_apiType = API_TYPE.GENERATOR
+_apiType = API_TYPE.EXECUTOR
 _package = {API_TYPE.GENERATOR : "vatf.generator", API_TYPE.EXECUTOR : "vatf.executor"}
 _dynamic_modules = {}
 
