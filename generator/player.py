@@ -8,6 +8,7 @@ import random
 
 from vatf.generator import gen_tests
 from vatf.utils import os_proxy
+from vatf.utils import config_handler
 
 def _play_audio(path):
     gen_tests.create_call("player", "play_audio", path = path)
@@ -31,6 +32,8 @@ def get_random_audio_files(path, count = 1):
     return audiofiles
 
 def _get_all_file_pathes(pathes, audio_file):
+    if isinstance(pathes, str):
+        pathes = [pathes]
     audio_file_pathes = []
     for p in pathes:
         audio_file_path = os_proxy.join(p, audio_file)
@@ -38,8 +41,9 @@ def _get_all_file_pathes(pathes, audio_file):
             audio_file_pathes.append(audio_file_path)
     return audio_file_pathes
 
-def _get_audio_file_path(config, audio_file):
-    pathes = config.get_pathes_to_audio_files_in_system()
+def _get_audio_file_path(audio_file):
+    output = config_handler.handle(["assets.audio.path"])
+    pathes = output["assets.audio.path"]
     if len(pathes) == 0:
         raise Exception(f"Lack of audio files pathes in system")
     audio_file_pathes = _get_all_file_pathes(pathes, audio_file)
@@ -49,7 +53,7 @@ def _get_audio_file_path(config, audio_file):
 
 def play_audio(audiofile_id, find_in_audio_files_path = True):
     logging.debug(f"PlayAudio: {audiofile_id} {find_in_audio_files_path}")
-    audiofile_path = _get_audio_file_path(config, audiofile_id)
+    audiofile_path = _get_audio_file_path(audiofile_id)
     abs_path = config.get_absolute_path_to_audio_files_in_test()
     shutil.copyfile(audiofile_path, os_proxy.join(abs_path, os_proxy.basename(audiofile_path)))
     logging.debug(f"copy: {audiofile_path} -> {abs_path}")

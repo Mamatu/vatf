@@ -14,7 +14,7 @@ class _Configs:
     def get(self, var, raiseIfNotFound = True):
         from vatf.utils import config_loader
         for config in self.configs:
-            attr = config_loader.get(config, var, False)
+            attr = config.get(var, False)
             if attr:
                 return attr
         if raiseIfNotFound:
@@ -37,7 +37,7 @@ def _handle_global_config(config_vars, custom_format):
     global _configs
     if _configs is None:
         raise Exception("global config does not exist")
-    return handle_config(config_vars, _configs, custom_format)
+    return _handle_config(config_vars, _configs, custom_format)
 
 def _handle_config(config_vars, config, custom_format, callback = None):
     _dict = {}

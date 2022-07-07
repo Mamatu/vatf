@@ -66,7 +66,10 @@ def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to
             for k,v in obj.__dict__.items():
                 process_format(v, format_dict)
                 if isinstance(v, str):
-                    v = v.format(**format_dict)
+                    try:
+                        v = v.format(**format_dict)
+                    except KeyError:
+                        pass
                     setattr(obj, k, v)
     def make_dict(data_format):
         _dict = {}

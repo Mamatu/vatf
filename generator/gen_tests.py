@@ -125,13 +125,14 @@ def get_test_py_header(config_pathes = None):
     ]
     return header1 + header2 + header3
 
-def _create_header():
-    branch = config.get_vatf_branch_to_clone()
+def _create_header(configs):
+    output = config_handler.handle(["vatf.branch"], custom_format = {"session_path" : ""})
+    branch = output["vatf.branch"]
     if branch is not None and branch != "":
         branch = f"-b {branch}"
     else:
         branch = ""
-    for line in get_test_py_header():
+    for line in get_test_py_header(configs):
         _write_to_script(line.format(branch = branch))
 
 def create_test(suite_path, test_name, test, set_up = None, tear_down = None, configs = None):
@@ -143,7 +144,7 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None, co
     _create_run_sh_script(suite_path, test_name)
     _process_configs(suite_path, test_name, configs)
     global _test_py_file
-    _create_header()
+    _create_header(configs)
     code_lines = []
     if set_up: code_lines = execute(set_up, code_lines)
     code_lines = execute(test, code_lines)
@@ -154,6 +155,6 @@ def create_test(suite_path, test_name, test, set_up = None, tear_down = None, co
     global _lines_to_replace
     _lines_to_replace = {}
 
-def create_tests(suite_path, set_up = None, tear_down = None, **kwargs):
+def create_tests(suite_path, set_up = None, tear_down = None, configs = None, **kwargs):
     for k,v in kwargs.items():
-        create_test(suite_path, test_name = k, test = v, set_up = set_up, tear_down = tear_down)
+        create_test(suite_path, test_name = k, test = v, set_up = set_up, tear_down = tear_down, configs = configs)
