@@ -47,7 +47,10 @@ def kill(process):
         parent = psutil.Process(process.pid)
         children = parent.children(recursive=True)
         for child in children:
-            child.kill()
+            try:
+                child.kill()
+            except psutil.NoSuchProcess as nsp:
+                logging.warn(nsp)
         process.terminate()
         logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
