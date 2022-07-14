@@ -5,7 +5,7 @@ import logging
 from random import random
 from random import randint
 
-from vatf.utils import utils, os_proxy, config
+from vatf.utils import utils, os_proxy
 
 import datetime
 
