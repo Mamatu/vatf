@@ -5,3 +5,6 @@ def _get_api():
 
 def record_inputs_outputs():
     _get_api().record_inputs_outputs()
+
+def record_inputs_outputs_from_config(**kwargs):
+    _get_api().record_inputs_outputs_from_config(**kwargs)

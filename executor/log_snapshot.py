@@ -7,7 +7,7 @@ import logging
 import datetime
 import time
 
-from vatf.api import shell, mkdir
+from vatf.executor import shell, mkdir
 
 from vatf.utils import logger_thread
 from vatf.utils import utils, os_proxy
@@ -37,13 +37,12 @@ def start_from_config(monitorFileLines = True, **kwargs):
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")
-    session_path = mkdir.get_count_path("./logs/session")
     log_command_key = "va_log.command"
     log_path_key = "va_log.path"
-    output = config_handler.handle([log_command_key, log_path_key], {"session_path": session_path}, **kwargs)
+    output = config_handler.handle([log_command_key, log_path_key], **kwargs)
     shell_cmd = output[log_command_key]
     log_path = output[log_path_key]
-    mkdir.mkdir_with_counter("./logs/session")
+    mkdir.mkdir(os_proxy.dirname(log_path))
     start(log_path, shell_cmd)
 
 def stop():
@@ -143,7 +142,6 @@ def _start_observer(log_path, restart_timeout):
     observer.schedule(monitor_handler, path = log_path, recursive = False)
     observer.start()
 
-from vatf.utils import debug
 def _stop_observer():
     global _observer
     if _observer:

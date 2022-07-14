@@ -12,5 +12,8 @@ def get_count_path(path):
 def mkdir(path):
     _get_api().mkdir(path)
 
+def mkdir_with_date(path):
+    return _get_api().mkdir_with_date(path)
+
 def mkdir_with_counter(path):
-    _get_api().mkdir_with_counter(path)
+    return _get_api().mkdir_with_counter(path)

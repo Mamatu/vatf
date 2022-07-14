@@ -57,7 +57,18 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
             data.__dict__.update(item.__dict__)
     return _Config(data)
 
+def load_default_format(custom_format):
+    if custom_format is None:
+        custom_format = {}
+    default_format = {}
+    import datetime
+    date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    default_format["config_loading_time"] = date
+    custom_format.update(default_format)
+    return custom_format
+
 def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
+    custom_format = load_default_format(custom_format)
     if isinstance(config_json_pathes, str):
         config_json_pathes = [config_json_pathes]
     c = load_raw(config_json_pathes, schema_json_path)
