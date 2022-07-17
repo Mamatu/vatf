@@ -8,7 +8,7 @@ import os
 
 import sys
 
-from vatf.executor import log_snapshot, shell
+from vatf.executor import log_snapshot, shell, wait
 from vatf.utils import utils
 
 _counter = None
@@ -70,7 +70,7 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                 now = datetime.datetime.now()
                 line = f"{now} {line}"
                 _generated_lines.append(line)
-                _dlt_example_user(line, count = 1)
+                _dlt_example_user(line, count = 1000)
                 it = None
                 if self.stopped:
                     break
@@ -82,64 +82,26 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
             for x in range(3):
                 now = datetime.datetime.now()
                 line = f"{now} {_test_end_indicator}"
-                _dlt_example_user(line, count = 100)
+                _dlt_example_user(line, count = 50)
     _generator_thread = GeneratorThread(log_path, lines_count, custom_sleep)
     _generator_thread.start()
 
-def sleep_until_lines_in_file(path, count):
-    while True:
-        with open(path, "r") as f:
-            lines = f.readlines()
-            if len(lines) >= count:
-                break
-
-def test_log_with_timestamps():
+def test_wait_for_regex():
     try:
         global _generated_lines, _dlt_receive_path, _test_end_indicator
         log_path = utils.get_temp_filepath()
-        log_path_1 = utils.get_temp_filepath()
-        print(f"DLT -> {log_path_1}")
-        lines_count = 2
+        print(f"DLT -> {log_path}")
+        lines_count = 100
         utils.touch(log_path)
-        utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", 500)
-        sleep_until_lines_in_file(log_path_1, lines_count)
+        from functools import partial
+        command = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
+        command1 = str(_dlt_receive_path) + " -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
+        log_snapshot.start(log_path, command)
+        assert True == wait.wait_for_regex("line10", config_attrs = {"wait_for_regex.command" : command1})
         log_snapshot.stop()
         lines = []
-        with open(log_path_1, "r") as f:
-            lines = f.readlines()
-        def expected(line, is_last):
-            global _generated_lines
-            for gline in _generated_lines:
-                if gline in line:
-                    return True
-                if _test_end_indicator in line:
-                    return True
-            if is_last:
-                return True
-            return False
-        not_expected = [x for x in lines if not expected(x, lines.index(x) == len(lines) - 1)]
-        assert 0 == len(not_expected)
-    except Exception as ex:
-        print(ex, file=sys.stderr)
-        assert False
-
-def test_log_with_timestamps_config():
-    try:
-        global _generated_lines, _dlt_receive_path, _test_end_indicator
-        log_path = utils.get_temp_filepath()
-        log_path_1 = utils.get_temp_filepath()
-        print(f"DLT -> {log_path_1}")
-        lines_count = 2
-        utils.touch(log_path)
-        utils.touch(log_path_1)
-        _log_generator_run(log_path, lines_count)
-        log_snapshot.start_from_config(log_path_1, config_attrs = {"va_log.command" : f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", "va_log.path" : log_path_1})
-        sleep_until_lines_in_file(log_path_1, lines_count)
-        log_snapshot.stop()
-        lines = []
-        with open(log_path_1, "r") as f:
+        with open(log_path, "r") as f:
             lines = f.readlines()
         def expected(line, is_last):
             global _generated_lines

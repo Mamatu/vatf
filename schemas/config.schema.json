@@ -113,6 +113,12 @@
             "description" : "path to audio DIRECTORY"
         }
     },
+    "wait_for_regex" : {
+        "command" : {
+            "type" : "string",
+            "description" : "command to collect log for waiting"
+        }
+    },
     "utterance_to_va" : {
       "type" : "object",
       "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",

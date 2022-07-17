@@ -22,14 +22,12 @@ from vatf.utils import debug
 from vatf.utils import config_handler
 
 @vatf_api.public_api("log_snapshot")
-def start(log_path, shell_cmd, monitorFileLines = True, restart_timeout = None):
+def start(log_path, shell_cmd, monitorFileLines = True):
     print(f"{start.__name__}: {utils.name_and_args()}")
     if shell_cmd:
         _setup_command(shell_cmd, None, log_path)
         _start_command()
         _start_timer()
-        if restart_timeout:
-            _start_observer(log_path, restart_timeout)
     else:
         raise Exception("Only variant with shell_cmd is currently supported")
 

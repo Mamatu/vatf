@@ -9,5 +9,5 @@ def sleep(t):
 def sleep_random(t1, t2):
     _get_api().sleep_random(t1, t2)
 
-def wait_for_regex(regex, log_path, timeout, pause):
-    _get_api().wait_for_regex(regex, log_path, timeout, pause)
+def wait_for_regex(regex, timeout, pause):
+    return _get_api().wait_for_regex(regex, timeout, pause)
