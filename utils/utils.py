@@ -109,16 +109,17 @@ class GrepEntry:
         out = line.split(':', 1)
         return GrepEntry(out[0], out[1], line_offset)
 
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
+def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, onlyMatch = False):
     if fromLine < 1:
         raise Exception(f"Invalid fromLine value {fromLine}")
     if maxCount < -1:
         raise Exception(f"Invalid value of maxCount {maxCount}. It should be > -1")
     lineNumber = True #hardcode
     def makeArgs(lineNumber, maxCount):
-        n_arg = "-n" if lineNumber else ""
+        o_arg = " -o" if onlyMatch else ""
+        n_arg = " -n" if lineNumber else ""
         m_arg = " -m {maxCount}" if maxCount > -1 else ""
-        return f"{n_arg}{m_arg} -a"
+        return f"{o_arg}{n_arg}{m_arg} -a"
     args = makeArgs(lineNumber, maxCount)
     command = f"grep {args} \"{regex}\""
     if fromLine > 1:

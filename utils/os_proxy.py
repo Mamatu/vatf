@@ -14,7 +14,12 @@ def exists(path):
 
 def remove(path):
     if os.path.exists(path):
-        shutil.rmtree(path)
+        if os.path.isfile(path):
+            os.remove(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            raise Exception(f"Path {path} is not directory or file")
 
 def copy(src, dst):
     shutil.copytree(src, dst, dirs_exist_ok=True)

@@ -70,7 +70,7 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                 now = datetime.datetime.now()
                 line = f"{now} {line}"
                 _generated_lines.append(line)
-                _dlt_example_user(line, count = 1000)
+                _dlt_example_user(line, count = 100)
                 it = None
                 if self.stopped:
                     break
@@ -79,10 +79,6 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
                     if sleep_duration:
                         time.sleep(sleep_duration)
                 _counter = _counter + 1
-            for x in range(3):
-                now = datetime.datetime.now()
-                line = f"{now} {_test_end_indicator}"
-                _dlt_example_user(line, count = 50)
     _generator_thread = GeneratorThread(log_path, lines_count, custom_sleep)
     _generator_thread.start()
 
@@ -91,14 +87,14 @@ def test_wait_for_regex():
         global _generated_lines, _dlt_receive_path, _test_end_indicator
         log_path = utils.get_temp_filepath()
         print(f"DLT -> {log_path}")
-        lines_count = 100
+        lines_count = 10
         utils.touch(log_path)
         _log_generator_run(log_path, lines_count)
         from functools import partial
         command = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
         command1 = str(_dlt_receive_path) + " -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
         log_snapshot.start(log_path, command)
-        assert True == wait.wait_for_regex("line10", config_attrs = {"wait_for_regex.command" : command1})
+        assert True == wait.wait_for_regex("line2", config_attrs = {"wait_for_regex.command" : command1})
         log_snapshot.stop()
         lines = []
         with open(log_path, "r") as f:

@@ -12,4 +12,4 @@
   generator/uts/ut_gen_tests.py \
   generator/uts/ut_player.py \
   generator/uts/ut_wait.py && \
-./python.sh -m pytest executor/uts/ut_shell.py executor/uts/ut_sampling.py utils/uts/ut_config.py executor/uts/ut_log_snapshot_dlt.py executor/uts/ut_wait_dlt.py
+./python.sh -m pytest executor/uts/ut_shell.py executor/uts/ut_sampling.py utils/uts/ut_config.py executor/uts/ut_search.py executor/uts/ut_log_snapshot_dlt.py executor/uts/ut_wait_dlt.py

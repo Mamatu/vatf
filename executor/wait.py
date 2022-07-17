@@ -40,4 +40,4 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
                 return False
     finally:
         log_snapshot.stop()
-        #os_proxy.remove_file(temp_filepath)
+        os_proxy.remove_file(temp_filepath)
