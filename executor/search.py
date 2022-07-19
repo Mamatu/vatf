@@ -10,8 +10,13 @@ from vatf.utils import utils, os_proxy
 import datetime
 
 @vatf_api.public_api("search")
-def find(filepath, regex, onlyMatch = False):
-    return utils.grep(filepath, regex, onlyMatch = onlyMatch)
+def find(filepath, regex, only_match = False):
+    return utils.grep(filepath, regex, onlyMatch = only_match)
+
+@vatf_api.public_api("search")
+def contain(filepath, regex):
+    outcome = find(filepath, regex)
+    return len(outcome) > 0
 
 @vatf_api.public_api("search")
 def find_in_line(filepath, grep_regex, match_regex):
