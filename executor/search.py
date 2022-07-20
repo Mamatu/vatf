@@ -14,7 +14,7 @@ def find(filepath, regex, only_match = False):
     return utils.grep(filepath, regex, onlyMatch = only_match)
 
 @vatf_api.public_api("search")
-def contain(filepath, regex):
+def contains(filepath, regex):
     outcome = find(filepath, regex)
     return len(outcome) > 0
 

@@ -67,7 +67,7 @@ def test_search_find_regex_only_match():
     assert output[2][1] == "line7"
     os_proxy.remove(path)
 
-def test_search_contain():
+def test_search_contains():
     text = [
     "2022-01-29 20:54:55.567 line1\n",
     "2022-01-29 20:54:55.567 line2\n",
@@ -78,7 +78,7 @@ def test_search_contain():
     "2022-01-29 20:54:56.568 line7\n"
     ]
     path = os_proxy.create_file("w", data = "".join(text))
-    assert False == search.contain(path, "line8")
-    assert True == search.contain(path, "line7")
-    assert False == search.contain(path, "line0")
+    assert False == search.contains(path, "line8")
+    assert True == search.contains(path, "line7")
+    assert False == search.contains(path, "line0")
     os_proxy.remove(path)
