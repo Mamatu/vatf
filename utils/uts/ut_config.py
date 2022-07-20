@@ -170,3 +170,12 @@ def test_handler_config_attrs_custom_format():
         assert output["va_log.command"] == "receive 172.0.0.1"
         assert output["va_log.path"] == "/tmp/session.log"
     foo(config_attrs = config_attrs)
+
+def test_handler_2_configs():
+    config_handler.init_configs(["utils/uts/config_custom_without_format.json", "utils/uts/config_format.json"])
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "./assets/audio_files"
+        assert output["va_log.command"] == "receive 172.0.0.1"
+        assert output["va_log.path"] == "/tmp/session.log"
+    foo()

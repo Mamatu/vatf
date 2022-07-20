@@ -6,8 +6,7 @@ class _Configs:
             configs = [configs]
         self.configs = []
         if configs:
-            for config in configs:
-                self.load(config)
+            self.load(configs)
     def load(self, path):
         from vatf.utils import config_loader
         self.configs.append(config_loader.load(path))
