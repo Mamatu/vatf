@@ -1,0 +1,11 @@
+{
+  "va_log": {
+    "path" : "/tmp/tmp_search_test_config.log",
+    "timedelta" : {
+      "hours" : -1
+    },
+    "date_format" : "%Y-%m-%d %H:%M:%S.%f",
+    "date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+  }
+}
+
