@@ -5,7 +5,7 @@
     }
   },
   "va_log": {
-    "path" : "/tmp/session.log",
+    "path" : "/{session_name}/session.log",
     "command" : "receive {ip}",
     "timedelta" : {
       "hours" : -1
@@ -21,10 +21,8 @@
       }
     ]
   },
-  "format" : [
+  "format" :
     {
-      "key" : "ip",
-      "value" : "172.0.0.1"
+      "ip" : "172.0.0.1"
     } 
-  ]
 }

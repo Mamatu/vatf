@@ -170,20 +170,8 @@
       }
     },
     "format" : {
-      "type" : "array",
-      "description" : "expression to use format the config. To use expression use {} like in f-string https://peps.python.org/pep-0498",
-      "items" : {
-        "type" : "object",
-        "description" : "object which contains two fileds: key and value",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "string"
-          }
-        }
-      }
+      "type" : "object",
+      "description" : "expression to use format the config. To use expression use {} like in f-string https://peps.python.org/pep-0498. Object's properties are key and values"
     }
   }
 }
