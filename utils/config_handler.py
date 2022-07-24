@@ -53,10 +53,13 @@ def _handle_config_path(config_vars, path, custom_format):
     config = config_loader.load(path, custom_format = custom_format)
     return _handle_config(config_vars, config, custom_format = custom_format)
 
+class AttrDoesNotExist(Exception):
+    pass
+
 def _handle_config_attrs(config_vars, kw_config_vars, custom_format):
     def callback(k, v):
         if v is None:
-            raise Exception("Attr {k} is None")
+            raise AttrDoesNotExist("Attr {k} is None")
     return _handle_config(config_vars, kw_config_vars, custom_format = custom_format, callback = callback)
 
 def handle(config_vars, custom_format = None, **kwargs):
@@ -79,3 +82,10 @@ def handle(config_vars, custom_format = None, **kwargs):
         return _handle_config(config_vars, config, custom_format = custom_format)
     if len(true_list) == 0:
         return _handle_global_config(config_vars, custom_format = custom_format)
+
+def contains(config_var):
+    try:
+        output = handle([config_var])
+        return config_var in output
+    except AttrDoesNotExist:
+        return False

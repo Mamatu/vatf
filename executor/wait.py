@@ -17,8 +17,16 @@ def sleep(duration):
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 
-@vatf_api.public_api("wait")
-def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
+def _get_strategy(**kwargs):
+    is_command = config_handler.contains("wait_for_regex.command")
+    is_path = config_handler.contains("wait_for_regex.path")
+    if is_command and is_path:
+        raise Exception("Cannot be definded path and command simultaneously")
+    if is_command: return "custom_command"
+    if is_path: return "custom_path"
+    raise Exception("Not command, not path defined")
+
+def wait_for_regex_custom_command(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.api.log_snapshot as log_snapshot
     temp_filepath = utils.get_temp_filepath()
     print(f"wait_for_regex -> {temp_filepath}")
@@ -42,3 +50,11 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     finally:
         log_snapshot.stop()
         os_proxy.remove_file(temp_filepath)
+
+@vatf_api.public_api("wait")
+def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
+    now = datetime.datetime.now()
+    strategy = _get_strategy(**kwargs)
+    if strategy == "custom_command":
+        return wait_for_regex_custom_command(regex, timeout, pause, **kwargs)
+    if strategy == "custom_path":
