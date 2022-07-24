@@ -1,7 +1,7 @@
 {
   "assets" : {
     "audio" : {
-      "path":"./assets/audio_files"
+      "path":"./assets/{audio_file}"
     }
   },
   "va_log": {
@@ -21,10 +21,8 @@
       }
     ]
   },
-  "format" : [
+  "format" : 
     {
-      "key" : "ip",
-      "value" : "172.0.0.1"
-    } 
-  ]
+      "audio_file" : "audiofile.mp3"
+    }
 }

@@ -1,11 +1,11 @@
 {
   "assets" : {
     "audio" : {
-      "path":"./assets/{audio_file}"
+      "path":"./assets/audio_files"
     }
   },
   "va_log": {
-    "path" : "/{session_name}/session.log",
+    "path" : "/tmp/session.log",
     "command" : "receive {ip}",
     "timedelta" : {
       "hours" : -1
@@ -21,10 +21,8 @@
       }
     ]
   },
-  "format" : [
+  "format" :
     {
-      "key" : "audio_file",
-      "value" : "audiofile.mp3"
+      "ip" : "172.0.0.1"
     }
-  ]
 }
