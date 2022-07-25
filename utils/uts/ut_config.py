@@ -270,3 +270,10 @@ def test_iterate_dict_update_deeply_deep(mocker):
     dict_2 = {"dict1" : {"key1" : {"key12" : "value12"}}}
     d = config_loader._update_dict_deeply(dict_1, dict_2)
     assert d == {"dict1" : {"key1" : {"key11" : "value11", "key12" : "value12"}}}
+
+def test_load_config_with_formats(mocker):
+    config_handler.init_configs(["utils/uts/data/ut_config/config_ff.json", "utils/uts/data/ut_config/format1.json", "utils/uts/data/ut_config/format2.json"])
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path"], **kwargs)
+        assert output["assets.audio.path"] == "/value1/value2"
+    foo()
