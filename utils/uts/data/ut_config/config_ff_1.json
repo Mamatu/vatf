@@ -5,7 +5,7 @@
     }
   },
   "va_log": {
-    "path" : "/{key1}/session.log",
+    "path" : "/{config_loading_time}/{key1}/session.log",
     "command" : "receive {key2}",
     "timedelta" : {
       "hours" : -1

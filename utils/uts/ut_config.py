@@ -271,17 +271,31 @@ def test_iterate_dict_update_deeply_deep(mocker):
     d = config_loader._update_dict_deeply(dict_1, dict_2)
     assert d == {"dict1" : {"key1" : {"key11" : "value11", "key12" : "value12"}}}
 
-def test_load_config_with_formats(mocker):
+def test_load_config_with_formats_1(mocker):
     config_handler.init_configs(["utils/uts/data/ut_config/config_ff.json", "utils/uts/data/ut_config/format1.json", "utils/uts/data/ut_config/format2.json"])
     def foo(**kwargs):
         output = config_handler.handle(["assets.audio.path"], **kwargs)
         assert output["assets.audio.path"] == "/value1/value2"
     foo()
 
-def test_load_config_with_formats(mocker):
-    config_handler.init_configs(["utils/uts/data/ut_config/config_ff_1.json", "utils/uts/data/ut_config/format1.json", "utils/uts/data/ut_config/format2.json"])
-    def foo(**kwargs):
-        output = config_handler.handle(["assets.audio.path", "va_log.path"], **kwargs)
-        assert output["assets.audio.path"] == "/value1/value2"
-        assert output["va_log.path"] == "/value1/session.log"
-    foo()
+from contextlib import contextmanager
+from unittest.mock import patch
+
+# Source: https://stackoverflow.com/a/46919967
+@contextmanager
+def mocked_now(now):
+    class MockedDatetime(datetime.datetime):
+        @classmethod
+        def now(cls):
+            return now
+    with patch("datetime.datetime", MockedDatetime):
+        yield
+
+def test_load_config_with_formats_2(mocker):
+    with mocked_now(datetime.datetime(2020, 2, 2)):
+        config_handler.init_configs(["utils/uts/data/ut_config/config_ff_1.json", "utils/uts/data/ut_config/format1.json", "utils/uts/data/ut_config/format2.json"])
+        def foo(**kwargs):
+            output = config_handler.handle(["assets.audio.path", "va_log.path"], **kwargs)
+            assert output["assets.audio.path"] == "/value1/value2"
+            assert output["va_log.path"] == "/2020_02_02_00_00_00/value1/session.log"
+        foo()
