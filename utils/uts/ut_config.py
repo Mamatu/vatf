@@ -299,3 +299,14 @@ def test_load_config_with_formats_2(mocker):
             assert output["assets.audio.path"] == "/value1/value2"
             assert output["va_log.path"] == "/2020_02_02_00_00_00/value1/session.log"
         foo()
+
+def test_use_case_1(mocker):
+    ut_data_path = "./utils/uts/data/ut_config/test_use_case_1"
+    with mocked_now(datetime.datetime(2020, 2, 2)):
+        config_handler.init_configs([os.path.join(ut_data_path, "config.json"), os.path.join(ut_data_path, "mgu_config.json"), os.path.join(ut_data_path, "filter_speechcore.json")])
+        def foo(**kwargs):
+            output = config_handler.handle(["va_log.path", "va_log.command"], **kwargs)
+            assert output["va_log.path"] == "/tmp/data/session_2020_02_02_00_00_00/log/session.log"
+            expected_command = "bash -c \"dlt-receive -o /tmp/data/session_2020_02_02_00_00_00/log/session.log.dlt -a 192.168.150.20 > >(tee /tmp/data/session_2020_02_02_00_00_00/log/session.log | grep \"SPEE\")\""
+            assert output["va_log.command"] == expected_command
+        foo()
