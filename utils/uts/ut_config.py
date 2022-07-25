@@ -277,3 +277,11 @@ def test_load_config_with_formats(mocker):
         output = config_handler.handle(["assets.audio.path"], **kwargs)
         assert output["assets.audio.path"] == "/value1/value2"
     foo()
+
+def test_load_config_with_formats(mocker):
+    config_handler.init_configs(["utils/uts/data/ut_config/config_ff_1.json", "utils/uts/data/ut_config/format1.json", "utils/uts/data/ut_config/format2.json"])
+    def foo(**kwargs):
+        output = config_handler.handle(["assets.audio.path", "va_log.path"], **kwargs)
+        assert output["assets.audio.path"] == "/value1/value2"
+        assert output["va_log.path"] == "/value1/session.log"
+    foo()

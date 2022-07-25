@@ -1,0 +1,17 @@
+{
+  "assets" : {
+    "audio" : {
+      "path":"/{key1}/{key2}"
+    }
+  },
+  "va_log": {
+    "path" : "/{key1}/session.log",
+    "command" : "receive {key2}",
+    "timedelta" : {
+      "hours" : -1
+    },
+    "date_format" : "%Y-%m-%d %H:%M:%S.%f",
+    "date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+  }
+}
+
