@@ -1,12 +1,13 @@
 _configs = None
 
 class _Configs:
-    def __init__(self, configs = None):
+    def __init__(self, configs = None, custom_format = None):
         if isinstance(configs, str):
             configs = [configs]
         self.configs = []
         if configs:
             self.load(configs)
+        self.custom_format = custom_format
     def load(self, path):
         from vatf.utils import config_loader
         self.configs.append(config_loader.load(path))
@@ -20,9 +21,9 @@ class _Configs:
             raise AttributeError(f"Attr {var} not found in config")
         return None
 
-def init_configs(config_pathes):
+def init_configs(config_pathes, custom_format = None):
     global _configs
-    _configs = _Configs(config_pathes)
+    _configs = _Configs(config_pathes, custom_format)
     return _configs
 
 def reset_configs():
@@ -36,6 +37,8 @@ def _handle_global_config(config_vars, custom_format):
     global _configs
     if _configs is None:
         raise Exception("global config does not exist")
+    if _configs and _configs.custom_format:
+        custom_format.update(_configs.custom_format)
     return _handle_config(config_vars, _configs, custom_format)
 
 def _handle_config(config_vars, config, custom_format, callback = None):
