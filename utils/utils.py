@@ -30,6 +30,18 @@ def name_and_args():
     args, _, _, values = inspect.getargvalues(caller)
     return [(i, values[i]) for i in args]
 
+def get_caller_args(caller):
+    args, _, _, values = inspect.getargvalues(caller)
+    return [(i, values[i]) for i in args]
+
+def print_func_info():
+    caller = inspect.stack()[1][0]
+    function_name = inspect.stack()[1][3]
+    args = get_caller_args(caller)
+    args = str(args)
+    args = args.replace("[", "").replace("]", "")
+    print(f"{function_name} ({args})")
+
 def get_temp_filepath():
     import tempfile
     return tempfile.NamedTemporaryFile().name

@@ -23,7 +23,6 @@ from vatf.utils import config_handler
 
 @vatf_api.public_api("log_snapshot")
 def start(log_path, shell_cmd, monitorFileLines = True):
-    print(f"{start.__name__}: {utils.name_and_args()}")
     if shell_cmd:
         _setup_command(shell_cmd, None, log_path)
         _start_command()
@@ -33,7 +32,6 @@ def start(log_path, shell_cmd, monitorFileLines = True):
 
 @vatf_api.public_api("log_snapshot")
 def start_from_config(monitorFileLines = True, **kwargs):
-    print(f"{start_from_config.__name__}: {utils.name_and_args()}")
     global _ctx
     if _ctx:
         raise Exception(f"{start.__name__} Log snapshot is already started!")

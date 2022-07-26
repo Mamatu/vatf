@@ -2,7 +2,7 @@ from vatf import vatf_api
 import subprocess
 import logging
 
-from vatf.utils import os_proxy
+from vatf.utils import os_proxy, utils
 
 def _cvlc_command(path):
     return f"cvlc {path} --play-and-exit vlc://quit"
