@@ -21,7 +21,7 @@
     }
   },
   "va_log": {
-    "command" : "bash -c \"dlt-receive -o {data_root}/data/session_{config_loading_time}/log/session.log.dlt -a {mgu_ip} > >(tee {data_root}/data/session_{config_loading_time}/log/session.log | grep \"{log_filter}\")\"",
+    "command" : "bash -c \"dlt-receive -o {data_root}/data/session_{config_loading_time}/log/session.log.dlt -a {device_ip} > >(tee {data_root}/data/session_{config_loading_time}/log/session.log | grep \"{log_filter}\")\"",
     "path" : "{data_root}/data/session_{config_loading_time}/log/session.log",
     "date_format" : "%Y/%m/%d %H:%M:%S.%f",
     "date_regex" : "[0-9][0-9][0-9][0-9]/[0-9][0-9]/[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]",
@@ -31,6 +31,9 @@
   },
   "audio" : {
     "path" : "{data_root}/data/session_{config_loading_time}/audio"
+  },
+  "wait_for_regex" : {
+    "command" : "bash -c \"dlt-receive -a {device_ip} > >(tee {{log_path}})"
   },
   "utterance_from_va" : {
     "regexes" : [

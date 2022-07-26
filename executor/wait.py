@@ -24,8 +24,9 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     print(f"wait_for_regex -> {temp_filepath}")
     try:
         va_log_command_key = "wait_for_regex.command"
-        output = config_handler.handle([va_log_command_key], custom_format = {"log_path" : temp_filepath}, **kwargs)
+        output = config_handler.handle([va_log_command_key], **kwargs)
         command = output[va_log_command_key]
+        command = command.format(log_path = temp_filepath)
         log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
         start_point = t.time()
         while True:
