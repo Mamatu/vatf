@@ -14,7 +14,12 @@ def exists(path):
 
 def remove(path):
     if os.path.exists(path):
-        shutil.rmtree(path)
+        if os.path.isfile(path):
+            os.remove(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+        else:
+            raise Exception(f"Path {path} is not directory or file")
 
 def copy(src, dst):
     shutil.copytree(src, dst, dirs_exist_ok=True)
@@ -58,8 +63,9 @@ def md5sum(filepath):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def create_file(mode, data = None):
-    path = utils.get_temp_filepath()
+def create_file(mode, data = None, path = None):
+    if path is None:
+        path = utils.get_temp_filepath()
     with open(path, mode) as f:
         logging.debug(f"{create_file.__name__}: {path} {mode}")
         if data:

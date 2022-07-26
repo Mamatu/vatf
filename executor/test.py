@@ -1,6 +1,5 @@
 from vatf import vatf_init
 from vatf.generator import gen_tests
-from vatf.utils import utils
 
 import argparse
 import inspect
