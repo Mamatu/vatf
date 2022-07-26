@@ -116,7 +116,11 @@
     "wait_for_regex" : {
         "command" : {
             "type" : "string",
-            "description" : "command to collect log for waiting"
+            "description" : "command to collect logs for waiting"
+        },
+        "path" : {
+          "type" : "string",
+          "description" : "path where are collected logs for waiting"
         }
     },
     "utterance_to_va" : {
