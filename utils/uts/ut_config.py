@@ -310,3 +310,17 @@ def test_use_case_1(mocker):
             expected_command = "bash -c \"dlt-receive -o /tmp/data/session_2020_02_02_00_00_00/log/session.log.dlt -a 192.168.150.20 > >(tee /tmp/data/session_2020_02_02_00_00_00/log/session.log | grep \"SPEE\")\""
             assert output["va_log.command"] == expected_command
         foo()
+
+def test_use_case_2(mocker):
+    ut_data_path = "./utils/uts/data/ut_config/test_use_case_2"
+    with mocked_now(datetime.datetime(2020, 2, 2)):
+        config_json = os.path.join(ut_data_path, "config.json")
+        ip_config_json = os.path.join(ut_data_path, "ip_config.json")
+        filter_speechcore_json = os.path.join(ut_data_path, "filter_speechcore.json")
+        config_handler.init_configs([config_json, ip_config_json, filter_speechcore_json], custom_format = {"test_name" : "test_use_case_2"})
+        def foo(**kwargs):
+            output = config_handler.handle(["va_log.path", "va_log.command"], **kwargs)
+            assert output["va_log.path"] == "/tmp/data/test_use_case_2/session_2020_02_02_00_00_00/log/session.log"
+            expected_command = "bash -c \"dlt-receive -o /tmp/data/test_use_case_2/session_2020_02_02_00_00_00/log/session.log.dlt -a 192.168.150.20 > >(tee /tmp/data/test_use_case_2/session_2020_02_02_00_00_00/log/session.log | grep \"SPEE\")\""
+            assert output["va_log.command"] == expected_command
+        foo()

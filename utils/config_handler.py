@@ -6,11 +6,10 @@ class _Configs:
             configs = [configs]
         self.configs = []
         if configs:
-            self.load(configs)
-        self.custom_format = custom_format
-    def load(self, path):
+            self.load(configs, custom_format)
+    def load(self, path, custom_format):
         from vatf.utils import config_loader
-        self.configs.append(config_loader.load(path))
+        self.configs.append(config_loader.load(path, custom_format = custom_format))
     def get(self, var, raiseIfNotFound = True):
         from vatf.utils import config_loader
         for config in self.configs:
@@ -37,8 +36,6 @@ def _handle_global_config(config_vars, custom_format):
     global _configs
     if _configs is None:
         raise Exception("global config does not exist")
-    if _configs and _configs.custom_format:
-        custom_format.update(_configs.custom_format)
     return _handle_config(config_vars, _configs, custom_format)
 
 def _handle_config(config_vars, config, custom_format, callback = None):
