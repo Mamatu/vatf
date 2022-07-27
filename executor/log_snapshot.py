@@ -21,8 +21,11 @@ from threading import Timer, RLock
 from vatf.utils import debug
 from vatf.utils import config_handler
 
+from vatf.executor import log_snapshot_impl
+
 @vatf_api.public_api("log_snapshot")
 def start(log_path, shell_cmd, monitorFileLines = True):
+    print(f"shell_cmd {shell_cmd}")
     if shell_cmd:
         _setup_command(shell_cmd, None, log_path)
         _start_command()
@@ -69,6 +72,7 @@ def _setup_command(shell_cmd, restart_timeout, log_path):
 
 def _start_command():
     global _timepoint_mutex
+    print(f"tm_ : {_timepoint_mutex}")
     with _timepoint_mutex:
         global _shell_cmd, _shell_cmd_process, _restart_command
         def restart():
@@ -92,6 +96,7 @@ def _start_timer():
     global _restart_timeout
     if _restart_timeout:
         global _repeat_timer
+        print(f"tm_ : {_timepoint_mutex}")
         #from https://stackoverflow.com/a/48741004
         @lock(_timepoint_mutex)
         def timepoint_observer():
