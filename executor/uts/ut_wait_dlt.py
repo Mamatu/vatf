@@ -32,7 +32,7 @@ def _dlt_example_user(payload, log_level = 2, count = 1):
 
 from vatf.utils import debug
 
-def setup_function():
+def setup_module():
     from vatf import vatf_api
     vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
     global _dlt_daemon_path
@@ -93,7 +93,7 @@ def test_wait_for_regex():
         from functools import partial
         command = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
         log_snapshot.start(log_path, command)
-        time.sleep(2)
+        time.sleep(1)
         command1 = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {{log_path}}"
         assert True == wait.wait_for_regex("line2", config_attrs = {"wait_for_regex.command" : command1})
         log_snapshot.stop()
