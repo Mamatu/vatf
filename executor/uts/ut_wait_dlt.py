@@ -32,7 +32,7 @@ def _dlt_example_user(payload, log_level = 2, count = 1):
 
 from vatf.utils import debug
 
-def setup_module():
+def setup_function():
     from vatf import vatf_api
     vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
     global _dlt_daemon_path

@@ -32,7 +32,7 @@ def _dlt_example_user(payload, log_level = 2, count = 1):
 
 from vatf.utils import debug
 
-def setup_module():
+def setup_function():
     from vatf import vatf_api
     vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
     global _dlt_daemon_path
@@ -41,7 +41,7 @@ def setup_module():
         raise Exception("dlt deamon is run! It should be not")
     _dlt_daemon = shell.bg(_dlt_daemon_path, shell = False)
 
-def teardown_module():
+def teardown_function():
     global _dlt_daemon, _generator_thread
     if not _generator_thread:
         raise Exception("log generator is not running")
