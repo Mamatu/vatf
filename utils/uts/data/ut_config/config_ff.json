@@ -1,0 +1,8 @@
+{
+  "assets" : {
+    "audio" : {
+      "path":"/{key1}/{key2}"
+    }
+  }
+}
+

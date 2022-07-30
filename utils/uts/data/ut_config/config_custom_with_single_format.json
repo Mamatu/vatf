@@ -1,0 +1,28 @@
+{
+  "assets" : {
+    "audio" : {
+      "path":"./assets/{audio_file}"
+    }
+  },
+  "va_log": {
+    "path" : "/{session_name}/session.log",
+    "command" : "receive {ip}",
+    "timedelta" : {
+      "hours" : -1
+    },
+    "date_format" : "%Y-%m-%d %H:%M:%S.%f",
+    "date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+  },
+  "utterance_from_va" : {
+    "regexes" : [
+      {
+        "begin" : "start_utterance",
+        "end" : "end_utterance"
+      }
+    ]
+  },
+  "format" : 
+    {
+      "audio_file" : "audiofile.mp3"
+    }
+}
