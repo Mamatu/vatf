@@ -89,13 +89,13 @@ def test_wait_for_regex():
         print(f"DLT -> {log_path}")
         lines_count = 10
         utils.touch(log_path)
-        _log_generator_run(log_path, lines_count)
         from functools import partial
         command = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}"
         log_snapshot.start(log_path, command)
         time.sleep(1)
+        _log_generator_run(log_path, lines_count)
         command1 = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {{log_path}}"
-        assert True == wait.wait_for_regex("line2", config_attrs = {"wait_for_regex.command" : command1})
+        assert True == wait.wait_for_regex("line8", config_attrs = {"wait_for_regex.command" : command1})
         log_snapshot.stop()
         lines = []
         with open(log_path, "r") as f:

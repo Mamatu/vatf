@@ -19,7 +19,6 @@ from watchdog.events import FileSystemEventHandler
 from threading import Timer, RLock
 
 from vatf.utils import debug
-from vatf.utils import config_handler
 
 class LogSnapshot:
     def __init__(self):

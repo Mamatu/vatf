@@ -19,8 +19,8 @@ def sleep_random(t1, t2):
 
 @vatf_api.public_api("wait")
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
-    import vatf.executor.log_snapshot_impl as log_snapshot
-    lsnapshot = log_snapshot.make()
+    import vatf.executor.log_snapshot_class as log_snapshot_class
+    log_snapshot = log_snapshot_class.make()
     temp_filepath = utils.get_temp_filepath()
     print(f"wait_for_regex -> {temp_filepath}")
     try:
@@ -28,7 +28,7 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         output = config_handler.handle([va_log_command_key], **kwargs)
         command = output[va_log_command_key]
         command = command.format(log_path = temp_filepath)
-        lsnapshot.start(log_path = temp_filepath, shell_cmd = command)
+        log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
         start_point = t.time()
         while True:
             out = search.find(filepath = temp_filepath, regex = regex)
@@ -41,5 +41,5 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
                 print(f"timeout: {end_point} {start_point}")
                 return False
     finally:
-        lsnapshot.stop()
+        log_snapshot.stop()
         os_proxy.remove_file(temp_filepath)
