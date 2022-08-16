@@ -48,10 +48,6 @@ def test_wait_for_regex():
     assert not callbacks.pre_sleep.called
 
 def test_wait_for_regex_timeout():
-    callbacks = wait.WfrCallbacks()
-    callbacks.success = MagicMock()
-    callbacks.timeout = MagicMock()
-    callbacks.pre_sleep = MagicMock()
     text = [
     "2022-01-29 20:54:55.567 line1\n",
     "2022-01-29 20:54:55.567 line2\n",
@@ -95,12 +91,8 @@ def test_wait_for_regex_monitor():
             time.sleep(0.1)
             counter = counter + 1
     t = threading.Thread(target = log_generator)
-    callbacks = wait.WfrCallbacks()
-    callbacks.success = MagicMock()
-    callbacks.timeout = MagicMock()
-    callbacks.pre_sleep = MagicMock()
     t.start()
-    wait.wait_for_regex("line20", log_path, callbacks = callbacks, timeout = 20, pause = 0.5)
-    wait.wait_for_regex("line39", log_path, callbacks = callbacks, timeout = 20, pause = 0.5)
+    wait.wait_for_regex("line20", log_path, timeout = 20, pause = 0.5)
+    wait.wait_for_regex("line39", log_path, timeout = 20, pause = 0.5)
     t.join()
     log_file.close()

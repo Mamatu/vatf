@@ -117,6 +117,18 @@
         "command" : {
             "type" : "string",
             "description" : "command to collect log for waiting"
+        },
+        "path" : {
+            "type" : "string",
+            "description" : "path to file which is monitorig for waiting"
+        },
+        "date_format" : {
+          "type" : "string",
+          "description" : "dare format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"
+        },
+        "date_regex" : {
+          "type" : "string",
+          "description" : "date regex of timestamp in log for instance: [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
         }
     },
     "utterance_to_va" : {

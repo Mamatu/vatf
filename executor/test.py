@@ -51,7 +51,7 @@ def get_functions(_filter):
     return [func for func in mod.__dict__.values()
             if _is_mod_function(mod, func) and _filter(func.__name__)]
 
-def get_test_functions(test_name_prefix = "Test_"):
+def get_test_functions(test_name_prefix = "test_"):
     return get_functions(lambda name: name.startswith(test_name_prefix))
 
 def _get_unique(name):
