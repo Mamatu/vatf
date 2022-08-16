@@ -1,5 +1,11 @@
 _configs = None
 
+class NoConfigException(Exception):
+    pass
+
+class NoAttrConfigException(Exception):
+    pass
+
 class _Configs:
     def __init__(self, configs = None, custom_format = None):
         if isinstance(configs, str):
@@ -35,7 +41,7 @@ def get():
 def _handle_global_config(config_vars, custom_format):
     global _configs
     if _configs is None:
-        raise Exception("global config does not exist")
+        raise NoConfigException("no config is existing")
     return _handle_config(config_vars, _configs, custom_format)
 
 def _handle_config(config_vars, config, custom_format, callback = None):
@@ -56,7 +62,7 @@ def _handle_config_path(config_vars, path, custom_format):
 def _handle_config_attrs(config_vars, kw_config_vars, custom_format):
     def callback(k, v):
         if v is None:
-            raise Exception("Attr {k} is None")
+            raise NoAttrConfigException("Attr {k} is None")
     return _handle_config(config_vars, kw_config_vars, custom_format = custom_format, callback = callback)
 
 def handle(config_vars, custom_format = None, **kwargs):
@@ -79,3 +85,12 @@ def handle(config_vars, custom_format = None, **kwargs):
         return _handle_config(config_vars, config, custom_format = custom_format)
     if len(true_list) == 0:
         return _handle_global_config(config_vars, custom_format = custom_format)
+
+def get_vars(config_vars, custom_format = None, **kwargs):
+    return handle(config_vars, custom_format, **kwargs)
+
+def get_var(config_var, custom_format = None, **kwargs):
+    if not isinstance(config_var, str):
+        raise Exception("config_var must be singe key")
+    output = get_vars([config_var], custom_format, **kwargs)
+    return output[config_var]
