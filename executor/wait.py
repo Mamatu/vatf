@@ -56,7 +56,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     print(f"wait_for_regex -> {log_filepath}")
     start_point = t.time()
     while True:
-        out = search.find(filepath = temp_filepath, regex = regex)
+        out = search.find(filepath = log_filepath, regex = regex)
         print(f"len: {len(out)}")
         if len(out) > 0:
             return True
