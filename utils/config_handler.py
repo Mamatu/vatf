@@ -86,6 +86,13 @@ def handle(config_vars, custom_format = None, **kwargs):
     if len(true_list) == 0:
         return _handle_global_config(config_vars, custom_format = custom_format)
 
+def has_var(config_var, custom_format = None, **kwargs):
+    try:
+        var = get_var(config_var, custom_format, **kwargs)
+        return var is not None
+    except:
+        return False
+
 def get_vars(config_vars, custom_format = None, **kwargs):
     return handle(config_vars, custom_format, **kwargs)
 

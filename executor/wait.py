@@ -68,7 +68,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
 
 @vatf_api.public_api("wait")
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
-    try:
+    if config_handler.has_var("wait_for_regex.command", **kwargs):
         return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
-    except config_handler.NoAttrConfigException:
+    else:
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
