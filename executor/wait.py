@@ -20,7 +20,8 @@ def sleep_random(t1, t2):
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.log_snapshot_class as log_snapshot_class
     log_snapshot = log_snapshot_class.make()
-    temp_filepath = utils.get_temp_filepath()
+    temp_file = utils.get_temp_file()
+    temp_filepath = temp_file.name
     print(f"wait_for_regex -> {temp_filepath}")
     try:
         wait_command_key = "wait_for_regex.command"
@@ -40,7 +41,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
                 return False
     finally:
         log_snapshot.stop()
-        os_proxy.remove_file(temp_filepath)
+        temp_file.close()
 
 def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.log_snapshot_class as log_snapshot_class
@@ -68,6 +69,6 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
 @vatf_api.public_api("wait")
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     try:
-        _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
+        return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
     except config_handler.NoAttrConfigException:
-        _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
+        return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)

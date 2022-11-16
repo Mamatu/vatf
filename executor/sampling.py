@@ -59,7 +59,7 @@ def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_t
 
 def _convert_pcm_to_ogg(recording_path, audioConfig):
     from vatf.utils import ffmpeg
-    output_path = utils.get_temp_filepath()
+    output_path = utils.get_temp_file()
     output_path = f"{output_path}.ogg"
     vatf.utils.ffmpeg.convert(recording_path, output_path, audioConfig)
     return output_path

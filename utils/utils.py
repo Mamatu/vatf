@@ -42,13 +42,13 @@ def print_func_info():
     args = args.replace("[", "").replace("]", "")
     print(f"{function_name} ({args})")
 
-def get_temp_filepath():
+def get_temp_file(mode = "r+"):
     import tempfile
-    return tempfile.NamedTemporaryFile().name
+    return tempfile.NamedTemporaryFile(mode = mode)
 
-def open_temp_filepath(flag = "w+"):
-    path = get_temp_filepath()
-    return open(path, flag)
+def open_temp_file(mode = "w+"):
+    file = get_temp_file(mode = mode)
+    return file
 
 def find_in_dir(dirpath, pattern, suffix = None):
     output = None
@@ -141,7 +141,7 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, on
     if command == None:
         raise Exception("Grep command was failed on initialization")
     logging.debug(f"{grep.__name__}: {command}")
-    with open_temp_filepath() as fout, open_temp_filepath() as ferr:
+    with open_temp_file() as fout, open_temp_file() as ferr:
         logging.debug(f"{grep.__name__}: fout {fout.name}")
         logging.debug(f"{grep.__name__}: ferr {ferr.name}")
         def readlines(f):
@@ -152,10 +152,6 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, on
             else:
                 lines = [GrepEntry.FromSplit(l, line_offset = line_offset) for l in lines]
             return lines
-        def remove():
-            if removeTmpFiles:
-                os.remove(ferr.name)
-                os.remove(fout.name)
         process = subprocess.Popen(command, shell=True, stdout=fout, stderr=ferr)
         process.wait()
         if os.path.getsize(ferr.name) > 0:
@@ -165,7 +161,6 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, on
             raise Exception(err)
         fout.seek(0)
         out = readlines(fout)
-        remove()
         return out
 
 def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):

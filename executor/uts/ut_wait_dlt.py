@@ -83,9 +83,11 @@ def _log_generator_run(log_path, lines_count, custom_sleep = None):
     _generator_thread.start()
 
 def test_wait_for_regex():
+    log_file = None
     try:
         global _generated_lines, _dlt_receive_path, _test_end_indicator
-        log_path = utils.get_temp_filepath()
+        log_file = utils.get_temp_file()
+        log_path = log_file.name
         print(f"DLT -> {log_path}")
         lines_count = 10
         utils.touch(log_path)
@@ -115,3 +117,6 @@ def test_wait_for_regex():
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        if log_file:
+            log_file.close()

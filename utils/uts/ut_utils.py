@@ -18,10 +18,9 @@ class UtilsTests(TestCase):
         self.test_file = None
         self.remove_test_file = True
     def  setUp(self):
-        self.test_file = utils.get_temp_filepath()
+        self.test_file = utils.get_temp_file()
     def tearDown(self):
-        if self.remove_test_file and os.path.exists(self.test_file):
-            os.remove(self.test_file)
+        self.test_file.close()
     @patch("os.listdir")
     def test_find_in_dir_no_matches(self, os_listdir_mock):
         os_listdir_mock.return_value = ["s_1", "r"]
@@ -59,20 +58,21 @@ class UtilsTests(TestCase):
         os_listdir_mock.side_effect = FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "")
         self.assertEqual(-1, utils.get_counter("/tmp1/", "session"))
     def test_grep_empty(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("")
         out = utils.grep(testfile_path, "2")
         self.assertEqual([], out)
     def test_grep(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
+        self.assertTrue(isinstance(testfile_path, str))
         with open(testfile_path, "w") as f:
             f.write("1\n2")
         out = utils.grep(testfile_path, "2")
         self.assertTrue(len(out) == 1)
         self.assertEqual("2", out[0].matched)
     def test_grep_one_regex_repeated(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("ada\nada\nada")
         out = utils.grep(testfile_path, "ada")
@@ -81,7 +81,7 @@ class UtilsTests(TestCase):
         self.assertEqual("ada", out[1].matched)
         self.assertEqual("ada", out[2].matched)
     def test_grep_one_regex_in_bias(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("ada\ndud\nada\ndud\nada\nada")
         out = utils.grep(testfile_path, "ada")
@@ -95,7 +95,7 @@ class UtilsTests(TestCase):
         self.assertEqual("ada", out[3].matched)
         self.assertEqual(6, out[3].line_number)
     def test_grep_line_regex_with_line_number(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("2021-12-19 17:59:17.171 [ 15] I start")
             f.write("\n")
@@ -110,7 +110,7 @@ class UtilsTests(TestCase):
         self.assertEqual("2021-12-19 17:59:17.172", out[0].matched[0])
         self.assertTrue(len(out) == 1)
     def test_grep_line_regex_with_line_two_lines(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("2021-12-19 17:59:17.171 [ 15] I regex")
             f.write("\n")
@@ -127,7 +127,7 @@ class UtilsTests(TestCase):
         date2 = datetime.datetime.strptime("2021-12-19 17:59:18.171", utils.DATE_FORMAT)
         self.assertEqual(1000, utils.get_total_milliseconds(date2 - date1))
     def test_grep_line_regex_with_line_two_lines(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("regex\n")
             f.write("2021-12-19 17:59:17.171 [ 15] I regex\n")
@@ -142,7 +142,7 @@ class UtilsTests(TestCase):
         self.assertEqual("2021-12-19 17:59:17.171", out[0].matched[0])
         self.assertEqual("2021-12-19 17:59:17.172", out[1].matched[0])
     def test_grep_line_regex_from_line_1(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("2021-12-19 17:59:17.171 [ 15] I regex\n")
             f.write("2021-12-19 17:59:17.172 [ 15] I line\n")
@@ -157,7 +157,7 @@ class UtilsTests(TestCase):
         self.assertEqual(1, len(out))
         self.assertEqual(5, out[0].line_number)
     def test_grep_line_regex_from_line_2(self):
-        testfile_path = self.test_file
+        testfile_path = self.test_file.name
         with open(testfile_path, "w") as f:
             f.write("2021-12-19 17:59:17.171 [ 15] I regex1\n")
             f.write("2021-12-19 17:59:17.172 [ 15] I line\n")

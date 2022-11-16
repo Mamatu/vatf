@@ -64,13 +64,16 @@ def md5sum(filepath):
     return hash_md5.hexdigest()
 
 def create_file(mode, data = None, path = None):
+    file = None
     if path is None:
-        path = utils.get_temp_filepath()
-    with open(path, mode) as f:
-        logging.debug(f"{create_file.__name__}: {path} {mode}")
-        if data:
-            f.write(data)
-    return path
+        file = utils.get_temp_file(mode = mode)
+    else:
+        file = open(path, mode = mode)
+    logging.debug(f"{create_file.__name__}: {path} {mode}")
+    if data:
+        file.write(data)
+    file.flush()
+    return file
 
 def remove_file(path):
     os.remove(path)

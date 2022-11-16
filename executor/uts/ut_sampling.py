@@ -13,27 +13,30 @@ from vatf.utils import utils, os_proxy
 from vatf.executor import mkdir, sampling
 
 def test_get_creation_date_empty():
-    p = os_proxy.create_file("tw")
+    f = os_proxy.create_file("tw")
+    p = f.name
     expectedDate = utils.get_modification_date(p)
     actualDate = sampling.get_creation_date(p)
     assert expectedDate == actualDate
-    os_proxy.remove_file(p)
+    f.close()
 
 def test_get_creation_date_has_date():
     date_str = "2020-12-19 17:59:17.172"
-    p = os_proxy.create_file("tw", data = date_str)
+    f = os_proxy.create_file("tw", data = date_str)
+    p = f.name
     expectedDate = datetime.datetime.strptime(date_str, sampling.DATE_FORMAT)
     actualDate = sampling.get_creation_date(p)
     assert expectedDate == actualDate
-    os_proxy.remove_file(p)
+    f.close()
 
 def test_get_creation_date_is_binary():
     data = [0x98, 0xaf, 0xb7, 0x93, 0xbb, 0x03, 0xbf, 0x8e]
-    p = os_proxy.create_file("bw", data = bytes(data))
+    f = os_proxy.create_file("bw", data = bytes(data))
+    p = f.name
     expectedDate = utils.get_modification_date(p)
     actualDate = sampling.get_creation_date(p)
     assert expectedDate == actualDate
-    os_proxy.remove_file(p)
+    f.close()
 
 def test_find_start_end_regexes():
     start_regex = "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"

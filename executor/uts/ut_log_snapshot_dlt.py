@@ -94,10 +94,14 @@ def sleep_until_lines_in_file(path, count):
                 break
 
 def test_log_with_timestamps():
+    log_file = None
+    log_file_1 = None
     try:
         global _generated_lines, _dlt_receive_path, _test_end_indicator
-        log_path = utils.get_temp_filepath()
-        log_path_1 = utils.get_temp_filepath()
+        log_file = utils.get_temp_file()
+        log_path = log_file.name
+        log_file_1 = utils.get_temp_file()
+        log_path_1 = log_file_1.name
         print(f"DLT -> {log_path_1}")
         lines_count = 2
         utils.touch(log_path)
@@ -124,12 +128,21 @@ def test_log_with_timestamps():
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        if log_file:
+            log_file.close()
+        if log_file_1:
+            log_file_1.close()
 
 def test_log_with_timestamps_config():
+    log_file = None
+    log_file_1 = None
     try:
         global _generated_lines, _dlt_receive_path, _test_end_indicator
-        log_path = utils.get_temp_filepath()
-        log_path_1 = utils.get_temp_filepath()
+        log_file = utils.get_temp_file()
+        log_path = log_file.name
+        log_file_1 = utils.get_temp_file()
+        log_path_1 = log_file_1.name
         print(f"DLT -> {log_path_1}")
         lines_count = 2
         utils.touch(log_path)
@@ -156,3 +169,8 @@ def test_log_with_timestamps_config():
     except Exception as ex:
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        if log_file:
+            log_file.close()
+        if log_file_1:
+            log_file_1.close()
