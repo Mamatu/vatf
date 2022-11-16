@@ -23,7 +23,7 @@ class _Configs:
             if attr:
                 return attr
         if raiseIfNotFound:
-            raise AttributeError(f"Attr {var} not found in config")
+            raise NoAttrConfigException(f"Attr {var} not found in config")
         return None
 
 def init_configs(config_pathes, custom_format = None):
