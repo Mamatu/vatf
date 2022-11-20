@@ -324,3 +324,9 @@ def test_use_case_2(mocker):
             expected_command = "bash -c \"dlt-receive -o /tmp/data/test_use_case_2/session_2020_02_02_00_00_00/log/session.log.dlt -a 192.168.150.20 > >(tee /tmp/data/test_use_case_2/session_2020_02_02_00_00_00/log/session.log | grep \"SPEE\")\""
             assert output["va_log.command"] == expected_command
         foo()
+
+def test_py_config():
+    from vatf.utils import config_pymodule
+    config_py_path = "./utils/uts/data/ut_config/config_1.py"
+    config = config_pymodule.Loader(config_py_path)
+    assert config.audio.path == "./assets/audio_files"
