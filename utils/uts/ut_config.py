@@ -23,15 +23,15 @@ def teardown_module():
 
 def test_load_config_raw():
     c = config_loader.load_raw("utils/uts/data/ut_config/config.json")
-    assert c.data.assets.audio.path == "./assets/audio_files"
-    assert c.data.va_log.path == "/tmp/session.log"
-    assert c.data.va_log.command == "receive {ip}"
-    assert c.data.va_log.timedelta.hours == -1
-    assert c.data.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
-    assert c.data.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-    assert c.data.utterance_from_va.regexes[0].begin == "start_utterance"
-    assert c.data.utterance_from_va.regexes[0].end == "end_utterance"
-    assert c.data.format.ip ==  "172.0.0.1"
+    assert c["assets"]["audio"]["path"] == "./assets/audio_files"
+    assert c["va_log"]["path"] == "/tmp/session.log"
+    assert c["va_log"]["command"] == "receive {ip}"
+    assert c["va_log"]["timedelta"]["hours"] == -1
+    assert c["va_log"]["date_format"] == "%Y-%m-%d %H:%M:%S.%f"
+    assert c["va_log"]["date_regex"] == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    assert c["utterance_from_va"]["regexes"][0]["begin"] == "start_utterance"
+    assert c["utterance_from_va"]["regexes"][0]["end"] == "end_utterance"
+    assert c["format"]["ip"] ==  "172.0.0.1"
 
 def test_load_config():
     c = config_loader.load("utils/uts/data/ut_config/config.json")
@@ -326,7 +326,19 @@ def test_use_case_2(mocker):
         foo()
 
 def test_py_config():
-    from vatf.utils import config_pymodule
-    config_py_path = "./utils/uts/data/ut_config/config_1.py"
-    config = config_pymodule.Loader(config_py_path)
-    assert config.audio.path == "./assets/audio_files"
+    from vatf.utils import config_py_loader
+    import pathlib
+    import logging
+    logging.basicConfig(level = logging.DEBUG)
+    config_py_path = "utils.uts.data.ut_config.config_1"
+    config = config_py_loader.load(config_py_path)
+    assert config["assets"]["audio"]["path"] == "./assets/audio_files"
+
+def test_py_config_1():
+    from vatf.utils import config_py_loader
+    import pathlib
+    import logging
+    logging.basicConfig(level = logging.DEBUG)
+    config_py_path = "utils/uts/data/ut_config/config_1.py"
+    config = config_py_loader.load(config_py_path)
+    assert config["assets"]["audio"]["path"] == "./assets/audio_files"

@@ -29,10 +29,30 @@ def get_attr(data, attr, raiseIfNotFound = True):
     return output
 
 class _Config:
+    class _Wrapper:
+        def __init__(self, attr):
+            self.attr = attr
+        def __getattr__(self, attr):
+            if isinstance(self.attr, dict):
+                if attr in self.attr:
+                    if isinstance(self.attr[attr], dict):
+                        return _Config._Wrapper(self.attr[attr])
+                    elif isinstance(self.attr[attr], list):
+                        wrappers = [_Config._Wrapper(a) for a in self.attr[attr]]
+                        return wrappers
+                    else:
+                        return self.attr[attr]
+                else:
+                    raise AttributeError
     def __init__(self, data):
-        self.data = data
+        self.data = _Config._Wrapper(data)
     def get(self, arg, raiseIfNotFound = True):
         return get_attr(self.data, arg, raiseIfNotFound = raiseIfNotFound)
+    def __getattr__(self, attr):
+        if attr in self.data:
+            return _Config._Wrapper(self.data[attr])
+        else:
+            raise AttributeError
 
 def _iterate_dict(dict_key, callback):
     def _make_key_chain(key_chain, key):
@@ -96,8 +116,9 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
     data = {}
     for item in array:
         data = _update_dict_deeply(data, item)
-    data = _convert_if_dict(data)
-    return _Config(data)
+    return data
+    #data = _convert_if_dict(data)
+    #return _Config(data)
 
 def load_default_format(custom_format):
     if custom_format is None:
@@ -109,27 +130,38 @@ def load_default_format(custom_format):
     custom_format.update(default_format)
     return custom_format
 
-def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
-    custom_format = load_default_format(custom_format)
-    if isinstance(config_json_pathes, str):
-        config_json_pathes = [config_json_pathes]
-    c = load_raw(config_json_pathes, schema_json_path)
+def _load_json(config_pathes, custom_format, schema_json_path):
+    data = load_raw(config_pathes, schema_json_path)
     def process_format(obj, format_dict):
-        if hasattr(obj, "__dict__"):
-            for k,v in obj.__dict__.items():
+        for k,v in obj.items():
+            if isinstance(v, dict):
                 process_format(v, format_dict)
-                if isinstance(v, str):
-                    v = v.format(**format_dict)
-                    setattr(obj, k, v)
+            elif isinstance(v, str):
+                v = v.format(**format_dict)
+                obj[k] = v
     def make_dict(data_format):
         _dict = {}
         for kv in data_format:
             _dict[kv.key] = kv.value
         return _dict
     format_dict = {}
-    if hasattr(c.data, "format") and c.data.format:
-        format_dict.update(c.data.format.__dict__)
+    if "format" in data and data["format"]:
+        format_dict.update(data["format"])
     if custom_format:
         format_dict.update(custom_format)
-    process_format(c.data, format_dict)
-    return c
+    process_format(data, format_dict)
+    return data
+
+from vatf.utils import config_common
+
+def load(config_pathes, custom_format = {}, schema_json_path = config_common.get_global_schema_path()):
+    custom_format = load_default_format(custom_format)
+    if isinstance(config_pathes, str):
+        config_pathes = [config_pathes]
+    config_json_pathes = [config_path for config_path in config_pathes if config_path.endswith(".json")]
+    config_py_pathes = [config_path for config_path in config_pathes if config_path.endswith(".py")]
+    c = _load_json(config_json_pathes, custom_format, schema_json_path)
+    from vatf.utils import config_py_loader
+    c1 = config_py_loader.load(config_py_pathes)
+    c.update(c1)
+    return _Config(c)
