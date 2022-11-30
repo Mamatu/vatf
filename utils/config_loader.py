@@ -5,6 +5,7 @@ import jsonschema
 from types import SimpleNamespace
 
 from vatf.utils import os_proxy
+from vatf.utils import config_common
 
 def _abs_path_to_schema():
     import pathlib
@@ -132,13 +133,6 @@ def load_default_format(custom_format):
 
 def _load_json(config_pathes, custom_format, schema_json_path):
     data = load_raw(config_pathes, schema_json_path)
-    def process_format(obj, format_dict):
-        for k,v in obj.items():
-            if isinstance(v, dict):
-                process_format(v, format_dict)
-            elif isinstance(v, str):
-                v = v.format(**format_dict)
-                obj[k] = v
     def make_dict(data_format):
         _dict = {}
         for kv in data_format:
@@ -149,19 +143,28 @@ def _load_json(config_pathes, custom_format, schema_json_path):
         format_dict.update(data["format"])
     if custom_format:
         format_dict.update(custom_format)
-    process_format(data, format_dict)
+    config_common.process_format(data, format_dict)
     return data
 
 from vatf.utils import config_common
 
-def load(config_pathes, custom_format = {}, schema_json_path = config_common.get_global_schema_path()):
+def load(config_pathes, custom_format = {}, schema_json_path = config_common.get_global_schema_path(), returnRawDict = False):
     custom_format = load_default_format(custom_format)
     if isinstance(config_pathes, str):
         config_pathes = [config_pathes]
-    config_json_pathes = [config_path for config_path in config_pathes if config_path.endswith(".json")]
-    config_py_pathes = [config_path for config_path in config_pathes if config_path.endswith(".py")]
+    config_json_pathes = []
+    config_py_pathes = []
+    for config_path in config_pathes:
+        if config_path.endswith(".json"):
+            config_json_pathes.append(config_path)
+        elif config_path.endswith(".py"):
+            config_py_pathes.append(config_path)
+        else:
+            config_py_pathes.append(config_path)
     c = _load_json(config_json_pathes, custom_format, schema_json_path)
     from vatf.utils import config_py_loader
     c1 = config_py_loader.load(config_py_pathes)
     c.update(c1)
+    if returnRawDict:
+        return c
     return _Config(c)
