@@ -41,7 +41,15 @@ class _Configs:
 class Config:
     class _Wrapper:
         def __init__(self, attr):
-            self.attr = attr
+            attr_v = attr.split(".")
+            if isinstance(attr, str):
+                if len(attr_v) == 1:
+                    self.attr = attr
+                elif len(attr_v) > 1:
+                    self.attr = {}
+                    def add_attr(attr_):
+                        a = attr_.pop()
+                        self.attr[a] = Config.Wrapper()
         def __getattr__(self, attr):
             if isinstance(self.attr, dict):
                 if attr in self.attr:
@@ -53,7 +61,7 @@ class Config:
                     else:
                         return self.attr[attr]
                 else:
-                    raise AttributeError
+                    raise AttributeError(f"Attribute error: {attr}")
         def __getitem__(self, k):
             array = k.split(".")
             attr = self.attr
@@ -164,14 +172,22 @@ def _get_handle_global_config(custom_format):
 def get_config(custom_format = None, **kwargs):
     is_config_path = "config_path" in kwargs.keys()
     is_config = "config" in kwargs.keys() and isinstance(kwargs["config"], Config)
-    is_config_dict = "config" in kwargs.keys() and isinstance(kwargs["config"], dict)
-    is_config_dict = is_config_dict or "config_attrs" in kwargs.keys() # support for decprecated config_attrs
-    true_list = [is_config_path, is_config, is_config_dict]
+    is_config_dict1 = "config" in kwargs.keys() and isinstance(kwargs["config"], dict)
+    is_config_dict2 = "config_attrs" in kwargs.keys() # support for decprecated config_attrs
+    is_config_dict3 = "config_dict" in kwargs.keys() # support for extra config_dict
+    true_list = [is_config_path, is_config, is_config_dict1, is_config_dict1, is_config_dict3]
     true_list = [x for x in true_list if x]
     if len(true_list) > 1:
         raise Exception("kwargs can contain only one: config, config_path or config attrs")
+    is_config_dict = is_config_dict1 or is_config_dict2 or is_config_dict3
     if is_config_dict:
-        kw_config_dict = kwargs["config"]
+        cd_labels = ["config", "config_attrs", "config_dict"]
+        def get_label():
+            for l in cd_labels:
+                if l in kwargs:
+                    return l
+            return None
+        kw_config_dict = kwargs[get_label()]
         return _get_handle_config_dict(kw_config_dict, custom_format = custom_format)
     if is_config_path:
         config_path = kwargs["config_path"]
