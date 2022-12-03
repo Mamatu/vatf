@@ -41,15 +41,25 @@ class _Configs:
 class Config:
     class _Wrapper:
         def __init__(self, attr):
-            attr_v = attr.split(".")
-            if isinstance(attr, str):
-                if len(attr_v) == 1:
-                    self.attr = attr
-                elif len(attr_v) > 1:
-                    self.attr = {}
-                    def add_attr(attr_):
-                        a = attr_.pop()
-                        self.attr[a] = Config.Wrapper()
+            self.attr = attr
+            if isinstance(self.attr, dict):
+                keys = [k for k in self.attr.keys()]
+                for key in keys:
+                    if isinstance(key, str):
+                        key_splitted = key.split(".")
+                        if len(key_splitted) > 1:
+                            value = self.attr[key]
+                            _attr = self.attr
+                            while len(key_splitted) > 1:
+                                k_ = key_splitted.pop(0)
+                                v_ = key_splitted[0]
+                                if k_ not in _attr:
+                                    d = {v_ : {}}
+                                    _attr[k_] = d
+                                else:
+                                    _attr[k_][v_] = {}
+                                _attr = _attr[k_]
+                            _attr[key_splitted.pop(0)] = value
         def __getattr__(self, attr):
             if isinstance(self.attr, dict):
                 if attr in self.attr:
@@ -71,20 +81,27 @@ class Config:
     def make_format(self, custom_format = None):
         if custom_format is None:
             return self.data
-        from vatf_utils import config_common
+        from vatf.utils import config_common
         return config_common.process_format(self.data, custom_format)
     def __init__(self, data, custom_format = None):
         import copy
         self.__data = copy.deepcopy(data)
-        self.data = data
+        self.data = copy.deepcopy(data)
         self.data = self.make_format(custom_format)
-        self.data = Config._Wrapper(self.data)
     def get_raw_data(self):
         return self.__data
     def __getattr__(self, attr):
-        return getattr(self.data, attr)
+        return getattr(Config._Wrapper(self.data), attr)
     def __getitem__(self, item):
-         return self.data[item]
+        if isinstance(item, str):
+            item = item.split(".")
+            if len(item) == 1:
+                return self.data[item[0]]
+            else:
+                data = self.data
+                for i in item:
+                    data = data[i]
+                return data
 
 def init_configs(config_pathes, custom_format = None):
     global __global_config
@@ -103,7 +120,12 @@ def _handle_global_config(config_vars, custom_format):
     if not __global_config.exist():
         raise NoConfigException("no config is existing")
     from utils import config_loader
-    data = config_loader.load(__global_config.config_pathes, custom_format = __global_config.custom_format, returnRawDict = True)
+    format_dict = {}
+    if custom_format:
+        format_dict.update(custom_format)
+    if __global_config.custom_format:
+        format_dict.update(__global_config.custom_format)
+    data = config_loader.load(__global_config.config_pathes, custom_format = format_dict, returnRawDict = True)
     return Config(data)
 
 def _get_global_config(custom_format):
@@ -154,7 +176,7 @@ def _get_handle_config_dict(kw_config_dict, custom_format):
 
 def _get_handle_config_path(config_path, custom_format):
     from utils import config_loader
-    data = config_loader.load(config_path, returnRawDict = True)
+    data = config_loader.load(config_path, custom_format, returnRawDict = True)
     return Config(data, custom_format)
 
 def _get_handle_config(config, custom_format):
@@ -166,7 +188,12 @@ def _get_handle_global_config(custom_format):
     if not __global_config.exist():
         raise NoConfigException("no config is existing")
     from utils import config_loader
-    data = config_loader.load(__global_config.config_pathes, custom_format = __global_config.custom_format, returnRawDict = True)
+    format_dict = {}
+    if custom_format:
+        format_dict.update(custom_format)
+    if __global_config.custom_format:
+        format_dict.update(__global_config.custom_format)
+    data = config_loader.load(__global_config.config_pathes, custom_format = format_dict, returnRawDict = True)
     return Config(data)
 
 def get_config(custom_format = None, **kwargs):
@@ -175,10 +202,10 @@ def get_config(custom_format = None, **kwargs):
     is_config_dict1 = "config" in kwargs.keys() and isinstance(kwargs["config"], dict)
     is_config_dict2 = "config_attrs" in kwargs.keys() # support for decprecated config_attrs
     is_config_dict3 = "config_dict" in kwargs.keys() # support for extra config_dict
-    true_list = [is_config_path, is_config, is_config_dict1, is_config_dict1, is_config_dict3]
-    true_list = [x for x in true_list if x]
+    config_list = [is_config_path, is_config, is_config_dict1, is_config_dict2, is_config_dict3]
+    true_list = [x for x in config_list if x]
     if len(true_list) > 1:
-        raise Exception("kwargs can contain only one: config, config_path or config attrs")
+        raise Exception(f"kwargs can contain only one: config, config_path or config_attrs. It has: {config_list}")
     is_config_dict = is_config_dict1 or is_config_dict2 or is_config_dict3
     if is_config_dict:
         cd_labels = ["config", "config_attrs", "config_dict"]
