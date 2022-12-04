@@ -29,32 +29,6 @@ def get_attr(data, attr, raiseIfNotFound = True):
         raise AttributeError(f"Attr {'.'.join(_attr)} not found in config")
     return output
 
-class _Config:
-    class _Wrapper:
-        def __init__(self, attr):
-            self.attr = attr
-        def __getattr__(self, attr):
-            if isinstance(self.attr, dict):
-                if attr in self.attr:
-                    if isinstance(self.attr[attr], dict):
-                        return _Config._Wrapper(self.attr[attr])
-                    elif isinstance(self.attr[attr], list):
-                        wrappers = [_Config._Wrapper(a) for a in self.attr[attr]]
-                        return wrappers
-                    else:
-                        return self.attr[attr]
-                else:
-                    raise AttributeError
-    def __init__(self, data):
-        self.data = _Config._Wrapper(data)
-    def get(self, arg, raiseIfNotFound = True):
-        return get_attr(self.data, arg, raiseIfNotFound = raiseIfNotFound)
-    def __getattr__(self, attr):
-        if attr in self.data:
-            return _Config._Wrapper(self.data[attr])
-        else:
-            raise AttributeError
-
 def _iterate_dict(dict_key, callback):
     def _make_key_chain(key_chain, key):
         new_key_chain = key_chain.copy()
@@ -121,35 +95,13 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
     #data = _convert_if_dict(data)
     #return _Config(data)
 
-def load_default_format(custom_format):
-    if custom_format is None:
-        custom_format = {}
-    default_format = {}
-    import datetime
-    date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    default_format["config_loading_time"] = date
-    custom_format.update(default_format)
-    return custom_format
-
-def _load_json(config_pathes, custom_format, schema_json_path):
+def _load_json(config_pathes, schema_json_path):
     data = load_raw(config_pathes, schema_json_path)
-    def make_dict(data_format):
-        _dict = {}
-        for kv in data_format:
-            _dict[kv.key] = kv.value
-        return _dict
-    format_dict = {}
-    if "format" in data and data["format"]:
-        format_dict.update(data["format"])
-    if custom_format:
-        format_dict.update(custom_format)
-    config_common.process_format(data, format_dict)
     return data
 
 from vatf.utils import config_common
 
-def load(config_pathes, custom_format = {}, schema_json_path = config_common.get_global_schema_path(), returnRawDict = False):
-    custom_format = load_default_format(custom_format)
+def load(config_pathes, schema_json_path = config_common.get_global_schema_path()):
     if isinstance(config_pathes, str):
         config_pathes = [config_pathes]
     config_json_pathes = []
@@ -161,10 +113,8 @@ def load(config_pathes, custom_format = {}, schema_json_path = config_common.get
             config_py_pathes.append(config_path)
         else:
             config_py_pathes.append(config_path)
-    c = _load_json(config_json_pathes, custom_format, schema_json_path)
+    c = _load_json(config_json_pathes, schema_json_path)
     from vatf.utils import config_py_loader
     c1 = config_py_loader.load(config_py_pathes)
     c.update(c1)
-    if returnRawDict:
-        return c
-    return _Config(c)
+    return c

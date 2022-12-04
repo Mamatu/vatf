@@ -35,43 +35,46 @@ def test_load_config_raw():
 
 def test_load_config():
     c = config_loader.load("utils/uts/data/ut_config/config.json")
-    assert c.data.assets.audio.path == "./assets/audio_files"
-    assert c.data.va_log.path == "/tmp/session.log"
-    assert c.data.va_log.command == "receive 172.0.0.1"
-    assert c.data.va_log.timedelta.hours == -1
-    assert c.data.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
-    assert c.data.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-    assert c.data.utterance_from_va.regexes[0].begin == "start_utterance"
-    assert c.data.utterance_from_va.regexes[0].end == "end_utterance"
-    assert c.data.format.ip == "172.0.0.1"
-    assert c.get("va_log.date_regex") == c.data.va_log.date_regex
+    c = config_handler.Config(c)
+    assert c.assets.audio.path == "./assets/audio_files"
+    assert c.va_log.path == "/tmp/session.log"
+    assert c.va_log.command == "receive 172.0.0.1"
+    assert c.va_log.timedelta.hours == -1
+    assert c.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
+    assert c.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    assert c.utterance_from_va.regexes[0].begin == "start_utterance"
+    assert c.utterance_from_va.regexes[0].end == "end_utterance"
+    assert c.format.ip == "172.0.0.1"
+    assert c.get("va_log.date_regex") == c.va_log.date_regex
     assert c.get("va_log.date_regex1", False) == None
 
 def test_load_config_with_custom_format():
-    c = config_loader.load("utils/uts/data/ut_config/config_custom.json", {"session_name" : "session_1"})
-    assert c.data.assets.audio.path == "./assets/audio_files"
-    assert c.data.va_log.path == "/session_1/session.log"
-    assert c.data.va_log.command == "receive 172.0.0.1"
-    assert c.data.va_log.timedelta.hours == -1
-    assert c.data.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
-    assert c.data.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-    assert c.data.utterance_from_va.regexes[0].begin == "start_utterance"
-    assert c.data.utterance_from_va.regexes[0].end == "end_utterance"
-    assert c.data.format.ip ==  "172.0.0.1"
-    assert c.get("va_log.date_regex") == c.data.va_log.date_regex
+    c = config_loader.load("utils/uts/data/ut_config/config_custom.json")
+    c = config_handler.Config(c, {"session_name" : "session_1"})
+    assert c.assets.audio.path == "./assets/audio_files"
+    assert c.va_log.path == "/session_1/session.log"
+    assert c.va_log.command == "receive 172.0.0.1"
+    assert c.va_log.timedelta.hours == -1
+    assert c.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
+    assert c.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    assert c.utterance_from_va.regexes[0].begin == "start_utterance"
+    assert c.utterance_from_va.regexes[0].end == "end_utterance"
+    assert c.format.ip ==  "172.0.0.1"
+    assert c.get("va_log.date_regex") == c.va_log.date_regex
     assert c.get("va_log.date_regex1", False) == None
 
 def test_load_two_configs():
     c = config_loader.load(["utils/uts/data/ut_config/config1.json", "utils/uts/data/ut_config/config2.json"])
-    assert c.data.assets.audio.path == "./assets/audio_files"
-    assert c.data.va_log.path == "/tmp/session.log"
-    assert c.data.va_log.command == "receive 172.0.0.1"
-    assert c.data.va_log.timedelta.hours == -1
-    assert c.data.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
-    assert c.data.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-    assert c.data.utterance_from_va.regexes[0].begin == "start_utterance"
-    assert c.data.utterance_from_va.regexes[0].end == "end_utterance"
-    assert c.data.format.ip ==  "172.0.0.1"
+    c = config_handler.Config(c)
+    assert c.assets.audio.path == "./assets/audio_files"
+    assert c.va_log.path == "/tmp/session.log"
+    assert c.va_log.command == "receive 172.0.0.1"
+    assert c.va_log.timedelta.hours == -1
+    assert c.va_log.date_format == "%Y-%m-%d %H:%M:%S.%f"
+    assert c.va_log.date_regex == "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    assert c.utterance_from_va.regexes[0].begin == "start_utterance"
+    assert c.utterance_from_va.regexes[0].end == "end_utterance"
+    assert c.format.ip ==  "172.0.0.1"
 
 def _handler_global_config():
     config_handler.init_configs("utils/uts/data/ut_config/config.json")
@@ -126,7 +129,7 @@ def test_handler_config_path_custom():
     foo(config_path = "utils/uts/data/ut_config/config_custom.json")
 
 def test_handler_config_custom():
-    config = config_loader.load("utils/uts/data/ut_config/config_custom.json", custom_format = {"session_name" : "tmp"})
+    config = config_loader.load("utils/uts/data/ut_config/config_custom.json")
     def foo(**kwargs):
         output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"session_name" : "tmp"}, **kwargs)
         assert output["assets.audio.path"] == "./assets/audio_files"
@@ -152,7 +155,7 @@ def test_handler_config_path_custom_format():
     foo(config_path = "utils/uts/data/ut_config/config_custom_without_format.json")
 
 def test_handler_config_custom_format():
-    config = config_loader.load("utils/uts/data/ut_config/config_custom_without_format.json", custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"})
+    config = config_loader.load("utils/uts/data/ut_config/config_custom_without_format.json")
     def foo(**kwargs):
         output = config_handler.handle(["assets.audio.path", "va_log.command", "va_log.path"], custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"}, **kwargs)
         assert output["assets.audio.path"] == "./assets/audio_files"
@@ -437,7 +440,7 @@ def test_new_config_handler_config_path_custom():
     foo(config_path = "utils/uts/data/ut_config/config_custom.json")
 
 def test_new_config_handler_config_custom():
-    config = config_loader.load("utils/uts/data/ut_config/config_custom.json", custom_format = {"session_name" : "tmp"})
+    config = config_loader.load("utils/uts/data/ut_config/config_custom.json")
     def foo(**kwargs):
         config = config_handler.get_config(custom_format = {"session_name" : "data"}, **kwargs)
         assert config.assets.audio.path == "./assets/audio_files"
@@ -454,7 +457,7 @@ def test_new_config_handler_config_path_custom_format():
     foo(config_path = "utils/uts/data/ut_config/config_custom_without_format.json")
 
 def test_new_config_handler_config_custom_format():
-    config = config_loader.load("utils/uts/data/ut_config/config_custom_without_format.json", custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"})
+    config = config_loader.load("utils/uts/data/ut_config/config_custom_without_format.json")
     def foo(**kwargs):
         config = config_handler.get_config(custom_format = {"ip" : "172.0.0.1", "session_name" : "tmp"}, **kwargs)
         assert config.assets.audio.path == "./assets/audio_files"

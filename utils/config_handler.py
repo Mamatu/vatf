@@ -17,27 +17,6 @@ class _Global:
 
 __global_config = _Global()
 
-class _Configs:
-    def __init__(self, pathes = None, custom_format = None):
-        if isinstance(pathes, str):
-            pathes = [pathes]
-        if pathes:
-            self.data = self.load(pathes, custom_format)
-    def load(self, pathes, custom_format):
-        data = {}
-        from vatf.utils import config_loader
-        for path in pathes:
-            config = config_loader.load(path, custom_format = custom_format)
-            data.update(config)
-        return data
-    def get(self, var, raiseIfNotFound = True):
-        from vatf.utils import config_loader
-        if var in self.data:
-            return self.data[var]
-        if raiseIfNotFound:
-            raise NoAttrConfigException(f"Attr {var} not found in config")
-        return None
-
 class Config:
     class _Wrapper:
         def __init__(self, attr):
@@ -78,30 +57,39 @@ class Config:
             for a in array:
                 attr = attr[a]
             return attr
-    def make_format(self, custom_format = None):
-        if custom_format is None:
-            return self.data
+    def make_format(self, data, custom_format = None):
         from vatf.utils import config_common
-        return config_common.process_format(self.data, custom_format)
+        return config_common.process_format(data, custom_format)
     def __init__(self, data, custom_format = None):
+        if isinstance(data, Config):
+            data = data.get_raw_data_copy()
         import copy
         self.__data = copy.deepcopy(data)
         self.data = copy.deepcopy(data)
-        self.data = self.make_format(custom_format)
+        self.data = self.make_format(self.data, custom_format)
     def get_raw_data(self):
         return self.__data
+    def get_raw_data_copy(self):
+        import copy
+        return copy.deepcopy(self.get_raw_data())
     def __getattr__(self, attr):
         return getattr(Config._Wrapper(self.data), attr)
     def __getitem__(self, item):
+        _data = Config._Wrapper(self.data)
         if isinstance(item, str):
             item = item.split(".")
             if len(item) == 1:
-                return self.data[item[0]]
+                return _data[item[0]]
             else:
-                data = self.data
+                data = _data
                 for i in item:
                     data = data[i]
                 return data
+    def get(self, item, raiseIfNotFound = True):
+        try:
+            return self[item]
+        except KeyError as ke:
+            return None
 
 def init_configs(config_pathes, custom_format = None):
     global __global_config
@@ -115,86 +103,29 @@ def reset_configs():
 def get():
     return _global_config_pathes
 
-def _handle_global_config(config_vars, custom_format):
+def _handle_global_config(custom_format):
     global __global_config
     if not __global_config.exist():
         raise NoConfigException("no config is existing")
     from utils import config_loader
     format_dict = {}
-    if custom_format:
-        format_dict.update(custom_format)
     if __global_config.custom_format:
         format_dict.update(__global_config.custom_format)
-    data = config_loader.load(__global_config.config_pathes, custom_format = format_dict, returnRawDict = True)
-    return Config(data)
+    if custom_format:
+        format_dict.update(custom_format)
+    data = config_loader.load(__global_config.config_pathes)
+    return Config(data, custom_format = format_dict)
 
-def _get_global_config(custom_format):
-    global _global_config_pathes
-    if _global_config_pathes is None:
-        raise NoConfigException("no config is existing")
-    return _get_config(_global_config_pathes, custom_format)
+def _handle_config(config, custom_format):
+    return Config(config, custom_format)
 
-def _handle_config(config_vars, config, custom_format, callback = None):
-    _dict = {}
-    for attr in config_vars:
-        value = config.get(attr)
-        if callback: callback(attr, value)
-        if custom_format:
-            value = value.format(**custom_format)
-        _dict[attr] = value 
-    return _dict
-
-def _get_config(config, custom_format, callback = None):
-    _dict = {}
-    for attr in config_vars:
-        value = config.get(attr)
-        if callback: callback(attr, value)
-        if custom_format:
-            value = value.format(**custom_format)
-        _dict[attr] = value 
-    return _dict
-
-def _handle_config_path(config_vars, path, custom_format):
-    from vatf.utils import config_loader
-    config = config_loader.load(path, custom_format = custom_format)
-    return _handle_config(config_vars, config, custom_format = custom_format)
-
-def _handle_config_attrs(config_vars, kw_config_vars, custom_format):
-    def callback(k, v):
-        if v is None:
-            raise NoAttrConfigException("Attr {k} is None")
-    return _handle_config(config_vars, kw_config_vars, custom_format = custom_format, callback = callback)
-
-def _get_config_attrs(kw_config_vars, custom_format):
-    def callback(k, v):
-        if v is None:
-            raise NoAttrConfigException("Attr {k} is None")
-    return _get_config(kw_config_vars, custom_format = custom_format, callback = callback)
-
-def _get_handle_config_dict(kw_config_dict, custom_format):
-    return Config(kw_config_dict, custom_format)
-
-def _get_handle_config_path(config_path, custom_format):
+def _handle_config_path(config_path, custom_format):
     from utils import config_loader
-    data = config_loader.load(config_path, custom_format, returnRawDict = True)
+    data = config_loader.load(config_path)
     return Config(data, custom_format)
 
-def _get_handle_config(config, custom_format):
-    raw_data = config.get_raw_data()
-    return Config(raw_data, custom_format)
-
-def _get_handle_global_config(custom_format):
-    global __global_config
-    if not __global_config.exist():
-        raise NoConfigException("no config is existing")
-    from utils import config_loader
-    format_dict = {}
-    if custom_format:
-        format_dict.update(custom_format)
-    if __global_config.custom_format:
-        format_dict.update(__global_config.custom_format)
-    data = config_loader.load(__global_config.config_pathes, custom_format = format_dict, returnRawDict = True)
-    return Config(data)
+def _handle_config_dict(kw_config_dict, custom_format):
+    return Config(kw_config_dict, custom_format)
 
 def get_config(custom_format = None, **kwargs):
     is_config_path = "config_path" in kwargs.keys()
@@ -215,15 +146,15 @@ def get_config(custom_format = None, **kwargs):
                     return l
             return None
         kw_config_dict = kwargs[get_label()]
-        return _get_handle_config_dict(kw_config_dict, custom_format = custom_format)
+        return _handle_config_dict(kw_config_dict, custom_format = custom_format)
     if is_config_path:
         config_path = kwargs["config_path"]
-        return _get_handle_config_path(config_path, custom_format = custom_format)
+        return _handle_config_path(config_path, custom_format = custom_format)
     if is_config:
         config = kwargs["config"]
-        return _get_handle_config(config, custom_format = custom_format)
+        return _handle_config(config, custom_format = custom_format)
     if len(true_list) == 0:
-        return _get_handle_global_config(custom_format = custom_format)
+        return _handle_global_config(custom_format = custom_format)
 
 def handle(config_vars, custom_format = None, **kwargs):
     is_config_path = "config_path" in kwargs.keys()
@@ -236,21 +167,23 @@ def handle(config_vars, custom_format = None, **kwargs):
     _dict = {}
     if is_config_vars:
         kw_config_vars = kwargs["config_attrs"]
-        return _handle_config_attrs(config_vars, kw_config_vars, custom_format = custom_format)
+        return _handle_config_dict(kw_config_vars, custom_format = custom_format)
     if is_config_path:
         config_path = kwargs["config_path"]
-        return _handle_config_path(config_vars, config_path, custom_format = custom_format)
+        return _handle_config_path(config_path, custom_format = custom_format)
     if is_config:
         config = kwargs["config"]
-        return _handle_config(config_vars, config, custom_format = custom_format)
+        return _handle_config(config, custom_format = custom_format)
     if len(true_list) == 0:
-        return _handle_global_config(config_vars, custom_format = custom_format)
+        return _handle_global_config(custom_format = custom_format)
 
 def has_var(config_var, custom_format = None, **kwargs):
     try:
-        var = get_var(config_var, custom_format, **kwargs)
+        config = get_config(custom_format, **kwargs)
+        var = config.get(config_var)
         return var is not None
-    except:
+    except Exception as ex:
+        print(f"kex {ex}")
         return False
 
 def get_vars(config_vars, custom_format = None, **kwargs):
