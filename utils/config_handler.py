@@ -107,7 +107,7 @@ def _handle_global_config(custom_format):
     global __global_config
     if not __global_config.exist():
         raise NoConfigException("no config is existing")
-    from utils import config_loader
+    from vatf.utils import config_loader
     format_dict = {}
     if __global_config.custom_format:
         format_dict.update(__global_config.custom_format)
@@ -120,7 +120,7 @@ def _handle_config(config, custom_format):
     return Config(config, custom_format)
 
 def _handle_config_path(config_path, custom_format):
-    from utils import config_loader
+    from vatf.utils import config_loader
     data = config_loader.load(config_path)
     return Config(data, custom_format)
 
