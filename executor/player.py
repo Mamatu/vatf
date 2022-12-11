@@ -14,6 +14,18 @@ def cvlc_play_audio(path):
     proc = subprocess.Popen(command, shell=True)
     proc.wait()
 
+def load_audio_files(**kwargs):
+    import os
+    from vatf.utils import config_handler
+    config = config_handler.get_config(**kwargs)
+    audio_configs = config.assets
+    if isinstance(audio_configs, str):
+        audio_configs = [audio_configs]
+    for audio_config in audio_configs:
+        path = audio_config.path
+        files = os.listdir(path)
+
+
 @vatf_api.public_api("player")
 def play_audio(*args, **kwargs):
     if "path" in kwargs:

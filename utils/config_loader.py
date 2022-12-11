@@ -92,8 +92,6 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
     for item in array:
         data = _update_dict_deeply(data, item)
     return data
-    #data = _convert_if_dict(data)
-    #return _Config(data)
 
 def _load_json(config_pathes, schema_json_path):
     data = load_raw(config_pathes, schema_json_path)

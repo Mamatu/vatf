@@ -183,7 +183,6 @@ def has_var(config_var, custom_format = None, **kwargs):
         var = config.get(config_var)
         return var is not None
     except Exception as ex:
-        print(f"kex {ex}")
         return False
 
 def get_vars(config_vars, custom_format = None, **kwargs):
