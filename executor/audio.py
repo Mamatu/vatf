@@ -28,7 +28,7 @@ def record_inputs_outputs_from_config(**kwargs):
     _processes.append(shell.bg(rec_command))
 
 
-def record_stop():
+def stop():
     global _processes
     for p in _processes:
         shell.kill(p)

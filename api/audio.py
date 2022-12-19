@@ -11,3 +11,7 @@ def record_inputs_outputs():
 def record_inputs_outputs_from_config(**kwargs):
     utils.print_func_info()
     _get_api().record_inputs_outputs_from_config(**kwargs)
+
+def stop():
+    utils.print_func_info()
+    _get_api().stop()
