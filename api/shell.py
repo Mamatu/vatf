@@ -10,7 +10,7 @@ def fg(command):
 
 def bg(command, shell = True):
     utils.print_func_info()
-    _get_api().bg(command, shell)
+    return _get_api().bg(command, shell)
 
 def kill(process):
     utils.print_func_info()
