@@ -518,3 +518,31 @@ def test_use_case_2(mocker):
             assert config.va_log.command == expected_command
         foo()
 
+def test_py_use_case(mocker):
+    ut_data_path = "./utils/uts/data/ut_config/test_use_case_3"
+    with mocked_now(datetime.datetime(2020, 2, 2, 23, 45, 50)):
+        config_path = os.path.join(ut_data_path, "config.py")
+        config_handler.init_configs([config_path])
+        def foo(**kwargs):
+            config = config_handler.get_config(**kwargs)
+            assert config.vatf.branch == "develop_20220815"
+            assert config.audio.path == "/tmp/data/session_2020_02_02_23_45_50/audio"
+            assert config.assets.audio.path == "./assets/audio_files"
+            assert len(config.assets.audio.files) == 2
+            assert config.assets.audio.files[0].name == "alexa_are_you_there.wav"
+            assert config.assets.audio.files[0].tags[0] == "verification"
+            assert config.assets.audio.files[1].name == "alexa_tell_me_a_joke.wav"
+            assert config.assets.audio.files[1].tags[0] == "joke"
+            date_format = "%Y-%m-%d %H:%M:%S.%f"
+            date_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+            assert config.va_log.path == "/tmp/data/session_2020_02_02_23_45_50/log"
+            assert config.va_log.timedelta.hours == -1
+            assert config.va_log.date_format == date_format
+            assert config.va_log.date_regex == date_regex
+            assert config.wait_for_regex.path == "/tmp/data/session_2020_02_02_23_45_50/log"
+            assert config.wait_for_regex.date_format == date_format
+            assert config.wait_for_regex.date_regex == date_regex
+            assert len(config.utterance_from_va.regexes) == 1
+            assert config.utterance_from_va.regexes[0].begin == "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"
+            assert config.utterance_from_va.regexes[0].end == "DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true"
+        foo()
