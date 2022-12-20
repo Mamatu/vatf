@@ -6,7 +6,6 @@ import jsonschema
 from vatf.utils import config_common
 
 class Loader:
-    _fields = ["vatf", "assets", "va_log", "audio", "utterance_to_va", "utterance_from_va"]
     def __init__(self, pathes, schema_path = config_common.get_global_schema_path()):
         if isinstance(pathes, str):
             pathes = [pathes]
@@ -34,8 +33,9 @@ class Loader:
         data = {}
         module = importlib.import_module(name = path)
         def has_ul_variants(f):
-            return hasattr(module, f.lower()) and hasattr(module, f.uppter())
-        for f in Loader._fields:
+            return hasattr(module, f.lower()) and hasattr(module, f.upper())
+        fields = [f for f in list(module.__dict__.keys()) if not f.startswith("_") and not f.startswith("__")]
+        for f in fields:
             def load_field(f):
                 if has_ul_variants(f):
                     raise Exception(f"config {path} contains both variants of field {f}: {f.lower()} and {f.upper()} must be one!")
