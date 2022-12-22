@@ -45,7 +45,12 @@ class Config:
                     if isinstance(self.attr[attr], dict):
                         return Config._Wrapper(self.attr[attr])
                     elif isinstance(self.attr[attr], list):
-                        wrappers = [Config._Wrapper(a) for a in self.attr[attr]]
+                        wrappers = []
+                        for a in self.attr[attr]:
+                            if isinstance(a, list) or isinstance(a, dict):
+                                wrappers.append(Config._Wrapper(a))
+                            else:
+                                wrappers.append(a)
                         return wrappers
                     else:
                         return self.attr[attr]

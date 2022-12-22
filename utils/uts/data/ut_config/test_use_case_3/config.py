@@ -1,6 +1,6 @@
 VATF = {"branch" : "develop_20220815"}
 
-session_dir = "/tmp/data/session_{{config_loading_time}}"
+session_dir = "/tmp/data/session_{config_loading_time}"
 
 AUDIO  = {
     "path" : f"{session_dir}/audio"
@@ -21,7 +21,7 @@ ASSETS = {
     }
 }
 
-log_path = f"{session_dir}/log"
+log_path = f"{session_dir}/log/session.log"
 date_format = "%Y-%m-%d %H:%M:%S.%f"
 date_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
 
