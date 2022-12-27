@@ -17,6 +17,24 @@ def sleep(duration):
 def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 
+def _handle_single_regex(regex, filepath):
+    pass
+
+def _handle_multiple_regex(regex, filepath):
+    pass
+
+def _wait_loop(regex, timeout, pause, filepath, start_point):
+    while True:
+        out = search.find(filepath = filepath, regex = regex)
+        print(f"len: {len(out)}")
+        if len(out) > 0:
+            return True
+        t.sleep(pause)
+        end_point = t.time()
+        if (end_point - start_point) > timeout:
+            print(f"timeout: {end_point} {start_point}")
+            return False
+
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.log_snapshot_class as log_snapshot_class
     log_snapshot = log_snapshot_class.make()
@@ -29,15 +47,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         command = command.format(log_path = temp_filepath)
         log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
         start_point = t.time()
-        while True:
-            out = search.find(filepath = temp_filepath, regex = regex)
-            if len(out) > 0:
-                return True
-            t.sleep(pause)
-            end_point = t.time()
-            if (end_point - start_point) > timeout:
-                print(f"timeout: {end_point} {start_point}")
-                return False
+        return _wait_loop(regex, timeout, pause, temp_filepath, start_point)
     finally:
         log_snapshot.stop()
         temp_file.close()
@@ -54,16 +64,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     date_regex = output[wait_for_regex_date_regex_key]
     print(f"wait_for_regex -> {log_filepath}")
     start_point = t.time()
-    while True:
-        out = search.find(filepath = log_filepath, regex = regex)
-        print(f"len: {len(out)}")
-        if len(out) > 0:
-            return True
-        t.sleep(pause)
-        end_point = t.time()
-        if (end_point - start_point) > timeout:
-            print(f"timeout: {end_point} {start_point}")
-            return False
+    return _wait_loop(regex, timeout, pause, log_filepath, start_point)
 
 @vatf_api.public_api("wait")
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
