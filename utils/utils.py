@@ -31,16 +31,22 @@ def name_and_args():
     return [(i, values[i]) for i in args]
 
 def get_caller_args(caller):
-    args, _, _, values = inspect.getargvalues(caller)
-    return [(i, values[i]) for i in args]
+    args, varargs, keywords, values = inspect.getargvalues(caller)
+    output = [(i, values[i]) for i in args]
+    if varargs: output.extend([(i) for i in values[varargs]])
+    if keywords: output.extend([(k, v) for k, v in values[keywords].items()])
+    return output
 
-def print_func_info():
-    caller = inspect.stack()[1][0]
-    function_name = inspect.stack()[1][3]
+def get_func_info(level = 1):
+    caller = inspect.stack()[level][0]
+    function_name = inspect.stack()[level][3]
     args = get_caller_args(caller)
     args = str(args)
     args = args.replace("[", "").replace("]", "")
-    print(f"{function_name} ({args})")
+    return f"{function_name} ({args})"
+
+def print_func_info():
+    print(get_func_info(level = 2))
 
 def get_temp_file(mode = "r+"):
     import tempfile
