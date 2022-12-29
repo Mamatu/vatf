@@ -124,7 +124,7 @@
         },
         "date_format" : {
           "type" : "string",
-          "description" : "dare format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"
+          "description" : "date format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"
         },
         "date_regex" : {
           "type" : "string",
