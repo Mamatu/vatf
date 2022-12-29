@@ -1,5 +1,11 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import enum
-import time as t
 
 class RegexOperators(enum.Enum):
     AND = 0,
@@ -46,7 +52,7 @@ def _handle_single_regex(regex, filepath):
 def _is_array(r):
     return isinstance(r, list) or isinstance(r, tuple)
 
-def _regex_operators_index(regex, filepath):
+def _handle_multiple_regexes(regex, filepath):
     import copy
     regex_copy = copy.copy(regex)
     regex_copy.reverse()
@@ -65,10 +71,6 @@ def _regex_operators_index(regex, filepath):
     index = occurences.pop(0)
     ro = regex_copy[index]
     
-
-def _handle_multiple_regexes(regex, filepath):
-    pass
-
 def _wait_loop(regex, timeout, pause, filepath, start_point):
     while True:
         out = None
@@ -78,8 +80,9 @@ def _wait_loop(regex, timeout, pause, filepath, start_point):
             out = _handle_single_regex(regex, filepath)
         if out is not None and len(out) > 0:
             return True
-        t.sleep(pause)
-        end_point = t.time()
+        import time
+        time.sleep(pause)
+        end_point = time.time()
         if (end_point - start_point) > timeout:
             print(f"timeout: {end_point} {start_point}")
             return False
@@ -97,7 +100,8 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         command = config_handler.get_var(wait_command_key, **kwargs)
         command = command.format(log_path = temp_filepath)
         log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
-        start_point = t.time()
+        import time
+        start_point = time.time()
         return _wait_loop(regex, timeout, pause, temp_filepath, start_point)
     finally:
         log_snapshot.stop()
@@ -115,7 +119,8 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     date_format = output[wait_for_regex_date_format_key]
     date_regex = output[wait_for_regex_date_regex_key]
     print(f"wait_for_regex -> {log_filepath}")
-    start_point = t.time()
+    import time
+    start_point = time.time()
     return _wait_loop(regex, timeout, pause, log_filepath, start_point)
 
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
