@@ -7,12 +7,6 @@ import logging
 
 import inspect
 
-DATE_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-
-TIMESTAMP_REGEX = DATE_REGEX
-TIMESTAMP_FORMAT = DATE_FORMAT
-
 def count_lines_in_file(path):
     wc_cmd = f"wc -l {path}"
     logging.debug(f"Launch {wc_cmd}")
@@ -60,6 +54,9 @@ def get_func_info(level = 1):
 
 def print_func_info():
     print(get_func_info(level = 2))
+
+def get_tmp_file(mode = "r+"):
+    return get_temp_file(mode = mode)
 
 def get_temp_file(mode = "r+"):
     import tempfile

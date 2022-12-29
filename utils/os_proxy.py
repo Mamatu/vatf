@@ -63,13 +63,13 @@ def md5sum(filepath):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def create_file(mode, data = None, path = None):
+def create_tmp_file(mode, data = None, path = None):
+    utils.print_func_info()
     file = None
     if path is None:
-        file = utils.get_temp_file(mode = mode)
+        file = utils.get_tmp_file(mode = mode)
     else:
         file = open(path, mode = mode)
-    logging.debug(f"{create_file.__name__}: {path} {mode}")
     if data:
         file.write(data)
     file.flush()

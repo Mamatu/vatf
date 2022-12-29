@@ -11,6 +11,9 @@ import os
 
 from vatf.utils import utils
 
+TIMESTAMP_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 class UtilsTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
@@ -123,8 +126,8 @@ class UtilsTests(TestCase):
         self.assertEqual("2021-12-19 17:59:17.171", out[0].matched[0])
         self.assertEqual("2021-12-19 17:59:17.172", out[1].matched[0])
     def test_get_total_milliseconds(self):
-        date1 = datetime.datetime.strptime("2021-12-19 17:59:17.171", utils.DATE_FORMAT)
-        date2 = datetime.datetime.strptime("2021-12-19 17:59:18.171", utils.DATE_FORMAT)
+        date1 = datetime.datetime.strptime("2021-12-19 17:59:17.171", TIMESTAMP_FORMAT)
+        date2 = datetime.datetime.strptime("2021-12-19 17:59:18.171", TIMESTAMP_FORMAT)
         self.assertEqual(1000, utils.get_total_milliseconds(date2 - date1))
     def test_grep_line_regex_with_line_two_lines(self):
         testfile_path = self.test_file.name

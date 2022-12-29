@@ -15,6 +15,9 @@ import datetime
 import threading
 import time
 
+TIMESTAMP_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 def create_file( mode, data = None):
     path = utils.get_temp_file()
     with open(path, mode) as f:
@@ -25,7 +28,9 @@ def create_file( mode, data = None):
                 f.writelines(data)
     return path
 
+@patch("time.sleep")
 def test_wait_for_regex():
+    time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     callbacks = wait.WfrCallbacks()
     callbacks.success = MagicMock()
     callbacks.timeout = MagicMock()
@@ -39,15 +44,17 @@ def test_wait_for_regex():
     "2022-01-29 20:54:55.600 line6\n",
     "2022-01-29 20:54:56.568 line7\n"
     ]
-    log_path = os_proxy.create_file("w", data = "".join(text))
-    start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", utils.TIMESTAMP_FORMAT)
+    log_path = os_proxy.create_tmp_file("w", data = "".join(text))
+    start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", TIMESTAMP_FORMAT)
     wait.wait_for_regex("line7", log_path, callbacks = callbacks)
-    line7_timestamp = datetime.datetime.strptime("2022-01-29 20:54:56.568", utils.TIMESTAMP_FORMAT)
+    line7_timestamp = datetime.datetime.strptime("2022-01-29 20:54:56.568", TIMESTAMP_FORMAT)
     callbacks.success.assert_has_calls([call(7, "line7")])
     assert not callbacks.timeout.called
     assert not callbacks.pre_sleep.called
 
-def test_wait_for_regex_timeout():
+@patch("time.sleep")
+def test_wait_for_regex_timeout(time_sleep_mock):
+    time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     text = [
     "2022-01-29 20:54:55.567 line1\n",
     "2022-01-29 20:54:55.567 line2\n",
@@ -56,9 +63,9 @@ def test_wait_for_regex_timeout():
     "2022-01-29 20:54:55.570 line5\n",
     "2022-01-29 20:54:55.600 line6\n",
     ]
-    log_path = os_proxy.create_file("w", data = "".join(text))
+    log_path = os_proxy.create_tmp_file("w", data = "".join(text))
     # ToDo: in this test in wait_for_regex should be used mocked timer.sleep not real!
-    start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", utils.TIMESTAMP_FORMAT)
+    start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", TIMESTAMP_FORMAT)
     timeout = datetime.timedelta(seconds = 0.5)
     pause = datetime.timedelta(seconds = 0.5)
     pause1 = datetime.timedelta(seconds = 0.45)
@@ -74,7 +81,9 @@ def test_wait_for_regex_timeout():
     fail_msg = f"Condition doesn't pass: {pause1} < {c_args} and {c_args} < {pause2}"
     self.assertTrue(pause1 < c_args and c_args < pause2, fail_msg)
 
+@patch("time.sleep")
 def test_wait_for_regex_monitor():
+    time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     log_temp_file = utils.get_temp_file()
     try:
         log_path = log_temp_file.name
@@ -100,3 +109,32 @@ def test_wait_for_regex_monitor():
     finally:
         log_temp_file.close()
     log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_conditioner_1():
+    time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
+    text = [
+    "2022-01-29 20:54:55.567 line1\n",
+    "2022-01-29 20:54:55.567 line2\n",
+    "2022-01-29 20:54:55.568 line3\n",
+    "2022-01-29 20:54:55.569 line4\n",
+    "2022-01-29 20:54:55.570 line5\n",
+    "2022-01-29 20:54:55.600 line6\n",
+    ]
+    log_path = os_proxy.create_tmp_file("w", data = "".join(text))
+    # ToDo: in this test in wait_for_regex should be used mocked timer.sleep not real!
+    start_time = datetime.datetime.strptime("2022-01-29 20:54:55.567", TIMESTAMP_FORMAT)
+    timeout = datetime.timedelta(seconds = 0.5)
+    pause = datetime.timedelta(seconds = 0.5)
+    pause1 = datetime.timedelta(seconds = 0.45)
+    pause2 = datetime.timedelta(seconds = 0.51)
+    wait.wait_for_regex("line7", log_path, callbacks = callbacks, timeout = timeout, pause = pause)
+    callbacks.timeout.assert_has_calls([call(timeout)])
+    self.assertFalse(callbacks.success.called)
+    c_args = callbacks.pre_sleep.call_args
+    c_args = c_args[0]
+    if isinstance(c_args, tuple): # ToDo: workaround for python 3.6 and 3.7 which in different way handle call_args
+        c_args = c_args[0]
+    self.assertTrue(isinstance(c_args, datetime.timedelta), f"{c_args}")
+    fail_msg = f"Condition doesn't pass: {pause1} < {c_args} and {c_args} < {pause2}"
+    self.assertTrue(pause1 < c_args and c_args < pause2, fail_msg)

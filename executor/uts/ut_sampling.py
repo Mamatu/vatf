@@ -12,36 +12,39 @@ import os
 from vatf.utils import utils, os_proxy
 from vatf.executor import mkdir, sampling
 
+TIMESTAMP_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
+
 def test_get_creation_date_empty():
-    f = os_proxy.create_file("tw")
+    f = os_proxy.create_tmp_file("tw")
     p = f.name
     expectedDate = utils.get_modification_date(p)
-    actualDate = sampling.get_creation_date(p)
+    actualDate = sampling.get_creation_date(p, timestamp_format = TIMESTAMP_FORMAT)
     assert expectedDate == actualDate
     f.close()
 
 def test_get_creation_date_has_date():
     date_str = "2020-12-19 17:59:17.172"
-    f = os_proxy.create_file("tw", data = date_str)
+    f = os_proxy.create_tmp_file("tw", data = date_str)
     p = f.name
-    expectedDate = datetime.datetime.strptime(date_str, sampling.DATE_FORMAT)
-    actualDate = sampling.get_creation_date(p)
+    expectedDate = datetime.datetime.strptime(date_str, TIMESTAMP_FORMAT)
+    actualDate = sampling.get_creation_date(p, timestamp_format = TIMESTAMP_FORMAT)
     assert expectedDate == actualDate
     f.close()
 
 def test_get_creation_date_is_binary():
     data = [0x98, 0xaf, 0xb7, 0x93, 0xbb, 0x03, 0xbf, 0x8e]
-    f = os_proxy.create_file("bw", data = bytes(data))
+    f = os_proxy.create_tmp_file("bw", data = bytes(data))
     p = f.name
     expectedDate = utils.get_modification_date(p)
-    actualDate = sampling.get_creation_date(p)
+    actualDate = sampling.get_creation_date(p, timestamp_format = TIMESTAMP_FORMAT)
     assert expectedDate == actualDate
     f.close()
 
 def test_find_start_end_regexes():
     start_regex = "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"
     end_regex = "DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true"
-    regexes = sampling.find_start_end_regexes("executor/uts/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
+    regexes = sampling.find_start_end_regexes("executor/uts/data/sampling/test_log.txt", start_regex, end_regex, 0, -1, timestamp_regex = TIMESTAMP_REGEX)
     assert "2021-12-22 18:32:58.850" == regexes[0][0].matched[0]
     assert "2021-12-22 18:33:02.292" == regexes[0][1].matched[0]
     assert "2021-12-22 18:33:14.189" == regexes[1][0].matched[0]
@@ -50,12 +53,12 @@ def test_find_start_end_regexes():
     logging.debug(f"Found regexes[1]: {regexes[1][0]}, {regexes[1][1]}")
 
 def test_extract_samples():
-    recording_start_date = sampling.get_recording_start_date("executor/uts/data/sampling/test_audio.pcm", "executor/uts/data/sampling/test_audio.pcm.date")
-    assert datetime.datetime.strptime("2021-12-22 18:32:54.932014", sampling.DATE_FORMAT) == recording_start_date
+    recording_start_date = sampling.get_recording_start_date("executor/uts/data/sampling/test_audio.pcm", "executor/uts/data/sampling/test_audio.pcm.date", timestamp_format = TIMESTAMP_FORMAT)
+    assert datetime.datetime.strptime("2021-12-22 18:32:54.932014", TIMESTAMP_FORMAT) == recording_start_date
     start_regex = "DialogUXStateAggregator:executeSetState:from=THINKING,to=SPEAKING,validTransition=true"
     end_regex = "DialogUXStateAggregator:executeSetState:from=SPEAKING,to=IDLE,validTransition=true"
-    regexes = sampling.find_start_end_regexes("executor/uts/data/sampling/test_log.txt", start_regex, end_regex, 0, -1)
-    samples = sampling.extract_samples(recording_start_date, regexes, "executor/uts/data/sampling/test_audio.wav", "/tmp/", sample_format = "wav")
+    regexes = sampling.find_start_end_regexes("executor/uts/data/sampling/test_log.txt", start_regex, end_regex, 0, -1, timestamp_regex = TIMESTAMP_REGEX)
+    samples = sampling.extract_samples(recording_start_date, regexes, "executor/uts/data/sampling/test_audio.wav", "/tmp/", sample_format = "wav", timestamp_format = TIMESTAMP_FORMAT)
     import hashlib
     assert (len(samples) == 2)
     def checksum(path):

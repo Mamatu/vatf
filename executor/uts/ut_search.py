@@ -25,7 +25,7 @@ def test_search_find_one_regex():
     "2022-01-29 20:54:55.600 line6\n",
     "2022-01-29 20:54:56.568 line7\n"
     ]
-    file = os_proxy.create_file("w", data = "".join(text))
+    file = os_proxy.create_tmp_file("w", data = "".join(text))
     path = file.name
     output = search.find("line5", filepath = path)
     assert len(output) == 1
@@ -44,7 +44,7 @@ def test_search_find_one_regex_from_config():
     "2022-01-29 20:54:56.568 line7\n"
     ]
     config_handler.init_configs(["executor/uts/data/search/config.json"])
-    file = os_proxy.create_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
+    file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
     assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
     output = search.find("line5")
@@ -63,7 +63,7 @@ def test_search_find_one_regex_only_match():
     "2022-01-29 20:54:55.600 line6\n",
     "2022-01-29 20:54:56.568 line7\n"
     ]
-    file = os_proxy.create_file("w", data = "".join(text))
+    file = os_proxy.create_tmp_file("w", data = "".join(text))
     path = file.name
     output = search.find("line5", filepath = path, only_match = True)
     assert len(output) == 1
@@ -82,7 +82,7 @@ def test_search_find_one_regex_only_match_from_config():
     "2022-01-29 20:54:56.568 line7\n"
     ]
     config_handler.init_configs(["executor/uts/data/search/config.json"])
-    file = os_proxy.create_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
+    file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
     assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
     output = search.find("line5", only_match = True)
@@ -101,7 +101,7 @@ def test_search_find_regex_only_match():
     "2022-01-29 20:54:55.600 line6\n",
     "2022-01-29 20:54:56.568 line7\n"
     ]
-    file = os_proxy.create_file("w", data = "".join(text))
+    file = os_proxy.create_tmp_file("w", data = "".join(text))
     path = file.name
     output = search.find("line[5,6,7]", filepath = path, only_match = True)
     assert len(output) == 3
@@ -124,7 +124,7 @@ def test_search_find_regex_only_match_path_from_config():
     "2022-01-29 20:54:56.568 line7\n"
     ]
     config_handler.init_configs(["executor/uts/data/search/config.json"])
-    file = os_proxy.create_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
+    file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
     assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
     output = search.find("line[5,6,7]", filepath = None, only_match = True)
@@ -147,7 +147,7 @@ def test_search_contains():
     "2022-01-29 20:54:55.600 line6\n",
     "2022-01-29 20:54:56.568 line7\n"
     ]
-    file = os_proxy.create_file("w", data = "".join(text))
+    file = os_proxy.create_tmp_file("w", data = "".join(text))
     path = file.name
     assert False == search.contains("line8", filepath = path)
     assert True == search.contains("line7", filepath = path)
@@ -165,7 +165,7 @@ def test_search_contains_path_from_config():
     "2022-01-29 20:54:56.568 line7\n"
     ]
     config_handler.init_configs(["executor/uts/data/search/config.json"])
-    file = os_proxy.create_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
+    file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
     assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
     assert False == search.contains("line8")
