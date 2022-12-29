@@ -41,8 +41,21 @@ def get_func_info(level = 1):
     caller = inspect.stack()[level][0]
     function_name = inspect.stack()[level][3]
     args = get_caller_args(caller)
-    args = str(args)
-    args = args.replace("[", "").replace("]", "")
+    for arg in args:
+        if isinstance(arg, tuple):
+            if len(arg) == 2:
+                idx = args.index(arg)
+                if isinstance(arg[1], str):
+                    args[idx] = f"{arg[0]} = \'{arg[1]}\'"
+                else:
+                    args[idx] = f"{arg[0]} = {arg[1]}"
+            elif len(arg) == 1:
+                args[idx] = f"{arg[0]}"
+            else:
+                raise Exception("Not supported length of arg")
+    args = map(lambda arg: str(arg), args)
+    args = ", ".join(args)
+    args = args.replace("[", "").replace("]", "").replace("\"", "")
     return f"{function_name} ({args})"
 
 def print_func_info():
