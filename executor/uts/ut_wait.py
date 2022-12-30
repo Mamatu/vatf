@@ -36,7 +36,7 @@ def create_file( mode, data = None):
     return path
 
 @patch("time.sleep")
-def test_wait_for_regex():
+def test_wait_for_regex(time_sleep_mock):
     time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     callbacks = wait.WfrCallbacks()
     callbacks.success = MagicMock()
@@ -89,7 +89,7 @@ def test_wait_for_regex_timeout(time_sleep_mock):
     self.assertTrue(pause1 < c_args and c_args < pause2, fail_msg)
 
 @patch("time.sleep")
-def test_wait_for_regex_monitor():
+def test_wait_for_regex_monitor(time_sleep_mock):
     time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     log_temp_file = utils.get_temp_file()
     try:
@@ -118,7 +118,7 @@ def test_wait_for_regex_monitor():
     log_file.close()
 
 @patch("time.sleep")
-def test_wait_for_regex_conditioner_1():
+def test_wait_for_regex_conditioner_1(time_sleep_mock):
     time_sleep_mock.side_effect = lambda time: print(f"sleep {time}")
     text = [
     "2022-01-29 20:54:55.567 line1\n",
