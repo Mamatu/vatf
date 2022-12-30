@@ -5,7 +5,6 @@ __license__ = "Apache License"
 __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
-from unittest import TestCase
 from unittest.mock import Mock
 from unittest.mock import patch
 
@@ -17,7 +16,7 @@ import random
 
 from vatf.utils import rosa
 
-class RosaTests(TestCase):
+class TestRosa:
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)

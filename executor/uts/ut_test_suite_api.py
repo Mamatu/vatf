@@ -21,4 +21,4 @@ def Test_2():
     print("Test_2")
     wait.sleep_random(1, 2)
 
-test.create_suite()
+#test.create_suite()

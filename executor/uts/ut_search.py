@@ -19,7 +19,7 @@ import os
 from vatf.utils import utils, os_proxy, config_handler
 from vatf.executor import search
 
-def teardown_module():
+def teardown_function():
     config_handler.reset_configs()
 
 def test_search_find_one_regex():

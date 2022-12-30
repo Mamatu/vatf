@@ -10,7 +10,9 @@ import enum
 class RegexOperator(enum.Enum):
     AND = 0,
     OR = 1,
-    IN_ORDER = 2
+    IN_ORDER_LINE = 2,
+    IN_ORDER_REAL_TIMESTAMP = 3,
+    IN_ORDER_LOG_TIMESTAMP = 4
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
@@ -45,7 +47,7 @@ def _make_outputs(regex, filepath, ro):
             outputs.extend(search.find(filepath = filepath, regex = r))
     return outputs
 
-def _handle_and(regex, filepath):
+def _handle_and(regex, filepath, **kwargs):
     regex = _remove_operator(regex, RegexOperator.AND)
     outputs = _make_outputs(regex, filepath, RegexOperator.AND)
     if len(outputs) == len(regex):
@@ -53,29 +55,50 @@ def _handle_and(regex, filepath):
         if status: return sorted(outputs, key = lambda o: o.line_number)[-1]
     return False
 
-def _handle_or(regex, filepath):
+def _handle_or(regex, filepath, **kwargs):
     regex = _remove_operator(regex, RegexOperator.OR)
     outputs = _make_outputs(regex, filepath, RegexOperator.OR)
     for o in outputs:
         if o: return o
     return False
 
-def _handle_in_order(regex, filepath):
-    regex = _remove_operator(regex, RegexOperator.IN_ORDER)
-    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER)
+def _handle_in_order_line(regex, filepath, **kwargs):
+    regex = _remove_operator(regex, RegexOperator.IN_ORDER_LINE)
+    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LINE)
     _out = [o is not None for o in outputs]
     if all(_out):
         lines = [o.line_number if o else o for o in outputs]
         return lines == sorted(lines)
     return False
 
-def _handle_regex_operator(regex, ro, filepath):
-    if ro == RegexOperator.AND:
-        return _handle_and(regex, filepath)
-    elif ro == RegexOperator.OR:
-        return _handle_or(regex, filepath)
-    elif ro == RegexOperator.IN_ORDER:
-        return _handle_in_order(regex, filepath)
+def _handle_in_order_log_timestamp(regex, filepath, **kwargs):
+    if not "timestamp_regex" in kwargs:
+        raise Exception("RegexOperator.IN_ORDER_LOG_TIMESTAMP requires timestamp_regex from config")
+    timestamp_regex = kwargs['timestamp_regex']
+    regex = _remove_operator(regex, RegexOperator.IN_ORDER_LOG_TIMESTAMP)
+    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LOG_TIMESTAMP)
+    _out = [o is not None for o in outputs]
+    if all(_out):
+        lines = [o.line_number if o else o for o in outputs]
+        return lines == sorted(lines)
+    return False
+
+def _handle_in_order_real_timestamp(regex, filepath, **kwargs):
+    regex = _remove_operator(regex, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
+    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
+    _out = [o is not None for o in outputs]
+    if all(_out):
+        lines = [o.line_number if o else o for o in outputs]
+        return lines == sorted(lines)
+    return False
+
+def _handle_regex_operator(regex, ro, filepath, **kwargs):
+    _handlers = {RegexOperator.AND : _handle_and,
+            RegexOperator.OR : _handle_or,
+            RegexOperator.IN_ORDER_LINE : _handle_in_order_line,
+            RegexOperator.IN_ORDER_REAL_TIMESTAMP : _handle_in_order_real_timestamp}
+    if ro in regex:
+        return _handlers[ro](regex, filepath, **kwargs)
     else:
         raise Exception(f"Not supported regex operator: {ro}")
 
@@ -87,26 +110,28 @@ def _handle_single_regex(regex, filepath):
     out = search.find(filepath = filepath, regex = regex)
     return out
 
-def _handle_multiple_regexes(regex, filepath):
+def _handle_multiple_regexes(regex, filepath, **kwargs):
     import copy
     regex_copy = copy.copy(regex)
     regex_copy.reverse()
     for r in regex_copy:
         if _is_array(r):
-            out = _handle_multiple_regexes(r, filepath)
+            out = _handle_multiple_regexes(r, filepath, **kwargs)
             assert isinstance(out, bool)
             idx = regex_copy.index(r)
             regex_copy[idx] = out
     regex_copy.reverse()
     regex = regex_copy
     ro = _get_operators(regex)
-    return _handle_regex_operator(regex, ro, filepath)
+    return _handle_regex_operator(regex, ro, filepath, **kwargs)
 
-def _wait_loop(regex, timeout, pause, filepath, start_point):
+def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
+    from vatf.utils import config_handler
+    timestamp_regex = config_handler.get_var("wait_for_regex.date_regex", **kwargs)
     while True:
         status = False
         if _is_array(regex):
-            status = _handle_multiple_regexes(regex, filepath)
+            status = _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex)
         else:
             status = _handle_single_regex(regex, filepath)
         if status: return True
@@ -132,7 +157,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
         import time
         start_point = time.time()
-        return _wait_loop(regex, timeout, pause, temp_filepath, start_point)
+        return _wait_loop(regex, timeout, pause, temp_filepath, start_point, **kwargs)
     finally:
         log_snapshot.stop()
         temp_file.close()
@@ -151,7 +176,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     print(f"wait_for_regex -> {log_filepath}")
     import time
     start_point = time.time()
-    return _wait_loop(regex, timeout, pause, log_filepath, start_point)
+    return _wait_loop(regex, timeout, pause, log_filepath, start_point, **kwargs)
 
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler

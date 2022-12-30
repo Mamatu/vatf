@@ -100,13 +100,13 @@ def parse_number_suffix(string):
     logging.debug(f"{parse_number_suffix.__name__}: {output}")
     return output
 
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, onlyMatch = False):
+def grep(filepath, regex, maxCount = -1, fromLine = 1, onlyMatch = False):
     from vatf.utils import grep
-    return grep.grep(filepath, regex, removeTmpFiles, maxCount, fromLine, onlyMatch)
+    return grep.grep(filepath, regex, maxCount, fromLine, onlyMatch)
 
-def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
+def grep_regex_in_line(filepath, grep_regex, match_regex, maxCount = -1, fromLine = 1):
     from vatf.utils import grep
-    return grep.grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles, maxCount, fromLine)
+    return grep.grep_regex_in_line(filepath, grep_regex, match_regex, maxCount, fromLine)
 
 def get_counter(dirpath, pattern, suffix = None):
     def remove_suffix(m, suffix):

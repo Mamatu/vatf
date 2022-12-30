@@ -21,15 +21,10 @@ from vatf.utils import utils
 TIMESTAMP_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
 TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
-class UtilsTests(TestCase):
-    def __init__(self, arg):
-        logging.basicConfig(level=logging.DEBUG)
-        TestCase.__init__(self, arg)
-        self.test_file = None
-        self.remove_test_file = True
-    def  setUp(self):
+class TestUtils(TestCase):
+    def setup_method(self, method):
         self.test_file = utils.get_temp_file()
-    def tearDown(self):
+    def teardown_method(self, method):
         self.test_file.close()
     @patch("os.listdir")
     def test_find_in_dir_no_matches(self, os_listdir_mock):

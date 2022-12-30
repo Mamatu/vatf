@@ -15,15 +15,15 @@ import textwrap
 import sys
 import os
 
-class TestTests(TestCase):
+class _TestTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
-    def setUp(self):
+    def setup_method(self, method):
         from vatf import vatf_api
-        vatf_api.set_api_type(vatf_api.EXECUTOR)
+        vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
         logging.getLogger().setLevel(logging.DEBUG)
-    def test_test_suite_api(self):
+    def _test_test_suite_api(self):
         test_folder = ["assets", "config.json", "run_test.sh", "test.py"]
         suite_path = utils.get_temp_file()
         logging.debug(f"suite_path: {suite_path}")

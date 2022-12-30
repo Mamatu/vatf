@@ -19,7 +19,7 @@ class TestTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
-    def setUp(self):
+    def setup_class(self):
         logging.getLogger().setLevel(logging.DEBUG)
     def test_test_suite_api(self):
         test_folder = ["assets", "config.json", "run_test.sh", "test.py"]

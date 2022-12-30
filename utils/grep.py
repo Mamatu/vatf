@@ -33,7 +33,7 @@ class GrepOutput:
         out = line.split(':', 1)
         return GrepOutput(out[0], out[1], line_offset)
 
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, onlyMatch = False):
+def grep(filepath, regex, maxCount = -1, fromLine = 1, onlyMatch = False):
     from vatf.utils.utils import open_temp_file
     import subprocess, os
     if fromLine < 1:
@@ -77,12 +77,19 @@ def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, on
         out = readlines(fout)
         return out
 
-def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
+def grep_in_text(txt, regex, maxCount = -1, fromLine = 1, onlyMatch = False):
+    from vatf.utils import os_proxy
+    try:
+        file = create_tmp_file("w+", data = txt)
+        return grep(file, regex, maxCount, fromLine, onlyMatch)
+    finally:
+        file.close()
+
+def grep_regex_in_line(filepath, grep_regex, match_regex, maxCount = -1, fromLine = 1):
     """
     :filepath - filepath for greping
     :grep_regex - regex using to match line by grep
     :match_regex - regex to extract specific data from line
-    :removeTmpFiles - remove tmp files when finished
     :maxCount - max count of matched, if it is -1 it will be infinity
     :fromLine - start searching from specific line
     """
@@ -91,7 +98,7 @@ def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True,
     if fromLine < 1:
         raise Exception(f"Invalid fromLine value {fromLine}")
     logging.debug(f"{grep_regex_in_line.__name__}: {name_and_args()}")
-    out = grep(filepath, grep_regex, removeTmpFiles, maxCount = maxCount, fromLine = fromLine)
+    out = grep(filepath, grep_regex, maxCount = maxCount, fromLine = fromLine)
     rec = re.compile(match_regex)
     matched_lines = []
     for o in out:

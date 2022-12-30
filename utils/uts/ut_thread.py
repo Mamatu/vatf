@@ -5,7 +5,6 @@ __license__ = "Apache License"
 __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
-from unittest import TestCase
 from unittest.mock import Mock, call
 from unittest.mock import patch
 
@@ -18,16 +17,12 @@ import os
 
 from vatf.utils.thread import make_repeat_timer
 
-class ThreadTests(TestCase):
+class TestThread:
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
         self.test_file = None
         self.remove_test_file = True
-    def  setUp(self):
-        pass
-    def tearDown(self):
-        pass
     def test_repeat_thread(self):
         timer = None
         counter = 0

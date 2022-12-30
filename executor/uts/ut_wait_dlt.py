@@ -48,7 +48,7 @@ def setup_function():
         raise Exception("dlt deamon is run! It should be not")
     _dlt_daemon = shell.bg(_dlt_daemon_path, shell = False)
 
-def teardown_module():
+def teardown_function():
     global _dlt_daemon, _generator_thread
     if not _generator_thread:
         raise Exception("log generator is not running")
@@ -104,7 +104,8 @@ def test_wait_for_regex():
         time.sleep(1)
         _log_generator_run(log_path, lines_count)
         command1 = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {{log_path}}"
-        assert True == wait.wait_for_regex("line8", config_attrs = {"wait_for_regex.command" : command1})
+        config = {"wait_for_regex.command" : command1, "wait_for_regex.date_regex" : "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9]"}
+        assert True == wait.wait_for_regex("line8", config = config)
         log_snapshot.stop()
         lines = []
         with open(log_path, "r") as f:
