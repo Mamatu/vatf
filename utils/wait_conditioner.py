@@ -126,24 +126,17 @@ def _handle_multiple_regexes(regex, filepath, **kwargs):
     return _handle_regex_operator(regex, ro, filepath, **kwargs)
 
 def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
-    from vatf.utils import config_handler
+    from vatf.utils import config_handler, loop
     timestamp_regex = config_handler.get_var("wait_for_regex.date_regex", **kwargs)
-    while True:
-        status = False
+    def handle():
         if _is_array(regex):
-            status = _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex)
+            return _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex)
         else:
-            status = _handle_single_regex(regex, filepath)
-        if status: return True
-        import time
-        time.sleep(pause)
-        end_point = time.time()
-        if (end_point - start_point) > timeout:
-            print(f"timeout: {end_point} {start_point}")
-            return False
+            return _handle_single_regex(regex, filepath)
+    return loop.wait_until(handle, pause = pause, timeout = timeout)
 
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
-    import vatf.executor.log_snapshot_class as log_snapshot_class
+    import vatf.executor.lib_log_snapshot as log_snapshot_class
     log_snapshot = log_snapshot_class.make()
     from vatf.utils import utils
     temp_file = utils.get_temp_file()
@@ -154,7 +147,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         from vatf.utils import config_handler
         command = config_handler.get_var(wait_command_key, **kwargs)
         command = command.format(log_path = temp_filepath)
-        log_snapshot.start(log_path = temp_filepath, shell_cmd = command)
+        log_snapshot.start_cmd(log_path = temp_filepath, shell_cmd = command)
         import time
         start_point = time.time()
         return _wait_loop(regex, timeout, pause, temp_filepath, start_point, **kwargs)
@@ -163,7 +156,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         temp_file.close()
 
 def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
-    import vatf.executor.log_snapshot_class as log_snapshot_class
+    import vatf.executor.lib_log_snapshot as log_snapshot_class
     wait_for_regex_path_key = "wait_for_regex.path"
     wait_for_regex_date_format_key = "wait_for_regex.date_format"
     wait_for_regex_date_regex_key = "wait_for_regex.date_regex"
