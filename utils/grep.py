@@ -7,16 +7,6 @@ __maintainer__ = "Marcin Matula"
 
 import logging
 
-def _handle_kwargs(keys, default_output, **kwargs):
-    if isinstance(keys, str):
-        return handle_kwargs([keys], default_output)
-    keys_in_kwargs = [k for k in keys if k in kwargs]
-    if len(keys_in_kwargs) > 1:
-        raise Exception(f"Only one alternative {keys_in_kwargs} can be parameter")
-    if len(keys_in_kwargs) == 0:
-        return default_output
-    return kwargs[keys_in_kwargs[0]]
-
 class GrepOutput:
     def __init__(self, line_number = None, matched = None, line_offset = 0):
         if line_number:
@@ -44,9 +34,10 @@ class GrepOutput:
         return GrepOutput(out[0], out[1], line_offset)
 
 def grep(filepath, regex, **kwargs):
-    fromLine = _handle_kwargs(["fromLine", "from_line"], 1, **kwargs)
-    maxCount = _handle_kwargs(["maxCount", "max_count"], -1, **kwargs)
-    onlyMatch = _handle_kwargs(["onlyMatch", "only_match"], False, **kwargs)
+    from vatf.utils.kw_utils import handle_kwargs
+    fromLine = handle_kwargs(["fromLine", "from_line"], 1, **kwargs)
+    maxCount = handle_kwargs(["maxCount", "max_count"], -1, **kwargs)
+    onlyMatch = handle_kwargs(["onlyMatch", "only_match"], False, **kwargs)
     if fromLine < 1:
         raise Exception(f"Invalid fromLine value {fromLine}")
     if maxCount < -1:
@@ -106,7 +97,8 @@ def grep_regex_in_line(filepath, grep_regex, match_regex, **kwargs):
     :maxCount - max count of matched, if it is -1 it will be infinity
     :fromLine - start searching from specific line
     """
-    fromLine = _handle_kwargs(["fromLine", "from_line"], 1, **kwargs)
+    from vatf.utils.kw_utils import handle_kwargs
+    fromLine = handle_kwargs(["fromLine", "from_line"], 1, **kwargs)
     from vatf.utils.utils import open_temp_file, name_and_args
     import re
     if fromLine < 1:
