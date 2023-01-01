@@ -114,7 +114,7 @@ def test_log_with_timestamps():
         utils.touch(log_path)
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", 500)
+        log_snapshot.start(log_path_1, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}")
         sleep_until_lines_in_file(log_path_1, lines_count)
         log_snapshot.stop()
         lines = []
@@ -155,7 +155,7 @@ def test_log_with_timestamps_config():
         utils.touch(log_path)
         utils.touch(log_path_1)
         _log_generator_run(log_path, lines_count)
-        log_snapshot.start_from_config(log_path_1, config_attrs = {"va_log.command" : f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", "va_log.path" : log_path_1})
+        log_snapshot.start_from_config(config_attrs = {"va_log.command" : f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path_1}", "va_log.path" : log_path_1})
         sleep_until_lines_in_file(log_path_1, lines_count)
         log_snapshot.stop()
         lines = []
