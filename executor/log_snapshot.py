@@ -22,7 +22,30 @@ def start(log_path, shell_cmd):
 
 @vatf_api.public_api("log_snapshot")
 def start_from_config(**kwargs):
-    return start_cmd_from_config(**kwargs)
+    log_command_key = "va_log.command"
+    log_path_key = "va_log.path"
+    in_log_path_key = "va_log.in_path"
+    config = config_handler.get_config(**kwargs)
+    cmd_mode = False
+    copy_mode = False
+    try:
+        cmd_mode = config[log_command_key] and config[log_path_key]
+    except KeyError:
+        pass
+    try:
+        copy_mode = config[in_log_path_key] and config[log_path_key]
+    except KeyError:
+        pass
+    if cmd_mode and copy_mode:
+        raise Exception("Config fullfil both modes copy and cmd. One is required")
+    if not cmd_mode and not copy_mode:
+        raise Exception("Config does not contain information to choose mode")
+    if cmd_mode:
+        return start_cmd_from_config(**kwargs)
+    elif copy_mode:
+        return start_copy_from_config(**kwargs)
+    else:
+        raise Exception("Not supported mode")
 
 @vatf_api.public_api("log_snapshot")
 def start_cmd(log_path, shell_cmd):
@@ -36,9 +59,9 @@ def start_cmd(log_path, shell_cmd):
 def start_cmd_from_config(**kwargs):
     log_command_key = "va_log.command"
     log_path_key = "va_log.path"
-    output = config_handler.handle([log_command_key, log_path_key], **kwargs)
-    shell_cmd = output[log_command_key]
-    log_path = output[log_path_key]
+    config = config_handler.get_config(**kwargs)
+    shell_cmd = config[log_command_key]
+    log_path = config[log_path_key]
     mkdir.mkdir(os_proxy.dirname(log_path))
     start_cmd(log_path, shell_cmd)
 
@@ -54,11 +77,11 @@ def start_copy(log_path, in_log_path):
 def start_copy_from_config(**kwargs):
     in_log_path_key = "va_log.in_path"
     log_path_key = "va_log.path"
-    output = config_handler.handle([in_log_path_key, log_path_key], **kwargs)
-    in_log_path = output[in_log_path_key]
-    log_path = output[log_path_key]
+    config = config_handler.get_config(**kwargs)
+    in_log_path = config[in_log_path_key]
+    log_path =config[log_path_key]
     mkdir.mkdir(os_proxy.dirname(log_path))
-    start_copy(log_path, shell_cmd)
+    start_copy(log_path, in_log_path)
 
 @vatf_api.public_api("log_snapshot")
 def stop():
