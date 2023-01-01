@@ -41,10 +41,24 @@ class LogSnapshot:
         import os
         if not os.path.exists(in_log_path):
             raise Exception(f"File {in_log_path} does not exist")
-        from vatf.utils.kw_utils import handle_kwargs
-        timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
-        timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
-        timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
+        from vatf.utils import config_handler
+        config = None
+        try:
+            config = config_handler.get_config(**kwargs)
+        except config_handler.NoConfigException:
+            pass
+        timestamp_regex = None
+        timestamp_format = None
+        timestamp_delta = None
+        if config:
+            timestamp_regex = config["va_log.date_regex"]
+            timestamp_format = config["va_log.date_format"]
+            timestamp_delta = config["va_log.timedelta"]
+        else:
+            from vatf.utils.kw_utils import handle_kwargs
+            timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
+            timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
+            timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
         from vatf.executor import search
         from datetime import datetime
