@@ -75,7 +75,9 @@ class LogSnapshot:
         from threading import Thread
         def copy_file(line_number, in_log_path, log_path, pause, thread_control):
             import time
-            while thread_control[0]:
+            while True:
+                if thread_control[0] == False:
+                    return
                 shell.fg(f"tail --lines=+{line_number} {in_log_path} > {log_path}")
                 time.sleep(pause)
         self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause, self._thread_control])
