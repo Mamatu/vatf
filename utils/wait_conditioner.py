@@ -72,6 +72,7 @@ def _handle_in_order_line(regex, filepath, **kwargs):
     return False
 
 def _handle_in_order_log_timestamp(regex, filepath, **kwargs):
+    raise Exception("Not supported yet")
     if not "timestamp_regex" in kwargs:
         raise Exception("RegexOperator.IN_ORDER_LOG_TIMESTAMP requires timestamp_regex from config")
     timestamp_regex = kwargs['timestamp_regex']
@@ -84,6 +85,7 @@ def _handle_in_order_log_timestamp(regex, filepath, **kwargs):
     return False
 
 def _handle_in_order_real_timestamp(regex, filepath, **kwargs):
+    raise Exception("Not supported yet")
     regex = _remove_operator(regex, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
     outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
     _out = [o is not None for o in outputs]
