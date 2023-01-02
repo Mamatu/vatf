@@ -72,15 +72,13 @@ class LogSnapshot:
         from vatf.utils.binary_search import binary_search
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
         from vatf.executor import shell
-        from threading import Thread
-        def copy_file(line_number, in_log_path, log_path, pause, thread_control):
+        from vatf.utils.thread_with_stop import Thread
+        def copy_file(line_number, in_log_path, log_path, pause, is_stopped):
             import time
-            while True:
-                if thread_control[0] == False:
-                    return
+            while not is_stopped():
                 shell.fg(f"tail --lines=+{line_number} {in_log_path} > {log_path}")
                 time.sleep(pause)
-        self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause, self._thread_control])
+        self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause])
         self._thread.start()
 
     def stop(self):
@@ -94,7 +92,7 @@ class LogSnapshot:
 
     def _stop_thread(self):
         if self._thread:
-            self._thread_control[0] = False
+            self._thread.stop()
             self._thread.join()
 
 def make():
