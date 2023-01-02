@@ -1,5 +1,4 @@
 def binary_search(array, is_lower, is_greater):
-    print(array)
     if len(array) == 0:
         return None
     if len(array) == 1:
