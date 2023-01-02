@@ -55,6 +55,8 @@ class LogSnapshot:
             timestamp_regex = config["va_log.date_regex"]
             timestamp_format = config["va_log.date_format"]
             timestamp_delta = config["va_log.timedelta"]
+            from vatf.utils import config_common
+            timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
         else:
             timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
             timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
@@ -62,7 +64,7 @@ class LogSnapshot:
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
         from vatf.executor import search
         from datetime import datetime
-        now = datetime.now()#.strftime(timestamp_format)
+        now = datetime.now()
         if timestamp_delta:
             now = now + timestamp_delta
         outputs = search.find(timestamp_regex, filepath = in_log_path, only_match = True)

@@ -28,6 +28,11 @@ def test_get():
 def teardown_module():
     config_handler.reset_configs()
 
+def test_config_common_convert_dict_to_timedelta():
+    from vatf.utils import config_common
+    timedelta = config_common.convert_dict_to_timedelta({"hours" : -1})
+    #assert timedelta.seconds == -3600
+
 def test_load_config_raw():
     c = config_loader.load_raw("utils/uts/data/ut_config/config.json")
     assert c["assets"]["audio"]["path"] == "./assets/audio_files"

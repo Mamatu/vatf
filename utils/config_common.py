@@ -48,3 +48,26 @@ def process_format(config_dict, format_dict, **kwargs):
             except:
                 pass
     return config_dict
+
+def convert_dict_to_timedelta(timedelta):
+    if isinstance(timedelta, dict):
+        args = {}
+        def get_key(key):
+            v = None
+            try:
+                v = timedelta[key]
+            except KeyError:
+                pass
+            if v: args[key] = v
+            else: args[key] = 0
+        get_key("days")
+        get_key("seconds")
+        get_key("microseconds")
+        get_key("milliseconds")
+        get_key("minutes")
+        get_key("hours")
+        get_key("weeks")
+        import datetime
+        print(args)
+        return datetime.timedelta(**args)
+    return timedelta
