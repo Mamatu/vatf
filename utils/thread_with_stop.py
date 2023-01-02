@@ -8,18 +8,27 @@ __maintainer__ = "Marcin Matula"
 import threading
 
 class Thread(threading.Thread):
-    def __init__(self, target, args):
+    def __init__(self, target, args = [], kwargs = {}):
         self.stopped = False
-        _args = []
-        _args.extend(args)
-        _args.append(self.is_stopped)
-        super().__init__(group = None, target = target, args = _args)
+        self.args = args
+        self.kwargs = kwargs
+        self.mutex = threading.RLock()
+        self.target = target
+        super().__init__()
 
     def stop(self):
-        self.stopped = True
+        try:
+            self.mutex.acquire()
+            self.stopped = True
+        finally:
+            self.mutex.release()
 
     def is_stopped(self):
-        return self.stopped
+        try:
+            self.mutex.acquire()
+            return self.stopped
+        finally:
+            self.mutex.release()
 
     def run(self):
-        super().run()
+        return self.target(*self.args, is_stopped = lambda: self.is_stopped(), **self.kwargs)
