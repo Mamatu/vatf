@@ -55,6 +55,7 @@ def start_from_config(**kwargs):
 @vatf_api.public_api("log_snapshot")
 def start_cmd(log_path, shell_cmd):
     check_if_invoked()
+    global _log_snapshot
     _log_snapshot = lib_log_snapshot.make()
     _log_snapshot.start_cmd(log_path = log_path, shell_cmd = shell_cmd)
 
@@ -71,6 +72,7 @@ def start_cmd_from_config(**kwargs):
 @vatf_api.public_api("log_snapshot")
 def start_copy(log_path, in_log_path):
     check_if_invoked()
+    global _log_snapshot
     _log_snapshot = lib_log_snapshot.make()
     _log_snapshot.start_copy(log_path = log_path, in_log_path = in_log_path)
 
