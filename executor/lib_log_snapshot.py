@@ -17,7 +17,6 @@ class LogSnapshot:
         self._shell_cmd = None
         self._shell_process = None
         self._thread = None
-        self._thread_control = [True]
  
     def start_cmd(self, log_path, shell_cmd):
         """
@@ -94,6 +93,7 @@ class LogSnapshot:
         if self._thread:
             self._thread.stop()
             self._thread.join()
+            self._thread = None
 
 def make():
     return LogSnapshot()
