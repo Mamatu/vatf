@@ -141,7 +141,6 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import utils
     temp_file = utils.get_temp_file()
     temp_filepath = temp_file.name
-    print(f"wait_for_regex -> {temp_filepath}")
     try:
         wait_command_key = "wait_for_regex.command"
         from vatf.utils import config_handler
@@ -166,7 +165,6 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     log_filepath = output[wait_for_regex_path_key]
     date_format = output[wait_for_regex_date_format_key]
     date_regex = output[wait_for_regex_date_regex_key]
-    print(f"wait_for_regex -> {log_filepath}")
     import time
     start_point = time.time()
     return _wait_loop(regex, timeout, pause, log_filepath, start_point, **kwargs)
