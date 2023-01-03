@@ -22,10 +22,10 @@ class Output:
     def __init__(self, status):
         self.status = status
         self.labels_status = {}
-     def get_main_status():
-         return self.status
-     def get_label_status(label):
-         return self.labels_status[label]
+    def get_main_status(self):
+        return self.status
+    def get_label_status(self, label):
+        return self.labels_status[label]
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
