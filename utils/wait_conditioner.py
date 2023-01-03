@@ -19,9 +19,9 @@ class Label:
         self.label = label
 
 class Output:
-    def __init__(self, status):
+    def __init__(self, status, labels_status):
         self.status = status
-        self.labels_status = {}
+        self.labels_status = labels_status
     def get_main_status(self):
         return self.status
     def get_label_status(self, label):
@@ -50,62 +50,89 @@ def _remove_operator(regex, ro):
     del regex_copy[idx]
     return regex_copy
 
-def _make_outputs(regex, filepath, ro):
+def _make_outputs(regex, filepath, ro, callback, **kwargs):
+    regex = _remove_operator(regex, ro)
+    from vatf.utils.kw_utils import handle_kwargs
+    labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
     outputs = []
+    label_local_keys = []
+    _regex = []
     for r in regex:
         if isinstance(r, bool):
             outputs.append(r)
+            print(f"bool: {r}")
+            print(f"{outputs}")
+            _regex.append(r)
+        elif isinstance(r, Label):
+            if labels is None:
+                raise Exception(f"Labels is not provided in kwargs but it is required")
+            if r.label in labels.keys():
+                raise Exception(f"Duplication of label: {r.label}")
+            label_local_keys.append(r.label)
         else:
+            print(f"regex: {r}")
+            print(f"{outputs}")
             from vatf.executor import search
             outputs.extend(search.find(filepath = filepath, regex = r))
-    return outputs
+            _regex.append(r)
+    print(f" outputs {len(outputs)} {outputs}")
+    out = callback(outputs, _regex)
+    for llk in label_local_keys: labels[llk] = out
+    return out
 
 def _handle_and(regex, filepath, **kwargs):
-    regex = _remove_operator(regex, RegexOperator.AND)
-    outputs = _make_outputs(regex, filepath, RegexOperator.AND)
-    if len(outputs) == len(regex):
-        status = all(outputs)
-        if status: return sorted(outputs, key = lambda o: o.line_number)[-1]
-    return False
+    def callback(outputs, regex):
+        if len(outputs) == len(regex):
+            status = all(outputs)
+            if status: return True
+        return False
+    return _make_outputs(regex, filepath, RegexOperator.AND, callback, **kwargs)
 
 def _handle_or(regex, filepath, **kwargs):
-    regex = _remove_operator(regex, RegexOperator.OR)
-    outputs = _make_outputs(regex, filepath, RegexOperator.OR)
-    for o in outputs:
-        if o: return o
-    return False
+    def callback(outputs, regex):
+        for o in outputs:
+            if o: return True
+        return False
+    return _make_outputs(regex, filepath, RegexOperator.OR, callback, **kwargs)
 
 def _handle_in_order_line(regex, filepath, **kwargs):
-    regex = _remove_operator(regex, RegexOperator.IN_ORDER_LINE)
-    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LINE)
-    _out = [o is not None for o in outputs]
-    if all(_out):
-        lines = [o.line_number if o else o for o in outputs]
-        return lines == sorted(lines)
-    return False
+    def callback(outputs, regex):
+        _out = []
+        for o in outputs:
+            if isinstance(o, bool):
+                _out.append(o)
+            else:
+                _out.append(o is not None)
+        print(f"_out {_out}")
+        print(f"outputs {outputs}")
+        if all(_out):
+            lines = [o.line_number if o else o for o in outputs]
+            return lines == sorted(lines)
+        return False
+    return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LINE, callback, **kwargs)
 
 def _handle_in_order_log_timestamp(regex, filepath, **kwargs):
     raise Exception("Not supported yet")
     if not "timestamp_regex" in kwargs:
         raise Exception("RegexOperator.IN_ORDER_LOG_TIMESTAMP requires timestamp_regex from config")
     timestamp_regex = kwargs['timestamp_regex']
-    regex = _remove_operator(regex, RegexOperator.IN_ORDER_LOG_TIMESTAMP)
-    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LOG_TIMESTAMP)
-    _out = [o is not None for o in outputs]
-    if all(_out):
-        lines = [o.line_number if o else o for o in outputs]
-        return lines == sorted(lines)
-    return False
+    def callback(outputs, regex):
+        _out = [o is not None for o in outputs]
+        if all(_out):
+            lines = [o.line_number if o else o for o in outputs]
+            return lines == sorted(lines)
+        return False
+    return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LOG_TIMESTAMP, callback, **kwargs)
 
 def _handle_in_order_real_timestamp(regex, filepath, **kwargs):
     raise Exception("Not supported yet")
-    regex = _remove_operator(regex, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
-    outputs = _make_outputs(regex, filepath, RegexOperator.IN_ORDER_REAL_TIMESTAMP)
-    _out = [o is not None for o in outputs]
-    if all(_out):
-        lines = [o.line_number if o else o for o in outputs]
-        return lines == sorted(lines)
-    return False
+    def callback(outputs, regex):
+        _out = [o is not None for o in outputs]
+        if all(_out):
+            lines = [o.line_number if o else o for o in outputs]
+            return lines == sorted(lines)
+        return False
+    return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_REAL_TIMESTAMP, callback, **kwargs)
 
 def _handle_regex_operator(regex, ro, filepath, **kwargs):
     _handlers = {RegexOperator.AND : _handle_and,
@@ -127,7 +154,8 @@ def _handle_single_regex(regex, filepath):
 
 def _handle_multiple_regexes(regex, filepath, **kwargs):
     import copy
-    regex_copy = copy.copy(regex)
+    #regex_copy = copy.copy(regex)
+    regex_copy = regex
     regex_copy.reverse()
     for r in regex_copy:
         if _is_array(r):
@@ -145,7 +173,7 @@ def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
     timestamp_regex = config_handler.get_var("wait_for_regex.date_regex", **kwargs)
     def handle():
         if _is_array(regex):
-            return _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex)
+            return _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex, **kwargs)
         else:
             return _handle_single_regex(regex, filepath)
     return loop.wait_until(handle, pause = pause, timeout = timeout)
