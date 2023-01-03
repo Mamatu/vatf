@@ -14,6 +14,19 @@ class RegexOperator(enum.Enum):
     IN_ORDER_REAL_TIMESTAMP = 3,
     IN_ORDER_LOG_TIMESTAMP = 4
 
+class Label:
+    def __init__(self, label):
+        self.label = label
+
+class Output:
+    def __init__(self, status):
+        self.status = status
+        self.labels_status = {}
+     def get_main_status():
+         return self.status
+     def get_label_status(label):
+         return self.labels_status[label]
+
 def _get_operators(regex):
     def regex_index(_regex, _ro):
         try:
