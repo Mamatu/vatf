@@ -36,21 +36,20 @@ def _get_operators(regex):
     occurences = [regex_index(regex, ro) for ro in RegexOperator]
     no_regex_operators_count = len([o for o in occurences if o == -1])
     if no_regex_operators_count != len(occurences) - 1:
-        raise Exception("Only one logical operator is expected")
+        raise Exception(f"Only one logical operator is expected {regex} {no_regex_operators_count} {len(occurences) - 1}")
     occurences.sort(reverse = True)
     index = occurences.pop(0)
     return regex[index]
 
 def _remove_operator(regex, ro):
-    import copy
-    regex_copy = copy.copy(regex)
-    idx = regex_copy.index(ro)
+    idx = regex.index(ro)
     if idx == -1:
         raise Exception(f"No {ro} operator in handle {ro} data")
-    del regex_copy[idx]
-    return regex_copy
+    del regex[idx]
+    return regex
 
 def _make_outputs(regex, filepath, ro, callback, **kwargs):
+    print(f"_make_outputs {regex}")
     regex = _remove_operator(regex, ro)
     from vatf.utils.kw_utils import handle_kwargs
     labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
@@ -60,24 +59,23 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
     for r in regex:
         if isinstance(r, bool):
             outputs.append(r)
-            print(f"bool: {r}")
-            print(f"{outputs}")
             _regex.append(r)
         elif isinstance(r, Label):
             if labels is None:
-                raise Exception(f"Labels is not provided in kwargs but it is required")
+                raise Exception(f"Labels output dicts must be provided to kwargs if Label are used")
             if r.label in labels.keys():
                 raise Exception(f"Duplication of label: {r.label}")
+            #regex.remove(r)
             label_local_keys.append(r.label)
         else:
-            print(f"regex: {r}")
-            print(f"{outputs}")
             from vatf.executor import search
             outputs.extend(search.find(filepath = filepath, regex = r))
             _regex.append(r)
     print(f" outputs {len(outputs)} {outputs}")
+    print(f"callback {outputs} {_regex}")
     out = callback(outputs, _regex)
     for llk in label_local_keys: labels[llk] = out
+    print(f"{labels}")
     return out
 
 def _handle_and(regex, filepath, **kwargs):
@@ -103,8 +101,9 @@ def _handle_in_order_line(regex, filepath, **kwargs):
                 _out.append(o)
             else:
                 _out.append(o is not None)
-        print(f"_out {_out}")
-        print(f"outputs {outputs}")
+        print(f"in_order_line {all(_out)}")
+        print(f"in_order_line {_out}")
+        print(f"in_order_line {outputs}")
         if all(_out):
             lines = [o.line_number if o else o for o in outputs]
             return lines == sorted(lines)
@@ -153,18 +152,15 @@ def _handle_single_regex(regex, filepath):
     return out
 
 def _handle_multiple_regexes(regex, filepath, **kwargs):
-    import copy
-    #regex_copy = copy.copy(regex)
-    regex_copy = regex
-    regex_copy.reverse()
-    for r in regex_copy:
+    regex.reverse()
+    outputs = []
+    for r in regex:
         if _is_array(r):
             out = _handle_multiple_regexes(r, filepath, **kwargs)
             assert isinstance(out, bool)
-            idx = regex_copy.index(r)
-            regex_copy[idx] = out
-    regex_copy.reverse()
-    regex = regex_copy
+            idx = regex.index(r)
+            regex[idx] = out
+    regex.reverse()
     ro = _get_operators(regex)
     return _handle_regex_operator(regex, ro, filepath, **kwargs)
 
