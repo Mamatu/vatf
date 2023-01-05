@@ -41,7 +41,7 @@ def test_log_copy():
             def cond():
                 with open(file1.name, "r") as f:
                     return len(f.readlines()) == 2
-            loop.wait_until(cond, pause = 0.1, timeout = 1)
+            loop.wait_until_true(cond, pause = 0.1, timeout = 1)
             snapshot.stop()
             with open(file1.name, "r") as f:
                 lines = f.readlines()

@@ -1,4 +1,4 @@
-def wait_until(callback, pause, timeout):
+def wait_until_true(callback, pause, timeout):
     import time
     start_point = time.time()
     while True:

@@ -36,7 +36,7 @@ def _get_operators(regex):
     occurences = [regex_index(regex, ro) for ro in RegexOperator]
     no_regex_operators_count = len([o for o in occurences if o == -1])
     if no_regex_operators_count != len(occurences) - 1:
-        raise Exception(f"Only one logical operator is expected {regex} {no_regex_operators_count} {len(occurences) - 1}")
+        raise Exception(f"Only one logical operator is expected {regex}")
     occurences.sort(reverse = True)
     index = occurences.pop(0)
     return regex[index]
@@ -49,13 +49,11 @@ def _remove_operator(regex, ro):
     return regex
 
 def _make_outputs(regex, filepath, ro, callback, **kwargs):
-    print(f"_make_outputs {regex}")
-    regex = _remove_operator(regex, ro)
-    from vatf.utils.kw_utils import handle_kwargs
-    labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
     outputs = []
     label_local_keys = []
     _regex = []
+    from vatf.utils.kw_utils import handle_kwargs
+    labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
     for r in regex:
         if isinstance(r, bool):
             outputs.append(r)
@@ -63,19 +61,21 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
         elif isinstance(r, Label):
             if labels is None:
                 raise Exception(f"Labels output dicts must be provided to kwargs if Label are used")
-            if r.label in labels.keys():
-                raise Exception(f"Duplication of label: {r.label}")
-            #regex.remove(r)
             label_local_keys.append(r.label)
-        else:
+        elif isinstance(r, str):
             from vatf.executor import search
             outputs.extend(search.find(filepath = filepath, regex = r))
             _regex.append(r)
-    print(f" outputs {len(outputs)} {outputs}")
-    print(f"callback {outputs} {_regex}")
+        elif isinstance(r, RegexOperator):
+            pass
+        else:
+            raise Exception(f"Not supported type in {r} in {regex}")
     out = callback(outputs, _regex)
-    for llk in label_local_keys: labels[llk] = out
-    print(f"{labels}")
+    for llk in label_local_keys:
+        if llk in labels:
+            if labels[llk] and not out:
+                raise Exception(f"FATAL: Incorrect sequence of outputs for label {llk}. The previous status was True and current output is False what is invalid!")
+        labels[llk] = out
     return out
 
 def _handle_and(regex, filepath, **kwargs):
@@ -101,9 +101,6 @@ def _handle_in_order_line(regex, filepath, **kwargs):
                 _out.append(o)
             else:
                 _out.append(o is not None)
-        print(f"in_order_line {all(_out)}")
-        print(f"in_order_line {_out}")
-        print(f"in_order_line {outputs}")
         if all(_out):
             lines = [o.line_number if o else o for o in outputs]
             return lines == sorted(lines)
@@ -152,7 +149,6 @@ def _handle_single_regex(regex, filepath):
     return out
 
 def _handle_multiple_regexes(regex, filepath, **kwargs):
-    regex.reverse()
     outputs = []
     for r in regex:
         if _is_array(r):
@@ -160,7 +156,6 @@ def _handle_multiple_regexes(regex, filepath, **kwargs):
             assert isinstance(out, bool)
             idx = regex.index(r)
             regex[idx] = out
-    regex.reverse()
     ro = _get_operators(regex)
     return _handle_regex_operator(regex, ro, filepath, **kwargs)
 
@@ -169,10 +164,12 @@ def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
     timestamp_regex = config_handler.get_var("wait_for_regex.date_regex", **kwargs)
     def handle():
         if _is_array(regex):
-            return _handle_multiple_regexes(regex, filepath, timestamp_regex = timestamp_regex, **kwargs)
+            import copy
+            regex_copy = copy.deepcopy(regex)
+            return _handle_multiple_regexes(regex_copy, filepath, timestamp_regex = timestamp_regex, **kwargs)
         else:
             return _handle_single_regex(regex, filepath)
-    return loop.wait_until(handle, pause = pause, timeout = timeout)
+    return loop.wait_until_true(handle, pause = pause, timeout = timeout)
 
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.lib_log_snapshot as log_snapshot_class
