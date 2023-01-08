@@ -122,6 +122,10 @@
             "type" : "string",
             "description" : "path to file which is monitorig for waiting"
         },
+        "chunks_directory" : {
+            "type" : "string",
+            "description" : "path to directory where should be stored chunks."
+        },
         "timedelta" : {
           "type" : "object",
           "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
@@ -211,6 +215,16 @@
           },
           "minItems" : 1,
           "maxItems" : 1
+        }
+      }
+    },
+    "tools" : {
+      "type" : "object",
+      "description" : "tools config",
+      "properties" : {
+        "output_path" : {
+          "type" : "string",
+          "description" : "Output path where tools script should be copied"
         }
       }
     },

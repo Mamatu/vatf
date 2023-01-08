@@ -9,13 +9,6 @@ Executor launches playing audio files, audio inputs and outputs of test station 
 
 > test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
 
-## Voice Assistance Test Framework - Generator
-This part of vatf provides modules to create custom test scenario for voice assistance.
-
-They include playing audio files, audio inputs and outputs of test station recording, sampling and sleep test code. 
-
-> test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
-
 ## Voice Assistance Test Framework - Utils
 This part of vatf contains common utilities which are used in vatf.executor and vatf.generator.
 
@@ -25,10 +18,12 @@ This part of vatf contains common utilities which are used in vatf.executor and 
 
 To get actual list of dependencies please look at .github/workflows/python.yaml
 
-### Generator and executor
-Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed.
-All recordings, logs and etc. for the test are stored in this directory. Test code is executed in generator with overloaded vatf api (functions with @public\_api decorator) by
-"empty implementation" only for syntax and errors verification. Next, the code is copied into test file `test.py` with switching vatf api into executor mode. You can modify this file. 
-
 ### vatf init
 In every test file is required to import `vatf_init.py` which initializes starndard executor api.
+
+### wait\_for\_regex
+wait\_for\_regex is mechaninsm to wait for specific regex in the log.
+
+There are two modes how this mechanism work:
+1) command - if can be used any specific command which provides the log from tested device from the moment of running that command
+2) log/chunks - this mode creates
