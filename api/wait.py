@@ -19,6 +19,6 @@ def sleep_random(t1, t2):
     utils.print_func_info()
     _get_api().sleep_random(t1, t2)
 
-def wait_for_regex(regex, timeout, pause):
+def wait_for_regex(regex, timeout, pause, **kwargs):
     utils.print_func_info()
-    return _get_api().wait_for_regex(regex, timeout, pause)
+    return _get_api().wait_for_regex(regex, timeout, pause, **kwargs)
