@@ -5,28 +5,8 @@ __license__ = "Apache License"
 __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
-import enum
-
-class RegexOperator(enum.Enum):
-    EXISTS = 0,
-    AND = 1,
-    OR = 2,
-    IN_ORDER_LINE = 3,
-    IN_ORDER_REAL_TIMESTAMP = 4,
-    IN_ORDER_LOG_TIMESTAMP = 5
-
-class Label:
-    def __init__(self, label):
-        self.label = label
-
-class Output:
-    def __init__(self, status, labels_status):
-        self.status = status
-        self.labels_status = labels_status
-    def get_main_status(self):
-        return self.status
-    def get_label_status(self, label):
-        return self.labels_status[label]
+from vatf.utils.wait_types import Label
+from vatf.utils.wait_types import RegexOperator
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
