@@ -73,7 +73,7 @@ def _check_if_start_point_is_before_time(filepath, **kwargs):
 #    o = binary_search(out, lambda o: strp(o.matched) < strp(start_point), lambda o: strp(start_point) < strp(o.matched), index_and_value = True)
 #    return _compare_two_outputs(out, o[0], start_point).line_number
 
-def _find_closest_line_number_to_date(filepath, **kwargs):
+def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):
         import datetime
         return datetime.datetime.strptime(matched, date_format)
@@ -85,7 +85,10 @@ def _find_closest_line_number_to_date(filepath, **kwargs):
     date_regex = config.wait_for_regex.date_regex
     from vatf.executor import search
     out = search.find(filepath = filepath, regex = date_regex, only_match = True)
-    return min(out, key = lambda x: abs(strp(x.matched) - strp(start_point))).line_number
+    out = [o for o in out if strp(o.matched) > strp(start_point)]
+    if len(out) == 0:
+        return None
+    return min(out, key = lambda x: abs(strp(x.matched) - strp(start_point)))
 
 def _find(filepath, regex, **kwargs):
     from vatf.executor import search
@@ -93,7 +96,10 @@ def _find(filepath, regex, **kwargs):
     start_point = handle_kwargs("start_point", default_output = None, is_required = False, **kwargs)
     line_number = 1
     if start_point:
-        line_number = _find_closest_line_number_to_date(filepath = filepath, **kwargs)
+        line = _find_closest_date_greater_than_start_point(filepath = filepath, **kwargs)
+        if line is None:
+            return []
+        line_number = line.line_number
     return search.find(filepath = filepath, regex = regex, from_line = line_number)
 
 def _get_operators(regex):
@@ -131,7 +137,7 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
             _regex.append(r)
         elif isinstance(r, Label):
             if labels is None:
-                raise Exception(f"Labels output dicts must be provided to kwargs if Label are used")
+                raise Exception(f"Labels output dicts must be provided to kwargs if Label class is used")
             label_local_keys.append(r.label)
         elif isinstance(r, str):
             outputs.extend(_find(filepath = filepath, regex = r, **kwargs))

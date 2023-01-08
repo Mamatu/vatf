@@ -74,8 +74,8 @@ def test_find_closest_line_number_to_date_1():
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
     start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567100).strftime(date_format)
-    line_number = w_cond._find_closest_line_number_to_date(log_file.name, config = config, start_point = start_point)
-    assert 1 == line_number
+    line = w_cond._find_closest_date_greater_than_start_point(log_file.name, config = config, start_point = start_point)
+    assert 3 == line.line_number
     log_file.close()
 
 def test_find_closest_line_number_to_date_2():
@@ -92,8 +92,8 @@ def test_find_closest_line_number_to_date_2():
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
     start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567900).strftime(date_format)
-    line_number = w_cond._find_closest_line_number_to_date(log_file.name, config = config, start_point = start_point)
-    assert 3 == line_number
+    line = w_cond._find_closest_date_greater_than_start_point(log_file.name, config = config, start_point = start_point)
+    assert 3 == line.line_number
     log_file.close()
 
 def test_check_if_start_point_is_before_time_fail_2():
@@ -326,7 +326,7 @@ def test_wait_for_regex_4_labels(time_sleep_mock):
 
 @patch("time.sleep")
 def test_wait_for_regex_simple_label(time_sleep_mock):
-    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000)):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
         time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
@@ -348,7 +348,7 @@ def test_wait_for_regex_simple_label(time_sleep_mock):
 
 @patch("time.sleep")
 def test_wait_for_single_regex_pass(time_sleep_mock):
-    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000)):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
         time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
@@ -367,7 +367,7 @@ def test_wait_for_single_regex_pass(time_sleep_mock):
 
 @patch("time.sleep")
 def test_wait_for_single_regex_fail(time_sleep_mock):
-    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000)):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
         time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
@@ -386,7 +386,7 @@ def test_wait_for_single_regex_fail(time_sleep_mock):
 
 @patch("time.sleep")
 def test_wait_for_single_regex_pass_in_tuple(time_sleep_mock):
-    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000)):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
         time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
@@ -463,3 +463,42 @@ def test_wait_for_single_regex_from_start_point_fail(time_sleep_mock):
         assert not w_cond.wait_for_regex(["line1", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
         assert not labels["cond_1"]
         log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_sequence_of_fails(time_sleep_mock):
+    text = [
+    "2022-01-29 20:54:55.567000 line1\n",
+    "2022-01-29 20:54:55.567000 line2\n",
+    ]
+    text1 = [
+    "2022-01-29 20:54:55.568000 line1\n",
+    "2022-01-29 20:54:55.569000 line4\n",
+    ]
+    text2 = [
+    "2022-01-29 20:54:55.570000 line1\n",
+    "2022-01-29 20:54:55.600000 line6\n",
+    ]
+    log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+    date_format = "%Y-%m-%d %H:%M:%S.%f"
+    date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+    config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567001)):
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        labels = {}
+        assert not w_cond.wait_for_regex(["line1", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
+        assert not labels["cond_1"]
+    log_file.write("".join(text1))
+    log_file.flush()
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 568001)):
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        labels = {}
+        assert not w_cond.wait_for_regex(["line1", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
+        assert not labels["cond_1"]
+    log_file.write("".join(text2))
+    log_file.flush()
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 571001)):
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        labels = {}
+        assert not w_cond.wait_for_regex(["line1", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
+        assert not labels["cond_1"]
+    log_file.close()
