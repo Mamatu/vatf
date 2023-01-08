@@ -256,7 +256,7 @@ def _wait_loop(regex, timeout, pause, filepath, **kwargs):
             regex_copy = copy.deepcopy(regex)
             return _handle_multiple_regexes(regex_copy, filepath, timestamp_regex = timestamp_regex, **kwargs)
         else:
-            return _handle_single_regex(regex, filepath)
+            return _handle_single_regex(regex, filepath, **kwargs)
     return loop.wait_until_true(handle, pause = pause, timeout = timeout)
 
 def _get_start_point(config, date_format_is_required = False):
