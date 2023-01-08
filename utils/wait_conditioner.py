@@ -8,6 +8,94 @@ __maintainer__ = "Marcin Matula"
 from vatf.utils.wait_types import Label
 from vatf.utils.wait_types import RegexOperator
 
+def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
+    from vatf.utils import config_handler
+    if config_handler.has_var("wait_for_regex.command", **kwargs):
+        return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
+    else:
+        return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
+
+def _check_if_start_point_is_before_time(filepath, **kwargs):
+    from vatf.utils.kw_utils import handle_kwargs
+    start_point = handle_kwargs("start_point", default_output = None, is_required = True, **kwargs)
+    with open(filepath, "r") as f:
+        line = f.readline()
+        from vatf.utils import grep
+        from vatf.utils import config_handler
+        from datetime import datetime
+        config = config_handler.get_config(**kwargs)
+        date_format = config.wait_for_regex.date_format
+        date_regex = config.wait_for_regex.date_regex
+        out = grep.grep_in_text(line, date_regex, only_match = True) 
+        if len(out) != 1:
+            raise Exception("Invalid outs from grep. It must be only one!")
+        dt = datetime.strptime(out[0].matched, date_format)
+        dt1 = datetime.strptime(start_point, date_format)
+        return dt1 < dt
+
+#def _find_closest_line_number_to_date(filepath, **kwargs):
+#    def strp(matched):
+#        import datetime
+#        return datetime.datetime.strptime(matched, date_format)
+#    def _compare_two_outputs(out, index, start_point):
+#        o1 = out[index]
+#        if len(out) <= index + 1:
+#            return o1
+#        o2 = out[index + 1]
+#        p = [o1, o2]
+#        return min(p, key = lambda x: abs(strp(x.matched) - strp(start_point)))
+#    from vatf.utils.kw_utils import handle_kwargs
+#    start_point = handle_kwargs("start_point", default_output = None, is_required = True, **kwargs)
+#    from vatf.utils import config_handler
+#    config = config_handler.get_config(**kwargs)
+#    date_format = config.wait_for_regex.date_format
+#    date_regex = config.wait_for_regex.date_regex
+#    from vatf.executor import search
+#    count = 0
+#    start_point_1 = start_point
+#    while True:
+#        out = search.find(filepath = filepath, regex = start_point_1)
+#        if out and len(out) > 0:
+#            break
+#        start_point_1 = start_point_1[:-1]
+#        count = count + 1
+#    if count == 0:
+#        return out[0].line_number
+#    date_regex = config.wait_for_regex.date_regex
+#    from vatf.utils import grep
+#    for o in out:
+#        ol = grep.grep_in_text(o.matched, regex = date_regex, only_match = True)
+#        if len(ol) != 1:
+#            raise Exception("Not supported statte where len(ol) != 1")
+#        o.matched = ol[0].matched
+#    if o
+#    from utils.binary_search import binary_search
+#    o = binary_search(out, lambda o: strp(o.matched) < strp(start_point), lambda o: strp(start_point) < strp(o.matched), index_and_value = True)
+#    return _compare_two_outputs(out, o[0], start_point).line_number
+
+def _find_closest_line_number_to_date(filepath, **kwargs):
+    def strp(matched):
+        import datetime
+        return datetime.datetime.strptime(matched, date_format)
+    from vatf.utils.kw_utils import handle_kwargs
+    start_point = handle_kwargs("start_point", default_output = None, is_required = True, **kwargs)
+    from vatf.utils import config_handler
+    config = config_handler.get_config(**kwargs)
+    date_format = config.wait_for_regex.date_format
+    date_regex = config.wait_for_regex.date_regex
+    from vatf.executor import search
+    out = search.find(filepath = filepath, regex = date_regex, only_match = True)
+    return min(out, key = lambda x: abs(strp(x.matched) - strp(start_point))).line_number
+
+def _find(filepath, regex, **kwargs):
+    from vatf.executor import search
+    from vatf.utils.kw_utils import handle_kwargs
+    start_point = handle_kwargs("start_point", default_output = None, is_required = False, **kwargs)
+    line_number = 1
+    if start_point:
+        line_number = _find_closest_line_number_to_date(filepath = filepath, **kwargs)
+    return search.find(filepath = filepath, regex = regex, from_line = line_number)
+
 def _get_operators(regex):
     def regex_index(_regex, _ro):
         try:
@@ -46,8 +134,7 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
                 raise Exception(f"Labels output dicts must be provided to kwargs if Label are used")
             label_local_keys.append(r.label)
         elif isinstance(r, str):
-            from vatf.executor import search
-            outputs.extend(search.find(filepath = filepath, regex = r))
+            outputs.extend(_find(filepath = filepath, regex = r, **kwargs))
             _regex.append(r)
         elif isinstance(r, RegexOperator):
             pass
@@ -63,6 +150,8 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
 
 def _handle_exists(regex, filepath, **kwargs):
     def callback(outputs, regex):
+        if len(outputs) == 0:
+            return False
         if len(regex) != 1:
             raise Exception(f"{RegexOperator.EXISTS} hadnles only single operator")
         if len(outputs) == 0:
@@ -72,6 +161,8 @@ def _handle_exists(regex, filepath, **kwargs):
 
 def _handle_and(regex, filepath, **kwargs):
     def callback(outputs, regex):
+        if len(outputs) == 0:
+            return False
         if len(outputs) == len(regex):
             status = all(outputs)
             if status: return True
@@ -80,6 +171,8 @@ def _handle_and(regex, filepath, **kwargs):
 
 def _handle_or(regex, filepath, **kwargs):
     def callback(outputs, regex):
+        if len(outputs) == 0:
+            return False
         for o in outputs:
             if o: return True
         return False
@@ -87,6 +180,8 @@ def _handle_or(regex, filepath, **kwargs):
 
 def _handle_in_order_line(regex, filepath, **kwargs):
     def callback(outputs, regex):
+        if len(outputs) == 0:
+            return False
         _out = []
         for o in outputs:
             if isinstance(o, bool):
@@ -137,9 +232,8 @@ def _handle_regex_operator(regex, ro, filepath, **kwargs):
 def _is_array(r):
     return isinstance(r, list) or isinstance(r, tuple)
 
-def _handle_single_regex(regex, filepath):
-    from vatf.executor import search
-    out = search.find(filepath = filepath, regex = regex)
+def _handle_single_regex(regex, filepath, **kwargs):
+    out = _find(filepath = filepath, regex = regex, **kwargs)
     return out
 
 def _handle_multiple_regexes(regex, filepath, **kwargs):
@@ -153,7 +247,7 @@ def _handle_multiple_regexes(regex, filepath, **kwargs):
     ro = _get_operators(regex)
     return _handle_regex_operator(regex, ro, filepath, **kwargs)
 
-def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
+def _wait_loop(regex, timeout, pause, filepath, **kwargs):
     from vatf.utils import config_handler, loop
     timestamp_regex = config_handler.get_var("wait_for_regex.date_regex", **kwargs)
     def handle():
@@ -165,6 +259,35 @@ def _wait_loop(regex, timeout, pause, filepath, start_point, **kwargs):
             return _handle_single_regex(regex, filepath)
     return loop.wait_until_true(handle, pause = pause, timeout = timeout)
 
+def _get_start_point(config, date_format_is_required = False):
+    date_format = None
+    timedelta = None
+    start_point = None
+    date_format_key = "wait_for_regex.date_format"
+    timedelta_key = "wait_for_regex.timedelta"
+    try:
+        date_format = config[date_format_key]
+    except:
+        date_format = None
+    try:
+        timedelta = config[timedelta_key]
+        from vatf.utils import config_common
+        timedelta = config_common.convert_dict_to_timedelta(timedelta)
+    except:
+        timedelta = None
+    if date_format:
+        import datetime
+        start_point = datetime.datetime.now()#.strftime(date_format)
+    if start_point is not None and not date_format_is_required:
+        return None
+    elif start_point is None and date_format_is_required:
+        raise Exception(f"{key} is required for this scenarion/mode")
+    if start_point and timedelta:
+        start_point = start_point + timedelta
+    if start_point:
+        start_point = start_point.strftime(date_format)
+    return start_point
+
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.lib_log_snapshot as log_snapshot_class
     log_snapshot = log_snapshot_class.make()
@@ -172,14 +295,15 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
     temp_file = utils.get_temp_file()
     temp_filepath = temp_file.name
     try:
-        wait_command_key = "wait_for_regex.command"
         from vatf.utils import config_handler
-        command = config_handler.get_var(wait_command_key, **kwargs)
+        config = config_handler.get_config(**kwargs)
+        command = config.wait_for_regex.command
         command = command.format(log_path = temp_filepath)
         log_snapshot.start_cmd(log_path = temp_filepath, shell_cmd = command)
-        import time
-        start_point = time.time()
-        return _wait_loop(regex, timeout, pause, temp_filepath, start_point, **kwargs)
+        start_point = _get_start_point(config)
+        if start_point is not None:
+            kwargs["start_point"] = start_point
+        return _wait_loop(regex, timeout, pause, temp_filepath, **kwargs)
     finally:
         log_snapshot.stop()
         temp_file.close()
@@ -187,21 +311,16 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
 def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     import vatf.executor.lib_log_snapshot as log_snapshot_class
     wait_for_regex_path_key = "wait_for_regex.path"
+    wait_for_regex_chunk_directory_key = "wait_for_regex.chunk_directory"
     wait_for_regex_date_format_key = "wait_for_regex.date_format"
     wait_for_regex_date_regex_key = "wait_for_regex.date_regex"
-    wait_path_vars_key = [wait_for_regex_path_key, wait_for_regex_date_format_key, wait_for_regex_date_regex_key]
+    wait_path_vars_key = [wait_for_regex_path_key, wait_for_regex_date_format_key, wait_for_regex_date_regex_key, wait_for_regex_chunk_directory_key]
     from vatf.utils import config_handler
-    output = config_handler.get_vars(wait_path_vars_key, **kwargs)
-    log_filepath = output[wait_for_regex_path_key]
-    date_format = output[wait_for_regex_date_format_key]
-    date_regex = output[wait_for_regex_date_regex_key]
-    import time
-    start_point = time.time()
-    return _wait_loop(regex, timeout, pause, log_filepath, start_point, **kwargs)
-
-def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
-    from vatf.utils import config_handler
-    if config_handler.has_var("wait_for_regex.command", **kwargs):
-        return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
-    else:
-        return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
+    config = config_handler.get_config(**kwargs)
+    start_point = _get_start_point(config, date_format_is_required = True)
+    if start_point is not None:
+        kwargs["start_point"] = start_point
+    log_filepath = config[wait_for_regex_path_key]
+    date_format = config[wait_for_regex_date_format_key]
+    date_regex = config[wait_for_regex_date_regex_key]
+    return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)

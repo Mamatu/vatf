@@ -122,6 +122,40 @@
             "type" : "string",
             "description" : "path to file which is monitorig for waiting"
         },
+        "timedelta" : {
+          "type" : "object",
+          "description" : "offset between timestamp in logs and local time (in which is stored recording creation timestamp). It should be written in format provided in 'strformat' string",
+          "properties" : {
+            "days" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "seconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "microseconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "milliseconds" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "minutes" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "hours" : {
+              "type" : "number",
+              "default" : 0
+            },
+            "weeks" : {
+              "type" : "number",
+              "default" : 0
+            }
+          }
+        },
         "date_format" : {
           "type" : "string",
           "description" : "date format of timestamp in log for instance: %Y-%m-%d %H:%M:%S.%f"

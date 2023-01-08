@@ -68,6 +68,5 @@ def convert_dict_to_timedelta(timedelta):
         get_key("hours")
         get_key("weeks")
         import datetime
-        print(args)
         return datetime.timedelta(**args)
     return timedelta
