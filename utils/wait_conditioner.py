@@ -131,11 +131,16 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
     _regex = []
     from vatf.utils.kw_utils import handle_kwargs
     labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
+    labels_objects = handle_kwargs("labels_objects", default_output = None, is_required = True, **kwargs)
     for r in regex:
         if isinstance(r, bool):
             outputs.append(r)
             _regex.append(r)
         elif isinstance(r, Label):
+            if r.label in labels_objects:
+                label_object = labels_objects[r.label]
+                if label_object is not r:
+                    raise Exception(f"Two different Label objects have the same label {label_object} and {r}")
             if labels is None:
                 raise Exception(f"Labels output dicts must be provided to kwargs if Label class is used")
             label_local_keys.append(r.label)
@@ -260,6 +265,8 @@ def _wait_loop(regex, timeout, pause, filepath, **kwargs):
         if _is_array(regex):
             import copy
             regex_copy = copy.deepcopy(regex)
+            labels_objects = {}
+            kwargs['labels_objects'] = labels_objects
             return _handle_multiple_regexes(regex_copy, filepath, timestamp_regex = timestamp_regex, **kwargs)
         else:
             return _handle_single_regex(regex, filepath, **kwargs)

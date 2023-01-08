@@ -125,7 +125,7 @@ def test_handle_in_order_line_pass(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert w_cond._handle_in_order_line(["line1", "line3", "line4", "line6", w_cond.RegexOperator.IN_ORDER_LINE], filepath = log_file.name)
+    assert w_cond._handle_in_order_line(["line1", "line3", "line4", "line6", w_cond.RegexOperator.IN_ORDER_LINE], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -140,7 +140,7 @@ def test_handle_in_order_line_fail(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert not w_cond._handle_in_order_line(["line3", "line1", "line4", "line6", w_cond.RegexOperator.IN_ORDER_LINE], filepath = log_file.name)
+    assert not w_cond._handle_in_order_line(["line3", "line1", "line4", "line6", w_cond.RegexOperator.IN_ORDER_LINE], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -155,7 +155,7 @@ def test_handle_and_pass(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert w_cond._handle_and(["line6", "line3", "line4", "line1", w_cond.RegexOperator.AND], filepath = log_file.name)
+    assert w_cond._handle_and(["line6", "line3", "line4", "line1", w_cond.RegexOperator.AND], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -170,7 +170,7 @@ def test_handle_and_fail(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert not w_cond._handle_and(["line6", "line3", "line4", "line15", w_cond.RegexOperator.AND], filepath = log_file.name)
+    assert not w_cond._handle_and(["line6", "line3", "line4", "line15", w_cond.RegexOperator.AND], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -185,7 +185,7 @@ def test_handle_or_pass(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert w_cond._handle_or(["line15", "line16", "line17", "line1", w_cond.RegexOperator.OR], filepath = log_file.name)
+    assert w_cond._handle_or(["line15", "line16", "line17", "line1", w_cond.RegexOperator.OR], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -200,7 +200,7 @@ def test_handle_or_fail(time_sleep_mock):
     "2022-01-29 20:54:55.600000 line6\n",
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
-    assert not w_cond._handle_or(["line15", "line16", "line17", "line18", w_cond.RegexOperator.OR], filepath = log_file.name)
+    assert not w_cond._handle_or(["line15", "line16", "line17", "line18", w_cond.RegexOperator.OR], filepath = log_file.name, labels_objects = {})
     log_file.close()
 
 @patch("time.sleep")
@@ -464,6 +464,33 @@ def test_wait_for_single_regex_from_start_point_fail(time_sleep_mock):
         assert not labels["cond_1"]
         log_file.close()
 
+
+@patch("time.sleep")
+def test_wait_for_regex_duplicated_label_exception(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line3\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        labels = {}
+        is_exception = False
+        try:
+            assert not w_cond.wait_for_regex([["line1", w_cond.Label("cond_1")], "line2", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
+            assert not labels["cond_1"]
+        except:
+            is_exception = True
+        assert is_exception
+        log_file.close()
+
 @patch("time.sleep")
 def test_wait_for_sequence_of_fails(time_sleep_mock):
     text = [
@@ -499,6 +526,5 @@ def test_wait_for_sequence_of_fails(time_sleep_mock):
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 571001)):
         time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
         labels = {}
-        assert not w_cond.wait_for_regex(["line1", w_cond.Label("cond_1")], timeout = 0.1, config = config, labels = labels)
-        assert not labels["cond_1"]
+        assert not w_cond.wait_for_regex("line1", timeout = 0.1, config = config, labels = labels)
     log_file.close()
