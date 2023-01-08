@@ -272,3 +272,39 @@ def test_wait_for_single_regex_fail(time_sleep_mock):
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
     assert not w_cond.wait_for_regex("line7", timeout = 0.1, config = config)
     log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_single_regex_pass_in_tuple(time_sleep_mock):
+    date_format = "%Y-%m-%d %H:%M:%S.%f"
+    date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9"
+    time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+    text = [
+    "2022-01-29 20:54:55.567 line1\n",
+    "2022-01-29 20:54:55.567 line2\n",
+    "2022-01-29 20:54:55.568 line3\n",
+    "2022-01-29 20:54:55.569 line4\n",
+    "2022-01-29 20:54:55.570 line5\n",
+    "2022-01-29 20:54:55.600 line6\n",
+    ]
+    log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+    config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+    assert w_cond.wait_for_regex(("line1",), timeout = 0.1, config = config)
+    log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_single_regex_fail_in_tuple(time_sleep_mock):
+    date_format = "%Y-%m-%d %H:%M:%S.%f"
+    date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9"
+    time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+    text = [
+    "2022-01-29 20:54:55.567 line1\n",
+    "2022-01-29 20:54:55.567 line2\n",
+    "2022-01-29 20:54:55.568 line3\n",
+    "2022-01-29 20:54:55.569 line4\n",
+    "2022-01-29 20:54:55.570 line5\n",
+    "2022-01-29 20:54:55.600 line6\n",
+    ]
+    log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+    config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+    assert not w_cond.wait_for_regex(("line7",), timeout = 0.1, config = config)
+    log_file.close()

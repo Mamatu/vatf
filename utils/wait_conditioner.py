@@ -8,11 +8,12 @@ __maintainer__ = "Marcin Matula"
 import enum
 
 class RegexOperator(enum.Enum):
-    AND = 0,
-    OR = 1,
-    IN_ORDER_LINE = 2,
-    IN_ORDER_REAL_TIMESTAMP = 3,
-    IN_ORDER_LOG_TIMESTAMP = 4
+    EXISTS = 0,
+    AND = 1,
+    OR = 2,
+    IN_ORDER_LINE = 3,
+    IN_ORDER_REAL_TIMESTAMP = 4,
+    IN_ORDER_LOG_TIMESTAMP = 5
 
 class Label:
     def __init__(self, label):
@@ -35,8 +36,10 @@ def _get_operators(regex):
             return -1
     occurences = [regex_index(regex, ro) for ro in RegexOperator]
     no_regex_operators_count = len([o for o in occurences if o == -1])
-    if no_regex_operators_count != len(occurences) - 1:
+    if no_regex_operators_count != len(occurences) - 1 and no_regex_operators_count != len(occurences):
         raise Exception(f"Only one logical operator is expected {regex}")
+    if no_regex_operators_count == len(occurences):
+        return RegexOperator.EXISTS
     occurences.sort(reverse = True)
     index = occurences.pop(0)
     return regex[index]
@@ -77,6 +80,15 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
                 raise Exception(f"FATAL: Incorrect sequence of outputs for label {llk}. The previous status was True and current output is False what is invalid!")
         labels[llk] = out
     return out
+
+def _handle_exists(regex, filepath, **kwargs):
+    def callback(outputs, regex):
+        if len(regex) != 1:
+            raise Exception(f"{RegexOperator.EXISTS} hadnles only single operator")
+        if len(outputs) == 0:
+            return False
+        return outputs[0] is not None
+    return _make_outputs(regex, filepath, RegexOperator.EXISTS, callback, **kwargs)
 
 def _handle_and(regex, filepath, **kwargs):
     def callback(outputs, regex):
@@ -131,11 +143,13 @@ def _handle_in_order_real_timestamp(regex, filepath, **kwargs):
     return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_REAL_TIMESTAMP, callback, **kwargs)
 
 def _handle_regex_operator(regex, ro, filepath, **kwargs):
-    _handlers = {RegexOperator.AND : _handle_and,
+    _handlers = {
+            RegexOperator.EXISTS : _handle_exists,
+            RegexOperator.AND : _handle_and,
             RegexOperator.OR : _handle_or,
             RegexOperator.IN_ORDER_LINE : _handle_in_order_line,
             RegexOperator.IN_ORDER_REAL_TIMESTAMP : _handle_in_order_real_timestamp}
-    if ro in regex:
+    if ro in _handlers.keys():
         return _handlers[ro](regex, filepath, **kwargs)
     else:
         raise Exception(f"Not supported regex operator: {ro}")
