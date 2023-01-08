@@ -53,9 +53,13 @@ class LogSnapshot:
         if config:
             timestamp_regex = config["va_log.date_regex"]
             timestamp_format = config["va_log.date_format"]
-            timestamp_delta = config["va_log.timedelta"]
-            from vatf.utils import config_common
-            timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
+            timestamp_delta = None
+            try:
+                timestamp_delta = config["va_log.timedelta"]
+                from vatf.utils import config_common
+                timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
+            except KeyError:
+                pass
         else:
             timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
             timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
