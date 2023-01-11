@@ -11,7 +11,8 @@ Takes the snapshot of log between start and stop method.
 from vatf import vatf_api
 import logging
 
-from vatf.executor import lib_log_snapshot, mkdir
+from vatf.executor import mkdir
+from vatf.utils import lib_log_snapshot
 from vatf.utils import config_handler, os_proxy
 
 _log_snapshot = None

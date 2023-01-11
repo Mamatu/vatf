@@ -303,8 +303,8 @@ def _get_start_point(config, date_format_is_required = False):
     return start_point
 
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
-    import vatf.executor.lib_log_snapshot as log_snapshot_class
-    log_snapshot = log_snapshot_class.make()
+    from vatf.utils import lib_log_snapshot
+    log_snapshot = lib_log_snapshot.make()
     from vatf.utils import utils
     temp_file = utils.get_temp_file()
     temp_filepath = temp_file.name
@@ -323,7 +323,6 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         temp_file.close()
 
 def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
-    import vatf.executor.lib_log_snapshot as log_snapshot_class
     wait_for_regex_path_key = "wait_for_regex.path"
     wait_for_regex_chunk_directory_key = "wait_for_regex.chunk_directory"
     wait_for_regex_date_format_key = "wait_for_regex.date_format"

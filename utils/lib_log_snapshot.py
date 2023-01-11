@@ -8,8 +8,6 @@ __maintainer__ = "Marcin Matula"
 """
 Takes the snapshot of log between start and stop method.
 """
-from vatf import vatf_api
-from vatf.executor import shell
 
 class LogSnapshot:
     def __init__(self):
@@ -25,6 +23,7 @@ class LogSnapshot:
         self._log_path = log_path
         self._shell_cmd = shell_cmd
         def restart():
+            from vatf.executor import shell
             if self._shell_process:
                 try:
                     shell.kill(self._shell_process)
@@ -84,12 +83,20 @@ class LogSnapshot:
         self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause])
         self._thread.start()
 
+    def get_lines_count():
+        pass
+
+    def remove_head(self, line_count):
+        from vatf.executor import shell
+        shell.fg(f"sed -i '{line_count}d' {self._log_path}")
+
     def stop(self):
         self._stop_command()
         self._stop_thread()
 
     def _stop_command(self):
         if self._shell_process:
+            from vatf.executor import shell
             shell.kill(self._shell_process)
             self._shell_process = None
 

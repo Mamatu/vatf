@@ -21,7 +21,7 @@ def mocked_now(now):
         yield
 
 def test_log_copy():
-    from vatf.executor import lib_log_snapshot
+    from vatf.utils import lib_log_snapshot
     snapshot = lib_log_snapshot.make()
     try:
         with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
