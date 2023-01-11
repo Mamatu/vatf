@@ -7,20 +7,40 @@ __maintainer__ = "Marcin Matula"
 
 from vatf import vatf_api
 from vatf.utils import utils
-import logging
-import os
-import psutil
-import subprocess
 
 import atexit
-from threading import RLock
-from vatf.utils.thread import lock
-
-_popens = []
+import subprocess
 
 @vatf_api.public_api("shell")
-def fg(command):
-    os.system(command)
+def fg(command, shell = True):
+    def read_output(output):
+        lines = []
+        for line in output:
+            lines.append(line.decode('utf-8').replace("\n", ""))
+        output.close()
+        return lines
+    process = subprocess.Popen(command, shell = shell, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    process.wait()
+    lines = read_output(process.stderr)
+    if len(lines) > 0:
+        lines = "\n".join(lines)
+        raise Exception(f'Stderr from {command}: {lines}')
+    lines = read_output(process.stdout)
+    return "\n".join(lines)
+
+@vatf_api.public_api("shell")
+def bg(command, shell = True):
+    process = subprocess.Popen(command, shell = shell)
+    logging.debug(f"Run process {process.pid} in background for command {command}")
+    _register_process(process)
+    atexit.register(kill, process)
+    return process
+
+import logging
+import psutil
+
+from threading import RLock
+from vatf.utils.thread import lock
 
 _active_processes = set()
 _mutex = RLock()
@@ -61,11 +81,3 @@ def kill(process):
         process.terminate()
         logging.debug(f"Killed children and terminated process {process.pid}")
         process.wait()
-
-@vatf_api.public_api("shell")
-def bg(command, shell = True):
-    process = subprocess.Popen(command, shell = shell)
-    logging.debug(f"Run process {process.pid} in background for command {command}")
-    _register_process(process)
-    atexit.register(kill, process)
-    return process
