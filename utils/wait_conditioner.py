@@ -191,6 +191,7 @@ def _handle_or(regex, filepath, **kwargs):
 
 def _handle_in_order_line(regex, filepath, **kwargs):
     def callback(outputs, regex):
+        outputs = outputs[:len(regex)]
         if len(outputs) == 0:
             return False
         _out = []
