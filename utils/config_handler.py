@@ -51,9 +51,9 @@ def get_config(custom_format = None, **kwargs):
         return _handle_global_config(custom_format = custom_format)
 
 def handle(config_vars, custom_format = None, **kwargs):
-    is_config_path = "config_path" in kwargs.keys()
-    is_config = "config" in kwargs.keys()
-    is_config_vars = "config_attrs" in kwargs.keys()
+    is_config_path = "config_path" in kwargs.keys() and kwargs["config_path"] is not None
+    is_config = "config" in kwargs.keys() and kwargs["config"] is not None
+    is_config_vars = "config_attrs" in kwargs.keys() and kwargs["config_attrs"] is not None
     true_list = [is_config_path, is_config, is_config_vars]
     true_list = [x for x in true_list if x]
     if len(true_list) > 1:
