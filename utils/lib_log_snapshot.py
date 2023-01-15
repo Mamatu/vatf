@@ -10,6 +10,7 @@ Takes the snapshot of log between start and stop method.
 """
 
 from vatf.executor import shell
+from vatf.utils import thread_with_stop
 
 class LogSnapshot:
     def __init__(self):
@@ -17,6 +18,7 @@ class LogSnapshot:
         self._shell_cmd = None
         self._shell_process = None
         self._thread = None
+        self._rb_thread = None
  
     def start_cmd(self, log_path, shell_cmd):
         """
@@ -94,9 +96,25 @@ class LogSnapshot:
         output = output.replace(" ", "")
         return int(output)
 
-    def remove_head(self, line_count):
+    def remove_head(self, lines_count):
+        """
+        Removes lines_count from head of log_snapshot file
+        """
         from vatf.executor import shell
-        shell.fg(f"sed -i '{line_count}d' {self._log_path}")
+        shell.fg(f"sed -i '{lines_count}d' {self._log_path}")
+
+    def set_ring_buffer(self, lines_count):
+        """
+        Log snapshot will work as ring buffer limited to lines_count lines
+        """
+        def _cutter(self, max_lines_count, is_stopped):
+            while not is_stopped():
+                lines = self.get_lines_count()
+                diff = max_lines_count - lines
+                if diff > 0:
+                    self.remove_head(diff)
+        self._rb_thread = thread_with_stop.Thread(target = _cutter, args = [self, lines_count])
+        saelf._rb_thread.start()
 
     def stop(self):
         self._stop_command()
@@ -113,6 +131,10 @@ class LogSnapshot:
             self._thread.stop()
             self._thread.join()
             self._thread = None
+        if self._rb_thread:
+            self._rb_thread.stop()
+            self._rb_thread.join()
+            self._rb_thread = None
 
 def make():
     return LogSnapshot()
