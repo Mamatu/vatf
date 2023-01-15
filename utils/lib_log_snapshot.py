@@ -9,6 +9,8 @@ __maintainer__ = "Marcin Matula"
 Takes the snapshot of log between start and stop method.
 """
 
+from vatf.executor import shell
+
 class LogSnapshot:
     def __init__(self):
         self._log_path = None
@@ -75,6 +77,7 @@ class LogSnapshot:
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
         from vatf.executor import shell
         from vatf.utils.thread_with_stop import Thread
+        self._log_path = log_path
         def copy_file(line_number, in_log_path, log_path, pause, is_stopped):
             import time
             while not is_stopped():
@@ -83,8 +86,13 @@ class LogSnapshot:
         self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause])
         self._thread.start()
 
-    def get_lines_count():
-        pass
+    def get_lines_count(self):
+        if self._log_path is None:
+            raise Exception("Lack of file to line count")
+        output = shell.fg(f"wc -l {self._log_path}")
+        output = output.replace(self._log_path, "")
+        output = output.replace(" ", "")
+        return int(output)
 
     def remove_head(self, line_count):
         from vatf.executor import shell

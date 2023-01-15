@@ -11,6 +11,9 @@ from vatf.utils import utils
 import atexit
 import subprocess
 
+class StderrException(Exception):
+    pass
+
 @vatf_api.public_api("shell")
 def fg(command, shell = True):
     def read_output(output):
@@ -24,7 +27,7 @@ def fg(command, shell = True):
     lines = read_output(process.stderr)
     if len(lines) > 0:
         lines = "\n".join(lines)
-        raise Exception(f'Stderr from {command}: {lines}')
+        raise StderrException(f"Stderr from {command}: {lines}")
     lines = read_output(process.stdout)
     return "\n".join(lines)
 

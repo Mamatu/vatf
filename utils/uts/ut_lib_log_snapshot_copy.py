@@ -43,6 +43,7 @@ def test_log_copy():
                     return len(f.readlines()) == 2
             loop.wait_until_true(cond, pause = 0.1, timeout = 1)
             snapshot.stop()
+            assert 2 == snapshot.get_lines_count()
             with open(file1.name, "r") as f:
                 lines = f.readlines()
                 assert len(lines) == 2

@@ -94,5 +94,13 @@ def stop():
         _log_snapshot.stop()
         _log_snapshot = None
 
+@vatf_api.public_api("log_snapshot")
+def get_lines_count():
+    global _log_snapshot
+    if _log_snapshot:
+        return _log_snapshot.get_lines_count()
+    else:
+        raise Exception("log_snapshot process was stopped")
+
 import atexit
 atexit.register(stop)
