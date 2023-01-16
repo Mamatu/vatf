@@ -90,11 +90,21 @@ class LogSnapshot:
 
     def get_lines_count(self):
         if self._log_path is None:
-            raise Exception("Lack of file to line count")
+            raise Exception("Lack of log path")
         output = shell.fg(f"wc -l {self._log_path}")
         output = output.replace(self._log_path, "")
         output = output.replace(" ", "")
         return int(output)
+
+    def get_the_first_line(self):
+        if self._log_path is None:
+            raise Exception("Lack of log path")
+        return shell.fg(f"head -n1 {self._log_path}")
+
+    def get_the_last_line(self):
+        if self._log_path is None:
+            raise Exception("Lack of log path")
+        return shell.fg(f"tail -n1 {self._log_path}")
 
     def remove_head(self, lines_count):
         """
