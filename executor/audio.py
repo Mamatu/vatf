@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 from vatf.api import shell, mkdir
 
 from vatf import vatf_api
@@ -19,8 +26,8 @@ def record_inputs_outputs():
 def record_inputs_outputs_from_config(**kwargs):
     global _processes
     audio_dir_path_key = "audio.path"
-    output = config_handler.handle([audio_dir_path_key], **kwargs)
-    output_path = output[audio_dir_path_key]
+    config = config_handler.get_config(**kwargs)
+    output_path = config.audio.path
     print(f"output_path: {output_path}")
     mkdir.mkdir(output_path)
     rec_command = f"python3 vatf/utils/papy.py --recorder=gst --rec --dir {output_path}"

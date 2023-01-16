@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import logging
 import datetime
 import os
@@ -8,13 +15,33 @@ from vatf.utils import utils
 
 import vatf.utils
 
-DATE_REGEX = utils.DATE_REGEX
-DATE_FORMAT = utils.DATE_FORMAT
+def _get_from_kwargs(attr, attr_in_config, **kwargs):
+    attr_value = None
+    if attr in kwargs:
+        attr_value = kwargs[attr]
+    else:
+        from utils import config_handler
+        config = config_handler.get_config(**kwargs)
+        attr_value = config[attr_in_config]
+    if attr_value is None:
+        raise Exception(f"Cannot find no {attr} in kwargs or {attr_in_config} in config")
+    return attr_value
 
-TIMESTAMP_REGEX = utils.TIMESTAMP_REGEX
-TIMESTAMP_FORMAT = utils.TIMESTAMP_FORMAT
+def _get_timestamp_regex_from_kwargs(**kwargs):
+    return _get_from_kwargs("timestamp_regex", "va_log.timestamp_regex", **kwargs)
 
-def get_creation_date(path):
+def _get_timestamp_format_from_kwargs(**kwargs):
+    return _get_from_kwargs("timestamp_format", "va_log.timestamp_format", **kwargs)
+
+def _convert_pcm_to_ogg(recording_path, audioConfig):
+    from vatf.utils import ffmpeg
+    output_path = utils.get_temp_file()
+    output_path = f"{output_path}.ogg"
+    vatf.utils.ffmpeg.convert(recording_path, output_path, audioConfig)
+    return output_path
+
+def get_creation_date(path, **kwargs):
+    timestamp_format = _get_timestamp_format_from_kwargs(**kwargs)
     if not os.path.exists(path):
         raise FileNotFoundError(path)
     read_date_stat = lambda: utils.get_modification_date(path)
@@ -22,7 +49,7 @@ def get_creation_date(path):
         with open(path, "tr") as f:
             content = f.read().rstrip()
             logging.info(f"Reading: {content}")
-            return datetime.datetime.strptime(content, utils.DATE_FORMAT)
+            return datetime.datetime.strptime(content, timestamp_format)
     except ValueError as vex:
         logging.info(f"Exception {str(vex)} during an attempt of reading {path}. Reads date stat")
         return read_date_stat()
@@ -30,11 +57,11 @@ def get_creation_date(path):
         logging.info(f"Cannot open {path} due to {ex} in text mode. Reads date stat")
         return read_date_stat()
 
-def get_recording_start_date(path_to_recording, path_to_recording_date):
+def get_recording_start_date(path_to_recording, path_to_recording_date, timestamp_format):
     if path_to_recording_date:
-        return get_creation_date(path_to_recording_date)
+        return get_creation_date(path_to_recording_date, timestamp_format = timestamp_format)
     if path_to_recording:
-        return get_creation_date(path_to_recording)
+        return get_creation_date(path_to_recording, timestamp_format = timestamp_format)
 
 def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_timestamp, audioData, sr, samples_path, sample_format = "ogg"):
     logging.info(f"{extract_sample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
@@ -57,14 +84,8 @@ def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_t
     logging.info(f"Write sample to {sample_path}")
     return sample_path
 
-def _convert_pcm_to_ogg(recording_path, audioConfig):
-    from vatf.utils import ffmpeg
-    output_path = utils.get_temp_filepath()
-    output_path = f"{output_path}.ogg"
-    vatf.utils.ffmpeg.convert(recording_path, output_path, audioConfig)
-    return output_path
-
-def extract_samples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg"):
+def extract_samples(recording_start_timestamp, regexes, recording_path, samples_path, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg", **kwargs):
+    timestamp_format = _get_timestamp_format_from_kwargs(**kwargs)
     import librosa
     audio = []
     sr = None
@@ -81,8 +102,8 @@ def extract_samples(recording_start_timestamp, regexes, recording_path, samples_
     sample_paths = []
     not_matched_samples_count = 0
     for start_end in regexes:
-        start_timestmap = datetime.datetime.strptime(start_end[0].matched[0], utils.DATE_FORMAT)
-        end_timestamp = datetime.datetime.strptime(start_end[1].matched[0], utils.DATE_FORMAT)
+        start_timestmap = datetime.datetime.strptime(start_end[0].matched[0], timestamp_format)
+        end_timestamp = datetime.datetime.strptime(start_end[1].matched[0], timestamp_format)
         sample_path = extract_sample(start_timestmap, end_timestamp, recording_start_timestamp, audio, sr, samples_path, sample_format = sample_format)
         if sample_path != None:
             sample_paths.append(sample_path)
@@ -91,9 +112,10 @@ def extract_samples(recording_start_timestamp, regexes, recording_path, samples_
     logging.info(f"Extracted {len(sample_paths)} samples. {not_matched_samples_count} samples could not extract (not in recording)")
     return sample_paths
 
-def find_start_end_regexes(path_to_log, start_regex, end_regex, from_line, max_count):
-    start_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = start_regex, match_regex = utils.DATE_REGEX, maxCount = max_count)
-    end_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = end_regex, match_regex = utils.DATE_REGEX, maxCount = max_count)
+def find_start_end_regexes(path_to_log, start_regex, end_regex, from_line, max_count, **kwargs):
+    timestamp_regex = _get_timestamp_regex_from_kwargs(**kwargs)
+    start_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = start_regex, match_regex = timestamp_regex, maxCount = max_count)
+    end_regexes = utils.grep_regex_in_line(filepath = path_to_log, grep_regex = end_regex, match_regex = timestamp_regex, maxCount = max_count)
     regexes = [(start_regexes[i], end_regexes[i]) for i in range(0, len(start_regexes))]
     if from_line and from_line > 0:
         from_line = int(from_line)

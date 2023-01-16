@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import logging
 
 import json
@@ -5,6 +12,7 @@ import jsonschema
 from types import SimpleNamespace
 
 from vatf.utils import os_proxy
+from vatf.utils import config_common
 
 def _abs_path_to_schema():
     import pathlib
@@ -27,12 +35,6 @@ def get_attr(data, attr, raiseIfNotFound = True):
     if output is None and raiseIfNotFound:
         raise AttributeError(f"Attr {'.'.join(_attr)} not found in config")
     return output
-
-class _Config:
-    def __init__(self, data):
-        self.data = data
-    def get(self, arg, raiseIfNotFound = True):
-        return get_attr(self.data, arg, raiseIfNotFound = raiseIfNotFound)
 
 def _iterate_dict(dict_key, callback):
     def _make_key_chain(key_chain, key):
@@ -96,40 +98,28 @@ def load_raw(config_json_pathes, schema_json_path = _abs_path_to_schema()):
     data = {}
     for item in array:
         data = _update_dict_deeply(data, item)
-    data = _convert_if_dict(data)
-    return _Config(data)
+    return data
 
-def load_default_format(custom_format):
-    if custom_format is None:
-        custom_format = {}
-    default_format = {}
-    import datetime
-    date = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    default_format["config_loading_time"] = date
-    custom_format.update(default_format)
-    return custom_format
+def _load_json(config_pathes, schema_json_path):
+    data = load_raw(config_pathes, schema_json_path)
+    return data
 
-def load(config_json_pathes, custom_format = {}, schema_json_path = _abs_path_to_schema()):
-    custom_format = load_default_format(custom_format)
-    if isinstance(config_json_pathes, str):
-        config_json_pathes = [config_json_pathes]
-    c = load_raw(config_json_pathes, schema_json_path)
-    def process_format(obj, format_dict):
-        if hasattr(obj, "__dict__"):
-            for k,v in obj.__dict__.items():
-                process_format(v, format_dict)
-                if isinstance(v, str):
-                    v = v.format(**format_dict)
-                    setattr(obj, k, v)
-    def make_dict(data_format):
-        _dict = {}
-        for kv in data_format:
-            _dict[kv.key] = kv.value
-        return _dict
-    format_dict = {}
-    if hasattr(c.data, "format") and c.data.format:
-        format_dict.update(c.data.format.__dict__)
-    if custom_format:
-        format_dict.update(custom_format)
-    process_format(c.data, format_dict)
+from vatf.utils import config_common
+
+def load(config_pathes, schema_json_path = config_common.get_global_schema_path()):
+    if isinstance(config_pathes, str):
+        config_pathes = [config_pathes]
+    config_json_pathes = []
+    config_py_pathes = []
+    for config_path in config_pathes:
+        if config_path.endswith(".json"):
+            config_json_pathes.append(config_path)
+        elif config_path.endswith(".py"):
+            config_py_pathes.append(config_path)
+        else:
+            config_py_pathes.append(config_path)
+    c = _load_json(config_json_pathes, schema_json_path)
+    from vatf.utils import config_py_loader
+    c1 = config_py_loader.load(config_py_pathes)
+    c.update(c1)
     return c

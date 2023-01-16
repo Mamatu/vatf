@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import logging
 from unittest import TestCase
 from unittest.mock import ANY, call, Mock, patch
@@ -12,11 +19,11 @@ class TestTests(TestCase):
     def __init__(self, arg):
         logging.basicConfig(level=logging.DEBUG)
         TestCase.__init__(self, arg)
-    def setUp(self):
+    def setup_class(self):
         logging.getLogger().setLevel(logging.DEBUG)
     def test_test_suite_api(self):
         test_folder = ["assets", "config.json", "run_test.sh", "test.py"]
-        suite_path = utils.get_temp_filepath()
+        suite_path = utils.get_temp_file()
         logging.debug(f"suite_path: {suite_path}")
         os.system(f"./python.sh api/tests/test_suite_api.py {suite_path} ./api/tests/config.json ./api/tests/custom.json")
         self.assertEqual(2, len(os_proxy.listdir(suite_path)))

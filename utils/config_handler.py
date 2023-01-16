@@ -1,68 +1,59 @@
-_configs = None
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
 
-class _Configs:
-    def __init__(self, configs = None, custom_format = None):
-        if isinstance(configs, str):
-            configs = [configs]
-        self.configs = []
-        if configs:
-            self.load(configs, custom_format)
-    def load(self, path, custom_format):
-        from vatf.utils import config_loader
-        self.configs.append(config_loader.load(path, custom_format = custom_format))
-    def get(self, var, raiseIfNotFound = True):
-        from vatf.utils import config_loader
-        for config in self.configs:
-            attr = config.get(var, False)
-            if attr:
-                return attr
-        if raiseIfNotFound:
-            raise AttributeError(f"Attr {var} not found in config")
-        return None
+class NoConfigException(Exception):
+    pass
+
+class NoAttrConfigException(Exception):
+    pass
 
 def init_configs(config_pathes, custom_format = None):
-    global _configs
-    _configs = _Configs(config_pathes, custom_format)
-    return _configs
+    reset_configs()
+    global _global_data
+    _global_data.config_pathes = config_pathes
+    _global_data.custom_format = custom_format
 
 def reset_configs():
-    global _configs
-    _configs = None
+    global _global_data
+    _global_data = _GlobalData()
 
-def get():
-    return _configs
-
-def _handle_global_config(config_vars, custom_format):
-    global _configs
-    if _configs is None:
-        raise Exception("global config does not exist")
-    return _handle_config(config_vars, _configs, custom_format)
-
-def _handle_config(config_vars, config, custom_format, callback = None):
-    _dict = {}
-    for attr in config_vars:
-        value = config.get(attr)
-        if callback: callback(attr, value)
-        if custom_format:
-            value = value.format(**custom_format)
-        _dict[attr] = value 
-    return _dict
-
-def _handle_config_path(config_vars, path, custom_format):
-    from vatf.utils import config_loader
-    config = config_loader.load(path, custom_format = custom_format)
-    return _handle_config(config_vars, config, custom_format = custom_format)
-
-def _handle_config_attrs(config_vars, kw_config_vars, custom_format):
-    def callback(k, v):
-        if v is None:
-            raise Exception("Attr {k} is None")
-    return _handle_config(config_vars, kw_config_vars, custom_format = custom_format, callback = callback)
+def get_config(custom_format = None, **kwargs):
+    is_config_path = "config_path" in kwargs.keys()
+    is_config = "config" in kwargs.keys() and isinstance(kwargs["config"], Config)
+    is_config_dict1 = "config" in kwargs.keys() and isinstance(kwargs["config"], dict)
+    is_config_dict2 = "config_attrs" in kwargs.keys() # support for decprecated config_attrs
+    is_config_dict3 = "config_dict" in kwargs.keys() # support for extra config_dict
+    config_list = [is_config_path, is_config, is_config_dict1, is_config_dict2, is_config_dict3]
+    true_list = [x for x in config_list if x]
+    if len(true_list) > 1:
+        raise Exception(f"kwargs can contain only one: config, config_path or config_attrs. It has: {config_list}")
+    is_config_dict = is_config_dict1 or is_config_dict2 or is_config_dict3
+    if is_config_dict:
+        cd_labels = ["config", "config_attrs", "config_dict"]
+        def get_label():
+            for l in cd_labels:
+                if l in kwargs:
+                    return l
+            return None
+        kw_config_dict = kwargs[get_label()]
+        return _handle_config_dict(kw_config_dict, custom_format = custom_format)
+    if is_config_path:
+        config_path = kwargs["config_path"]
+        return _handle_config_path(config_path, custom_format = custom_format)
+    if is_config:
+        config = kwargs["config"]
+        return _handle_config(config, custom_format = custom_format)
+    if len(true_list) == 0:
+        return _handle_global_config(custom_format = custom_format)
 
 def handle(config_vars, custom_format = None, **kwargs):
-    is_config_path = "config_path" in kwargs.keys()
-    is_config = "config" in kwargs.keys()
-    is_config_vars = "config_attrs" in kwargs.keys()
+    is_config_path = "config_path" in kwargs.keys() and kwargs["config_path"] is not None
+    is_config = "config" in kwargs.keys() and kwargs["config"] is not None
+    is_config_vars = "config_attrs" in kwargs.keys() and kwargs["config_attrs"] is not None
     true_list = [is_config_path, is_config, is_config_vars]
     true_list = [x for x in true_list if x]
     if len(true_list) > 1:
@@ -70,12 +61,144 @@ def handle(config_vars, custom_format = None, **kwargs):
     _dict = {}
     if is_config_vars:
         kw_config_vars = kwargs["config_attrs"]
-        return _handle_config_attrs(config_vars, kw_config_vars, custom_format = custom_format)
+        return _handle_config_dict(kw_config_vars, custom_format = custom_format)
     if is_config_path:
         config_path = kwargs["config_path"]
-        return _handle_config_path(config_vars, config_path, custom_format = custom_format)
+        return _handle_config_path(config_path, custom_format = custom_format)
     if is_config:
         config = kwargs["config"]
-        return _handle_config(config_vars, config, custom_format = custom_format)
+        return _handle_config(config, custom_format = custom_format)
     if len(true_list) == 0:
-        return _handle_global_config(config_vars, custom_format = custom_format)
+        return _handle_global_config(custom_format = custom_format)
+
+def has_var(config_var, custom_format = None, **kwargs):
+    try:
+        config = get_config(custom_format, **kwargs)
+        var = config.get(config_var)
+        return var is not None
+    except Exception as ex:
+        return False
+
+def get_vars(config_vars, custom_format = None, **kwargs):
+    return handle(config_vars, custom_format, **kwargs)
+
+def get_var(config_var, custom_format = None, **kwargs):
+    if not isinstance(config_var, str):
+        raise Exception("config_var must be singe key")
+    output = get_vars([config_var], custom_format, **kwargs)
+    return output[config_var]
+
+class _GlobalData:
+    def __init__(self):
+        self.config_pathes = None
+        self.custom_format = None
+        import datetime
+        self.config_loading_time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    def exist(self):
+        return self.config_pathes != None
+
+_global_data = _GlobalData()
+
+class Config:
+    class _Wrapper:
+        def __init__(self, attr):
+            self.attr = attr
+            if isinstance(self.attr, dict):
+                keys = [k for k in self.attr.keys()]
+                for key in keys:
+                    if isinstance(key, str):
+                        key_splitted = key.split(".")
+                        if len(key_splitted) > 1:
+                            value = self.attr[key]
+                            _attr = self.attr
+                            while len(key_splitted) > 1:
+                                k_ = key_splitted.pop(0)
+                                v_ = key_splitted[0]
+                                if k_ not in _attr:
+                                    d = {v_ : {}}
+                                    _attr[k_] = d
+                                else:
+                                    _attr[k_][v_] = {}
+                                _attr = _attr[k_]
+                            _attr[key_splitted.pop(0)] = value
+        def __getattr__(self, attr):
+            if isinstance(self.attr, dict):
+                if attr in self.attr:
+                    if isinstance(self.attr[attr], dict):
+                        return Config._Wrapper(self.attr[attr])
+                    elif isinstance(self.attr[attr], list):
+                        wrappers = []
+                        for a in self.attr[attr]:
+                            if isinstance(a, list) or isinstance(a, dict):
+                                wrappers.append(Config._Wrapper(a))
+                            else:
+                                wrappers.append(a)
+                        return wrappers
+                    else:
+                        return self.attr[attr]
+                else:
+                    raise AttributeError(f"Attribute error: {attr}")
+        def __getitem__(self, k):
+            array = k.split(".")
+            attr = self.attr
+            for a in array:
+                attr = attr[a]
+            return attr
+    def make_format(self, data, custom_format = None):
+        from vatf.utils import config_common
+        return config_common.process_format(data, custom_format, config_loading_time = _global_data.config_loading_time)
+    def __init__(self, data, custom_format = None):
+        if isinstance(data, Config):
+            data = data.get_raw_data_copy()
+        import copy
+        self.__data = copy.deepcopy(data)
+        self.data = copy.deepcopy(data)
+        self.data = self.make_format(self.data, custom_format)
+    def get_raw_data(self):
+        return self.__data
+    def get_raw_data_copy(self):
+        import copy
+        return copy.deepcopy(self.get_raw_data())
+    def __getattr__(self, attr):
+        return getattr(Config._Wrapper(self.data), attr)
+    def __getitem__(self, item):
+        _data = Config._Wrapper(self.data)
+        if isinstance(item, str):
+            item = item.split(".")
+            if len(item) == 1:
+                return _data[item[0]]
+            else:
+                data = _data
+                for i in item:
+                    data = data[i]
+                return data
+    def get(self, item, raiseIfNotFound = True):
+        try:
+            return self[item]
+        except KeyError as ke:
+            return None
+
+
+def _handle_global_config(custom_format):
+    global _global_data
+    if not _global_data.exist():
+        raise NoConfigException("no config is existing")
+    from vatf.utils import config_loader
+    format_dict = {}
+    if _global_data.custom_format:
+        format_dict.update(_global_data.custom_format)
+    if custom_format:
+        format_dict.update(custom_format)
+    data = config_loader.load(_global_data.config_pathes)
+    return Config(data, custom_format = format_dict)
+
+def _handle_config(config, custom_format):
+    return Config(config, custom_format)
+
+def _handle_config_path(config_path, custom_format):
+    from vatf.utils import config_loader
+    data = config_loader.load(config_path)
+    return Config(data, custom_format)
+
+def _handle_config_dict(kw_config_dict, custom_format):
+    return Config(kw_config_dict, custom_format)

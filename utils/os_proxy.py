@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import os
 import logging
 import hashlib
@@ -63,14 +70,17 @@ def md5sum(filepath):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def create_file(mode, data = None, path = None):
+def create_tmp_file(mode, data = None, path = None):
+    utils.print_func_info()
+    file = None
     if path is None:
-        path = utils.get_temp_filepath()
-    with open(path, mode) as f:
-        logging.debug(f"{create_file.__name__}: {path} {mode}")
-        if data:
-            f.write(data)
-    return path
+        file = utils.get_tmp_file(mode = mode)
+    else:
+        file = open(path, mode = mode)
+    if data:
+        file.write(data)
+    file.flush()
+    return file
 
 def remove_file(path):
     os.remove(path)

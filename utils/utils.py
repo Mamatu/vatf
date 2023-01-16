@@ -1,3 +1,10 @@
+__author__ = "Marcin Matula"
+__copyright__ = "Copyright (C) 2022, Marcin Matula"
+__credits__ = ["Marcin Matula"]
+__license__ = "Apache License"
+__version__ = "2.0"
+__maintainer__ = "Marcin Matula"
+
 import datetime
 import os
 import re
@@ -6,12 +13,6 @@ import subprocess
 import logging
 
 import inspect
-
-DATE_REGEX = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-
-TIMESTAMP_REGEX = DATE_REGEX
-TIMESTAMP_FORMAT = DATE_FORMAT
 
 def count_lines_in_file(path):
     wc_cmd = f"wc -l {path}"
@@ -31,24 +32,46 @@ def name_and_args():
     return [(i, values[i]) for i in args]
 
 def get_caller_args(caller):
-    args, _, _, values = inspect.getargvalues(caller)
-    return [(i, values[i]) for i in args]
+    args, varargs, keywords, values = inspect.getargvalues(caller)
+    output = [(i, values[i]) for i in args]
+    if varargs: output.extend([(i) for i in values[varargs]])
+    if keywords: output.extend([(k, v) for k, v in values[keywords].items()])
+    return output
+
+def get_func_info(level = 1):
+    caller = inspect.stack()[level][0]
+    function_name = inspect.stack()[level][3]
+    args = get_caller_args(caller)
+    for arg in args:
+        if isinstance(arg, tuple):
+            if len(arg) == 2:
+                idx = args.index(arg)
+                if isinstance(arg[1], str):
+                    args[idx] = f"{arg[0]} = \'{arg[1]}\'"
+                else:
+                    args[idx] = f"{arg[0]} = {arg[1]}"
+            elif len(arg) == 1:
+                args[idx] = f"{arg[0]}"
+            else:
+                raise Exception("Not supported length of arg")
+    args = map(lambda arg: str(arg), args)
+    args = ", ".join(args)
+    args = args.replace("[", "").replace("]", "").replace("\"", "")
+    return f"{function_name} ({args})"
 
 def print_func_info():
-    caller = inspect.stack()[1][0]
-    function_name = inspect.stack()[1][3]
-    args = get_caller_args(caller)
-    args = str(args)
-    args = args.replace("[", "").replace("]", "")
-    print(f"{function_name} ({args})")
+    print(get_func_info(level = 2))
 
-def get_temp_filepath():
+def get_tmp_file(mode = "r+"):
+    return get_temp_file(mode = mode)
+
+def get_temp_file(mode = "r+"):
     import tempfile
-    return tempfile.NamedTemporaryFile().name
+    return tempfile.NamedTemporaryFile(mode = mode)
 
-def open_temp_filepath(flag = "w+"):
-    path = get_temp_filepath()
-    return open(path, flag)
+def open_temp_file(mode = "w+"):
+    file = get_temp_file(mode = mode)
+    return file
 
 def find_in_dir(dirpath, pattern, suffix = None):
     output = None
@@ -77,6 +100,18 @@ def parse_number_suffix(string):
     logging.debug(f"{parse_number_suffix.__name__}: {output}")
     return output
 
+def grep(filepath, regex, **kwargs):
+    from vatf.utils import grep
+    return grep.grep(filepath, regex, **kwargs)
+
+def grep_in_text(txt, regex, **kwargs):
+    from vatf.utils import grep
+    return grep.grep_in_text(txt, regex, **kwargs)
+
+def grep_regex_in_line(filepath, grep_regex, match_regex, **kwargs):
+    from vatf.utils import grep
+    return grep.grep_regex_in_line(filepath, grep_regex, match_regex, **kwargs)
+
 def get_counter(dirpath, pattern, suffix = None):
     def remove_suffix(m, suffix):
         if suffix != None:
@@ -94,100 +129,6 @@ def get_counter(dirpath, pattern, suffix = None):
     return i
 
 import enum
-
-class GrepEntry:
-    def __init__(self, line_number = None, matched = None, line_offset = 0):
-        if line_number:
-            try:
-                self.line_number = int(line_number.rstrip())
-                self.line_number = self.line_number + line_offset
-            except Exception as ex:
-                logging.error(f"{line_number} cannot be converted to int! ${ex}")
-                raise ex
-        self.matched = matched.rstrip()
-    def __getitem__(self, idx):
-        if idx == 0:
-            return self.line_number
-        if idx == 1:
-            return self.matched
-        raise IndexError
-    def search_in_matched(self, rec):
-        self.matched = rec.search(self.matched)
-        return self.matched
-    def __str__(self):
-        return f"({self.line_number}, {self.matched})"
-    @staticmethod
-    def FromSplit(line, line_offset = 0):
-        out = line.split(':', 1)
-        return GrepEntry(out[0], out[1], line_offset)
-
-def grep(filepath, regex, removeTmpFiles = True, maxCount = -1, fromLine = 1, onlyMatch = False):
-    if fromLine < 1:
-        raise Exception(f"Invalid fromLine value {fromLine}")
-    if maxCount < -1:
-        raise Exception(f"Invalid value of maxCount {maxCount}. It should be > -1")
-    lineNumber = True #hardcode
-    def makeArgs(lineNumber, maxCount):
-        o_arg = " -o" if onlyMatch else ""
-        n_arg = " -n" if lineNumber else ""
-        m_arg = " -m {maxCount}" if maxCount > -1 else ""
-        return f"{o_arg}{n_arg}{m_arg} -a"
-    args = makeArgs(lineNumber, maxCount)
-    command = f"grep {args} \"{regex}\""
-    if fromLine > 1:
-        command = f"sed -n '{fromLine},$p' {filepath} | {command}"
-    else:
-        command = f"{command} {filepath}"
-    if command == None:
-        raise Exception("Grep command was failed on initialization")
-    logging.debug(f"{grep.__name__}: {command}")
-    with open_temp_filepath() as fout, open_temp_filepath() as ferr:
-        logging.debug(f"{grep.__name__}: fout {fout.name}")
-        logging.debug(f"{grep.__name__}: ferr {ferr.name}")
-        def readlines(f):
-            lines = f.readlines()
-            line_offset = 0 if fromLine < 1 else fromLine - 1
-            if not lineNumber:
-                lines = [GrepEntry(matched = l, line_offset = line_offset) for l in lines]
-            else:
-                lines = [GrepEntry.FromSplit(l, line_offset = line_offset) for l in lines]
-            return lines
-        def remove():
-            if removeTmpFiles:
-                os.remove(ferr.name)
-                os.remove(fout.name)
-        process = subprocess.Popen(command, shell=True, stdout=fout, stderr=ferr)
-        process.wait()
-        if os.path.getsize(ferr.name) > 0:
-            ferr.seek(0)
-            err = readlines(ferr)
-            remove()
-            raise Exception(err)
-        fout.seek(0)
-        out = readlines(fout)
-        remove()
-        return out
-
-def grep_regex_in_line(filepath, grep_regex, match_regex, removeTmpFiles = True, maxCount = -1, fromLine = 1):
-    """
-    :filepath - filepath for greping
-    :grep_regex - regex using to match line by grep
-    :match_regex - regex to extract specific data from line
-    :removeTmpFiles - remove tmp files when finished
-    :maxCount - max count of matched, if it is -1 it will be infinity
-    :fromLine - start searching from specific line
-    """
-    if fromLine < 1:
-        raise Exception(f"Invalid fromLine value {fromLine}")
-    logging.debug(f"{grep_regex_in_line.__name__}: {name_and_args()}")
-    out = grep(filepath, grep_regex, removeTmpFiles, maxCount = maxCount, fromLine = fromLine)
-    rec = re.compile(match_regex)
-    matched_lines = []
-    for o in out:
-        matched = o.search_in_matched(rec)
-        if matched:
-            matched_lines.append(o)
-    return matched_lines
 
 def get_modification_date(filename):
     t = os.path.getmtime(filename)
