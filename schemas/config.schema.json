@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/product.schema.json",
-  "title": "Test framework config for voice assistance",
+  "title": "Test framework config for voice assistant",
   "description": "Test framework",
   "type": "object",
   "properties": {
@@ -166,7 +166,7 @@
     },
     "utterance_to_va" : {
       "type" : "object",
-      "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
+      "description" : "defines regexes which determine begin and end of utterance to voice assistant from user",
       "properties" : {
         "regexes" : {
           "type" : "array",
@@ -191,7 +191,7 @@
     },
     "utterance_from_va" : {
       "type" : "object",
-      "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
+      "description" : "defines regexes which determine begin and end of utterance from voice assistant to user",
       "properties" : {
         "regexes" : {
           "type" : "array",
