@@ -19,6 +19,8 @@ class LogSnapshot:
         self._shell_process = None
         self._thread = None
         self._rb_thread = None
+        self._timestamp_regex = None
+        self._timestamp_format = None
  
     def start_cmd(self, log_path, shell_cmd):
         """
@@ -43,30 +45,6 @@ class LogSnapshot:
         import os
         if not os.path.exists(in_log_path):
             raise Exception(f"File {in_log_path} does not exist")
-        from vatf.utils import config_handler
-        from vatf.utils.kw_utils import handle_kwargs
-        config = None
-        try:
-            config = config_handler.get_config(**kwargs)
-        except config_handler.NoConfigException:
-            pass
-        timestamp_regex = None
-        timestamp_format = None
-        timestamp_delta = None
-        if config:
-            timestamp_regex = config["va_log.date_regex"]
-            timestamp_format = config["va_log.date_format"]
-            timestamp_delta = None
-            try:
-                timestamp_delta = config["va_log.timedelta"]
-                from vatf.utils import config_common
-                timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
-            except KeyError:
-                pass
-        else:
-            timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
-            timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
-            timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
         from vatf.executor import search
         from datetime import datetime
@@ -95,6 +73,12 @@ class LogSnapshot:
         output = output.replace(self._log_path, "")
         output = output.replace(" ", "")
         return int(output)
+
+    def set_timestamp_regex(self, timestamp_regex):
+        self._timestamp_regex = timestamp_regex
+
+    def set_timestamp_format(self, timestamp_format):
+        self._timestamp_format = timestamp_format
 
     def get_the_first_line(self):
         if self._log_path is None:
@@ -129,6 +113,34 @@ class LogSnapshot:
     def stop(self):
         self._stop_command()
         self._stop_thread()
+
+    def _handle_config(self):
+        from vatf.utils import config_handler
+        from vatf.utils.kw_utils import handle_kwargs
+        config = None
+        try:
+            config = config_handler.get_config(**kwargs)
+        except config_handler.NoConfigException:
+            pass
+        timestamp_regex = None
+        timestamp_format = None
+        timestamp_delta = None
+        if config:
+            timestamp_regex = config["va_log.date_regex"]
+            timestamp_format = config["va_log.date_format"]
+            timestamp_delta = None
+            try:
+                timestamp_delta = config["va_log.timedelta"]
+                from vatf.utils import config_common
+                timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
+            except KeyError:
+                pass
+        else:
+            timestamp_regex = handle_kwargs("timestamp_regex", is_required = True, **kwargs)
+            timestamp_format = handle_kwargs("timestamp_format", is_required = True, **kwargs)
+            timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
+        self.set_timestamp_format(timestamp_format)
+        self.set_timestamp_regex(timestamp_regex)
 
     def _stop_command(self):
         if self._shell_process:
