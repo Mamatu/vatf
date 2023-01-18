@@ -9,9 +9,9 @@ __maintainer__ = "Marcin Matula"
 Takes the snapshot of log between start and stop method.
 """
 
-from vatf.executor import shell
-from vatf.utils import thread_with_stop
+from vatf.executor import shell, search
 from vatf.utils.kw_utils import handle_kwargs
+from vatf.utils.binary_search import binary_search
 
 class LogSnapshot:
     def __init__(self):
@@ -22,7 +22,8 @@ class LogSnapshot:
         self._rb_thread = None
         self._timestamp_regex = None
         self._timestamp_format = None
- 
+        self._rb_count = 0
+
     def start_cmd(self, log_path, shell_cmd, **kwargs):
         """
         Starts log_snapshot which will use shell cmd to fill out log_path
@@ -49,11 +50,9 @@ class LogSnapshot:
         if not os.path.exists(in_log_path):
             raise Exception(f"File {in_log_path} does not exist")
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
-        from vatf.executor import search
         outputs = search.find(self._timestamp_regex, filepath = in_log_path, only_match = True)
         from datetime import datetime
         outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
-        from vatf.utils.binary_search import binary_search
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
         from vatf.executor import shell
         from vatf.utils.thread_with_stop import Thread
@@ -74,6 +73,17 @@ class LogSnapshot:
         output = output.replace(" ", "")
         return int(output)
 
+    def get_seconds(self):
+        from datetime import datetime
+        first_line_timestamp = self.get_the_first_line_timestamp()
+        last_line_timestamp = self.get_the_last_line_timestamp()
+        if not first_line_timestamp or not last_line_timestamp:
+            return 0
+        ftp = datetime.strptime(first_line_timestamp, self._timestamp_format)
+        ltp = datetime.strptime(last_line_timestamp, self._timestamp_format)
+        d = ltp - ftp
+        return d.total_seconds()
+
     def set_timestamp_regex(self, timestamp_regex):
         self._timestamp_regex = timestamp_regex
 
@@ -90,6 +100,19 @@ class LogSnapshot:
             raise Exception("Lack of log path")
         return shell.fg(f"tail -n1 {self._log_path}")
 
+    def _get_line_timestamp(self, line):
+        from vatf.utils import grep
+        outputs = grep.grep_in_text(line, self._timestamp_regex, only_match = True)
+        if len(outputs) == 0:
+            return None
+        return outputs[0].matched
+
+    def get_the_first_line_timestamp(self):
+        return self._get_line_timestamp(self.get_the_first_line())
+
+    def get_the_last_line_timestamp(self):
+        return self._get_line_timestamp(self.get_the_last_line())
+
     def remove_head(self, lines_count):
         """
         Removes lines_count from head of log_snapshot file
@@ -97,22 +120,59 @@ class LogSnapshot:
         from vatf.executor import shell
         shell.fg(f"sed -i '{lines_count}d' {self._log_path}")
 
-    def set_ring_buffer(self, lines_count):
+    def _cutter_for_lines(self, max_lines_count, is_stopped):
+        while not is_stopped():
+            lines = self.get_lines_count()
+            diff = max_lines_count - lines
+            print(f"{diff} {max_lines_count} {lines}")
+            if diff > 0:
+                self.remove_head(diff)
+                self._rb_count = slf._rb_count + 1
+
+    def _cutter_for_seconds(self, time_in_seconds, is_stopped):
+        while not is_stopped():
+                seconds = self.get_seconds()
+                fl_ts = self.get_the_first_line_timestamp()
+                if seconds is None or fl_ts is None:
+                    continue
+                diff = time_in_seconds - seconds
+                if diff > 0:
+                    outputs = search.find(self._timestamp_regex, filepath = self._log_path, only_match = True)
+                    outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
+                    line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
+                    self.remove_head(line_number)
+                    self._rb_count = slf._rb_count + 1
+
+    def set_ring_buffer(self, **kwargs):
         """
         Log snapshot will work as ring buffer limited to lines_count lines
         """
-        def _cutter(self, max_lines_count, is_stopped):
-            while not is_stopped():
-                lines = self.get_lines_count()
-                diff = max_lines_count - lines
-                if diff > 0:
-                    self.remove_head(diff)
-        self._rb_thread = thread_with_stop.Thread(target = _cutter, args = [self, lines_count])
-        saelf._rb_thread.start()
+        length_in_lines_count = handle_kwargs("length_in_lines_count", is_required = False, **kwargs)
+        length_in_seconds = handle_kwargs("length_in_seconds", is_required = False, **kwargs)
+        if length_in_lines_count and length_in_seconds:
+            raise Exception("Only one param is expected: length_in_lines_count or length_in_seconds")
+        if not length_in_lines_count and not length_in_seconds:
+            raise Exception("At least one param is expected: length_in_lines_count or length_in_seconds")
+        from vatf.utils.thread_with_stop import Thread
+        if length_in_lines_count:
+            self._rb_thread = Thread(target = self._cutter_for_lines, args = [length_in_lines_count])
+        if length_in_seconds:
+            from datetime import datetime
+            self._rb_thread = Thread(target = self._cutter_for_seconds, args = [length_in_seconds])
+        self._rb_thread.start()
 
-    def stop(self):
+    def stop(self, stop_ring_buffer_thread = True):
         self._stop_command()
-        self._stop_thread()
+        self._stop_thread(stop_ring_buffer_thread = stop_ring_buffer_thread)
+
+    def stop_ring_buffer_thread(self):
+        self.stop(stop_ring_buffer_thread = True)
+
+    def get_ring_buffer_count(self):
+        """
+        Returns how many times ring buffer algorithm has worked on the file
+        """
+        return self._rb_count
 
     def _handle_config_on_startup(self, **kwargs):
         from vatf.utils import config_handler
@@ -152,12 +212,12 @@ class LogSnapshot:
             shell.kill(self._shell_process)
             self._shell_process = None
 
-    def _stop_thread(self):
+    def _stop_thread(self, stop_ring_buffer_thread = True):
         if self._thread:
             self._thread.stop()
             self._thread.join()
             self._thread = None
-        if self._rb_thread:
+        if self._rb_thread and stop_ring_buffer_thread:
             self._rb_thread.stop()
             self._rb_thread.join()
             self._rb_thread = None
