@@ -4,7 +4,7 @@
       "path":"/{key1}/{key2}"
     }
   },
-  "va_log": {
+  "log_snapshot": {
     "path" : "/{config_loading_time}/{key1}/session.log",
     "command" : "receive {key2}",
     "timedelta" : {

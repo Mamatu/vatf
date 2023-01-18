@@ -23,7 +23,7 @@
   "audio" : {
     "path" : "{data_root}/session_{config_loading_time}/audio"
   },
-  "va_log": {
+  "log_snapshot": {
     "path" : "{data_root}/session_{config_loading_time}/log/session.log",
     "timedelta" : {
       "hours" : -1

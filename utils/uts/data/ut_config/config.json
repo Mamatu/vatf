@@ -4,7 +4,7 @@
       "path":"./assets/audio_files"
     }
   },
-  "va_log": {
+  "log_snapshot": {
     "path" : "/tmp/session.log",
     "command" : "receive {ip}",
     "timedelta" : {

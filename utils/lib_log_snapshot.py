@@ -13,8 +13,6 @@ from vatf.executor import shell
 from vatf.utils import thread_with_stop
 from vatf.utils.kw_utils import handle_kwargs
 
-from datetime import datetime
-
 class LogSnapshot:
     def __init__(self):
         self._log_path = None
@@ -53,6 +51,7 @@ class LogSnapshot:
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
         from vatf.executor import search
         outputs = search.find(self._timestamp_regex, filepath = in_log_path, only_match = True)
+        from datetime import datetime
         outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
         from vatf.utils.binary_search import binary_search
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
@@ -126,11 +125,11 @@ class LogSnapshot:
         timestamp_format = None
         timestamp_delta = None
         if config:
-            timestamp_regex = config["va_log.date_regex"]
-            timestamp_format = config["va_log.date_format"]
+            timestamp_regex = config["log_snapshot.date_regex"]
+            timestamp_format = config["log_snapshot.date_format"]
             timestamp_delta = None
             try:
-                timestamp_delta = config["va_log.timedelta"]
+                timestamp_delta = config["log_snapshot.timedelta"]
                 from vatf.utils import config_common
                 timestamp_delta = config_common.convert_dict_to_timedelta(timestamp_delta)
             except KeyError:
@@ -141,6 +140,7 @@ class LogSnapshot:
             timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
         self.set_timestamp_format(timestamp_format)
         self.set_timestamp_regex(timestamp_regex)
+        from datetime import datetime
         now = datetime.now()
         if timestamp_delta:
             now = now + timestamp_delta

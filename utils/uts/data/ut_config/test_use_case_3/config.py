@@ -32,7 +32,7 @@ log_path = f"{session_dir}/log/session.log"
 date_format = "%Y-%m-%d %H:%M:%S.%f"
 date_regex = "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
 
-VA_LOG = {
+LOG_SNAPSHOT = {
     "path" : log_path,
     "timedelta" : { "hours" : -1 },
     "date_format" : date_format,

@@ -51,9 +51,9 @@
         }
       }
     },
-    "va_log" : {
+    "log_snapshot" : {
       "type" : "object",
-      "description" : "voice assitance debug log configuration",
+      "description" : "log_snapshot config parameters",
       "properties" : {
         "path" : {
           "type" : "string",

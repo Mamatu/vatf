@@ -17,7 +17,7 @@
       }]
     }
   },
-  "va_log": {
+  "log_snapshot": {
     "command" : {
       "shell" : "log_receiver from {ip}",
       "restart_timeout" : 1000

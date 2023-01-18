@@ -28,10 +28,10 @@ def _get_from_kwargs(attr, attr_in_config, **kwargs):
     return attr_value
 
 def _get_timestamp_regex_from_kwargs(**kwargs):
-    return _get_from_kwargs("timestamp_regex", "va_log.timestamp_regex", **kwargs)
+    return _get_from_kwargs("timestamp_regex", "log_snapshot.timestamp_regex", **kwargs)
 
 def _get_timestamp_format_from_kwargs(**kwargs):
-    return _get_from_kwargs("timestamp_format", "va_log.timestamp_format", **kwargs)
+    return _get_from_kwargs("timestamp_format", "log_snapshot.timestamp_format", **kwargs)
 
 def _convert_pcm_to_ogg(recording_path, audioConfig):
     from vatf.utils import ffmpeg
