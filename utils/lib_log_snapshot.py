@@ -11,6 +11,9 @@ Takes the snapshot of log between start and stop method.
 
 from vatf.executor import shell
 from vatf.utils import thread_with_stop
+from vatf.utils.kw_utils import handle_kwargs
+
+from datetime import datetime
 
 class LogSnapshot:
     def __init__(self):
@@ -22,10 +25,11 @@ class LogSnapshot:
         self._timestamp_regex = None
         self._timestamp_format = None
  
-    def start_cmd(self, log_path, shell_cmd):
+    def start_cmd(self, log_path, shell_cmd, **kwargs):
         """
         Starts log_snapshot which will use shell cmd to fill out log_path
         """
+        now = self._handle_config_on_startup(**kwargs)
         self._log_path = log_path
         self._shell_cmd = shell_cmd
         def restart():
@@ -42,17 +46,14 @@ class LogSnapshot:
         """
         Starts log_snapshot which will copy part of in_log_path into log_path
         """
+        now = self._handle_config_on_startup(**kwargs)
         import os
         if not os.path.exists(in_log_path):
             raise Exception(f"File {in_log_path} does not exist")
         pause = handle_kwargs("pause", default_output = 0.2, is_required = False, **kwargs)
         from vatf.executor import search
-        from datetime import datetime
-        now = datetime.now()
-        if timestamp_delta:
-            now = now + timestamp_delta
-        outputs = search.find(timestamp_regex, filepath = in_log_path, only_match = True)
-        outputs = list(map(lambda x: (datetime.strptime(x[1], timestamp_format), x), outputs))
+        outputs = search.find(self._timestamp_regex, filepath = in_log_path, only_match = True)
+        outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
         from vatf.utils.binary_search import binary_search
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
         from vatf.executor import shell
@@ -114,9 +115,8 @@ class LogSnapshot:
         self._stop_command()
         self._stop_thread()
 
-    def _handle_config(self):
+    def _handle_config_on_startup(self, **kwargs):
         from vatf.utils import config_handler
-        from vatf.utils.kw_utils import handle_kwargs
         config = None
         try:
             config = config_handler.get_config(**kwargs)
@@ -141,6 +141,10 @@ class LogSnapshot:
             timestamp_delta = handle_kwargs("timestamp_delta", is_required = False, **kwargs)
         self.set_timestamp_format(timestamp_format)
         self.set_timestamp_regex(timestamp_regex)
+        now = datetime.now()
+        if timestamp_delta:
+            now = now + timestamp_delta
+        return now
 
     def _stop_command(self):
         if self._shell_process:

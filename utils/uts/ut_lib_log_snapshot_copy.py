@@ -21,18 +21,18 @@ def mocked_now(now):
         yield
 
 def test_log_copy():
-    from vatf.utils import lib_log_snapshot
-    snapshot = lib_log_snapshot.make()
-    try:
-        with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
+        from vatf.utils import lib_log_snapshot
+        snapshot = lib_log_snapshot.make()
+        try:
             from vatf.utils import os_proxy
             text = [
-                "2022-01-29 20:54:55.567 line1\n",
-                "2022-01-29 20:54:55.567 line2\n",
-                "2022-01-29 20:54:55.568 line3\n",
-                "2022-01-29 20:54:55.569 line4\n",
-                "2022-01-29 20:54:55.570 line5\n",
-                "2022-01-29 20:54:55.600 line6\n",
+                "2022-01-29 20:54:55.567000 line1\n",
+                "2022-01-29 20:54:55.567000 line2\n",
+                "2022-01-29 20:54:55.568000 line3\n",
+                "2022-01-29 20:54:55.569000 line4\n",
+                "2022-01-29 20:54:55.570000 line5\n",
+                "2022-01-29 20:54:55.600000 line6\n",
             ]
             file = os_proxy.create_tmp_file("w+", data = "".join(text))
             file1 = os_proxy.create_tmp_file("r")
@@ -51,5 +51,5 @@ def test_log_copy():
                 assert len(lines) == 2
                 assert lines[0] == text[-2]
                 assert lines[1] == text[-1]
-    finally:
-        snapshot.stop()
+        finally:
+            snapshot.stop()
