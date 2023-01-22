@@ -14,6 +14,10 @@ from vatf.utils.kw_utils import handle_kwargs
 from vatf.utils.binary_search import binary_search
 
 class LogSnapshot:
+    class LogPathNone(Exception):
+        def __init__(self):
+            super().__init__("log path is none")
+
     def __init__(self):
         self._log_path = None
         self._shell_cmd = None
@@ -23,6 +27,7 @@ class LogSnapshot:
         self._timestamp_regex = None
         self._timestamp_format = None
         self._rb_count = 0
+        self._head_offset = 0
 
     def start_cmd(self, log_path, shell_cmd, **kwargs):
         """
@@ -54,20 +59,19 @@ class LogSnapshot:
         from datetime import datetime
         outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
         line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
-        from vatf.executor import shell
         from vatf.utils.thread_with_stop import Thread
         self._log_path = log_path
-        def copy_file(line_number, in_log_path, log_path, pause, is_stopped):
+        def copy_file(self, line_number, in_log_path, log_path, pause, is_stopped):
             import time
             while not is_stopped():
-                shell.fg(f"tail --lines=+{line_number} {in_log_path} > {log_path}")
+                shell.fg(f"tail --lines=+{line_number + self._head_offset} {in_log_path} > {log_path}")
                 time.sleep(pause)
-        self._thread = Thread(target = copy_file, args = [line_number, in_log_path, log_path, pause])
+        self._thread = Thread(target = copy_file, args = [self, line_number, in_log_path, log_path, pause])
         self._thread.start()
 
     def get_lines_count(self):
         if self._log_path is None:
-            raise Exception("Lack of log path")
+            raise LogSnapshot.LogPathNone()
         output = shell.fg(f"wc -l {self._log_path}")
         output = output.replace(self._log_path, "")
         output = output.replace(" ", "")
@@ -92,12 +96,12 @@ class LogSnapshot:
 
     def get_the_first_line(self):
         if self._log_path is None:
-            raise Exception("Lack of log path")
+            raise LogSnapshot.LogPathNone()
         return shell.fg(f"head -n1 {self._log_path}")
 
     def get_the_last_line(self):
         if self._log_path is None:
-            raise Exception("Lack of log path")
+            raise LogSnapshot.LogPathNone()
         return shell.fg(f"tail -n1 {self._log_path}")
 
     def _get_line_timestamp(self, line):
@@ -117,31 +121,38 @@ class LogSnapshot:
         """
         Removes lines_count from head of log_snapshot file
         """
-        from vatf.executor import shell
+        if self._log_path is None:
+            raise LogSnapshot.LogPathNone()
         shell.fg(f"sed -i '{lines_count}d' {self._log_path}")
 
     def _cutter_for_lines(self, max_lines_count, is_stopped):
         while not is_stopped():
-            lines = self.get_lines_count()
-            diff = max_lines_count - lines
-            print(f"{diff} {max_lines_count} {lines}")
-            if diff > 0:
-                self.remove_head(diff)
-                self._rb_count = slf._rb_count + 1
+            lines = 0
+            try:
+                lines = self.get_lines_count()
+            except LogSnapshot.LogPathNone:
+                lines = -1
+            if lines > -1:
+                diff = max_lines_count - lines
+                if diff > 0:
+                    self.remove_head(diff)
+                    self._rb_count = self._rb_count + 1
+                    self._head_offset += diff
 
     def _cutter_for_seconds(self, time_in_seconds, is_stopped):
         while not is_stopped():
-                seconds = self.get_seconds()
-                fl_ts = self.get_the_first_line_timestamp()
-                if seconds is None or fl_ts is None:
-                    continue
-                diff = time_in_seconds - seconds
-                if diff > 0:
-                    outputs = search.find(self._timestamp_regex, filepath = self._log_path, only_match = True)
-                    outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
-                    line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
-                    self.remove_head(line_number)
-                    self._rb_count = slf._rb_count + 1
+            seconds = self.get_seconds()
+            fl_ts = self.get_the_first_line_timestamp()
+            if seconds is None or fl_ts is None:
+                continue
+            diff = time_in_seconds - seconds
+            if diff > 0:
+                outputs = search.find(self._timestamp_regex, filepath = self._log_path, only_match = True)
+                outputs = list(map(lambda x: (datetime.strptime(x[1], self._timestamp_format), x), outputs))
+                line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
+                self.remove_head(line_number)
+                self._rb_count = self._rb_count + 1
+                self._head_offset += line_number
 
     def set_ring_buffer(self, **kwargs):
         """
@@ -154,11 +165,14 @@ class LogSnapshot:
         if not length_in_lines_count and not length_in_seconds:
             raise Exception("At least one param is expected: length_in_lines_count or length_in_seconds")
         from vatf.utils.thread_with_stop import Thread
+        assert self._rb_thread is None, "self._rb_thread must be None"
         if length_in_lines_count:
             self._rb_thread = Thread(target = self._cutter_for_lines, args = [length_in_lines_count])
-        if length_in_seconds:
+        elif length_in_seconds:
             from datetime import datetime
             self._rb_thread = Thread(target = self._cutter_for_seconds, args = [length_in_seconds])
+        else:
+            raise Exception("Not supported state")
         self._rb_thread.start()
 
     def stop(self, stop_ring_buffer_thread = True):

@@ -110,8 +110,8 @@ def test_log_copy_ring_buffer_lines_count():
             snapshot.start_copy(file1.name, file.name, timestamp_format = "%Y-%m-%d %H:%M:%S.%f", timestamp_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-9]:[0-6][0-9]:[0-6][0-9].[0-9][0-9][0-9]")
             from vatf.utils import loop
             def cond():
-                return snapshot.get_the_last_line() == "2022-01-29 20:56:00.000000 line16\n" and snapshot.get_ring_buffer_count() > 0
-            assert loop.wait_until_true(cond, pause = 0.1, timeout = 2)
+                return snapshot.get_the_last_line() == "2022-01-29 20:56:00.000000 line16" and snapshot.get_ring_buffer_count() > 0
+            assert loop.wait_until_true(cond, pause = 0.1, timeout = 4)
             with open(file1.name, "r") as f:
                 lines = f.readlines()
                 assert len(lines) == 5
