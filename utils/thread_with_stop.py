@@ -9,12 +9,11 @@ import threading
 
 class Thread(threading.Thread):
     def __init__(self, target, args = [], kwargs = {}):
+        assert isinstance(args, list), "args must be list for this object"
         self.stopped = False
-        self.args = args
-        self.kwargs = kwargs
         self.mutex = threading.RLock()
-        self.target = target
-        super().__init__()
+        args.append(lambda: self.is_stopped())
+        super().__init__(target = target, args = args, kwargs = kwargs)
 
     def stop(self):
         try:
@@ -29,6 +28,3 @@ class Thread(threading.Thread):
             return self.stopped
         finally:
             self.mutex.release()
-
-    def run(self):
-        return self.target(*self.args, is_stopped = lambda: self.is_stopped(), **self.kwargs)
