@@ -1,34 +1,3 @@
 # Voice Assistant Test Framework
 
-> :warning: recomended version of python is >= 3.8. Unittest are runned on 3.6, 3.7, 3.8, 3.9 versions, but production is developed on python 3.8
-
-## Voice Assistant Test Framework - Executor
-This part of vatf is used in test script to execute test.
-
-Executor launches playing audio files, audio inputs and outputs of test station recording, sampling and sleeps test code. 
-
-> test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
-
-## Voice Assistant Test Framework - Generator
-This part of vatf provides modules to create custom test scenario for voice assistance.
-
-They include playing audio files, audio inputs and outputs of test station recording, sampling and sleep test code. 
-
-> test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
-
-## Voice Assistant Test Framework - Utils
-This part of vatf contains common utilities which are used in vatf.executor and vatf.generator.
-
-> test station is any device where vatf is launched. It can be self-tested (testing application on test station) or can test external device.
-
-### Dependencies
-
-To get actual list of dependencies please look at .github/workflows/python.yaml
-
-### Generator and executor
-Generator part allows to generate specific test or tests suite in specific directory. This directory can be transferred into specific test device, where tests are executed.
-All recordings, logs and etc. for the test are stored in this directory. Test code is executed in generator with overloaded vatf api (functions with @public\_api decorator) by
-"empty implementation" only for syntax and errors verification. Next, the code is copied into test file `test.py` with switching vatf api into executor mode. You can modify this file. 
-
-### vatf init
-In every test file is required to import `vatf_init.py` which initializes starndard executor api.
+> :warning: recomended version of python is >= 3.8. Unittest are runned on 3.7, 3.8, 3.9, 3.10 versions, but production is developed on python 3.8
