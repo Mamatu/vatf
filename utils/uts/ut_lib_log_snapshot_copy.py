@@ -80,7 +80,7 @@ def test_log_copy_get_seconds():
         finally:
             snapshot.stop()
 
-def test_log_copy_ring_buffer_lines_count():
+def test_log_copy_ring_buffer_seconds():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
         snapshot = lib_log_snapshot.make()
@@ -106,7 +106,7 @@ def test_log_copy_ring_buffer_lines_count():
             ]
             file = os_proxy.create_tmp_file("w+", data = "".join(text))
             file1 = os_proxy.create_tmp_file("r")
-            snapshot.set_ring_buffer(length_in_lines_count = 5)
+            snapshot.set_ring_buffer(length_in_seconds = 5)
             snapshot.start_copy(file1.name, file.name, timestamp_format = "%Y-%m-%d %H:%M:%S.%f", timestamp_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-9]:[0-6][0-9]:[0-6][0-9].[0-9][0-9][0-9]")
             from vatf.utils import loop
             def cond():

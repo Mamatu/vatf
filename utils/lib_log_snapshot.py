@@ -12,6 +12,7 @@ Takes the snapshot of log between start and stop method.
 from vatf.executor import shell, search
 from vatf.utils.kw_utils import handle_kwargs
 from vatf.utils.binary_search import binary_search
+from threading import Lock
 
 class LogSnapshot:
     class LogPathNone(Exception):
@@ -28,7 +29,11 @@ class LogSnapshot:
         self._timestamp_format = None
         self._rb_count = 0
         self._head_offset = 0
+        self._lock = Lock()
 
+    def call_safe(self, callback):
+        with self._lock:
+            return callback()
     def start_cmd(self, log_path, shell_cmd, **kwargs):
         """
         Starts log_snapshot which will use shell cmd to fill out log_path
@@ -64,7 +69,8 @@ class LogSnapshot:
         def copy_file(self, line_number, in_log_path, log_path, pause, is_stopped):
             import time
             while not is_stopped():
-                shell.fg(f"tail --lines=+{line_number + self._head_offset} {in_log_path} > {log_path}")
+                head_offset = self.call_safe(lambda: self._head_offset)
+                shell.fg(f"tail --lines=+{line_number + head_offset} {in_log_path} > {log_path}")
                 time.sleep(pause)
         self._thread = Thread(target = copy_file, args = [self, line_number, in_log_path, log_path, pause])
         self._thread.start()
@@ -125,20 +131,6 @@ class LogSnapshot:
             raise LogSnapshot.LogPathNone()
         shell.fg(f"sed -i '{lines_count}d' {self._log_path}")
 
-    def _cutter_for_lines(self, max_lines_count, is_stopped):
-        while not is_stopped():
-            lines = 0
-            try:
-                lines = self.get_lines_count()
-            except LogSnapshot.LogPathNone:
-                lines = -1
-            if lines > -1:
-                diff = max_lines_count - lines
-                if diff > 0:
-                    self.remove_head(diff)
-                    self._rb_count = self._rb_count + 1
-                    self._head_offset += diff
-
     def _cutter_for_seconds(self, time_in_seconds, is_stopped):
         while not is_stopped():
             seconds = self.get_seconds()
@@ -152,23 +144,21 @@ class LogSnapshot:
                 line_number = binary_search(outputs, lambda x: x[0] < now, lambda x: now < x[0])[1].line_number
                 self.remove_head(line_number)
                 self._rb_count = self._rb_count + 1
-                self._head_offset += line_number
+                breakpoint()
+                def _call_safe():
+                    self._head_offset = self._head_offset + line_number
+                self.call_safe(_call_safe)
 
     def set_ring_buffer(self, **kwargs):
         """
         Log snapshot will work as ring buffer limited to lines_count lines
         """
-        length_in_lines_count = handle_kwargs("length_in_lines_count", is_required = False, **kwargs)
         length_in_seconds = handle_kwargs("length_in_seconds", is_required = False, **kwargs)
-        if length_in_lines_count and length_in_seconds:
-            raise Exception("Only one param is expected: length_in_lines_count or length_in_seconds")
-        if not length_in_lines_count and not length_in_seconds:
+        if not length_in_seconds:
             raise Exception("At least one param is expected: length_in_lines_count or length_in_seconds")
         from vatf.utils.thread_with_stop import Thread
         assert self._rb_thread is None, "self._rb_thread must be None"
-        if length_in_lines_count:
-            self._rb_thread = Thread(target = self._cutter_for_lines, args = [length_in_lines_count])
-        elif length_in_seconds:
+        if length_in_seconds:
             from datetime import datetime
             self._rb_thread = Thread(target = self._cutter_for_seconds, args = [length_in_seconds])
         else:

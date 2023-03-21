@@ -56,7 +56,6 @@ def test_log_with_timestamps():
     _dlt_receive_path = os.path.join(_dlt_rootfs, "bin/dlt-receive")
     log_file = utils.get_temp_file()
     log_path = log_file.name
-    print(log_file.name)
     writer = dlt.DltWriter(_dlt_project_path)
     writer_t = None
     lines_count = 30
