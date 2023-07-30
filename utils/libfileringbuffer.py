@@ -19,16 +19,21 @@ class FileRingBuffer:
             idx = 0
             get_chunk_name = lambda: os.path.join(self.chunks_dir, f"chunk_{idx}.log")
             chunk_file = get_chunk_name()
+            bg_process = None
             while not is_stopped():
                 shell.fg(f"cat {fifo_file} >> {chunk_file}")
                 wc_chunk_file = shell.fg(f"wc -l {chunk_file}")
                 wc = int(wc_chunk_file.strip(" ")[0])
+                print(f"wc {wc}")
                 if wc > chunk_lines:
                     idx = idx + 1
                     chunk_file = get_chunk_name()
         self.thread = Thread(target = target, args = [self.fifo_file, self.chunk_lines, self.chunks_count])
     def start(self, chunks_dir_must_not_exist = False):
-        self.bg_process = shell.bg(f"mkfifo {self.fifo_file}; {self.command} > {self.fifo_file}")
+        shell.fg(f"mkfifo {self.fifo_file}")
+        if self.bg_process is not None:
+            raise Exception(f"command {self.bg_process} is not none!")
+        self.bg_process = shell.bg(f"{self.command} > {self.fifo_file}")
         try:
             os.makedirs(self.chunks_dir)
         except FileExistsError:
@@ -37,6 +42,7 @@ class FileRingBuffer:
         self.thread.start()
     def stop(self):
         shell.kill(self.bg_process)
+        self.bg_process = None
         self.thread.stop()
         os.remove(self.fifo_file)
 

@@ -23,6 +23,7 @@ def generate_line():
     global _written_lines_count
     now = datetime.datetime.now()
     s = f"{now} line_{_written_lines_count}"
+    print(s)
     _written_lines_count = _written_lines_count + 1
     global _lines_in_one_write
     return s, 2, 1
@@ -69,6 +70,7 @@ def test_libfileringbuffer():
         writer = dlt.DltWriter(get_project_path())
         writer_t = None
         command = f"{get_receive_path()} -a 127.0.0.1 | grep 'LOG- TEST'"
+        #command = f"{get_receive_path()} -a 127.0.0.1"
         import tempfile
         from vatf.utils import os_proxy
         tempdir = tempfile.TemporaryDirectory(dir="/tmp")
@@ -83,7 +85,7 @@ def test_libfileringbuffer():
         try:
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
-            wait.sleep(10)
+            wait.sleep(20)
             writer_t.stop()
             fb.stop()
         except shell.StderrException as ex:
