@@ -85,7 +85,7 @@ def test_libfileringbuffer():
         try:
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
-            wait.sleep(20)
+            wait.sleep(10)
             writer_t.stop()
             fb.stop()
         except shell.StderrException as ex:
