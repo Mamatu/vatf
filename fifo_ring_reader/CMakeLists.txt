@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.19)
+project(fifo_ring_reader)
+set(CMAKE_CXX_STANDARD 17)
+set(SOURCE_FILES main.cpp)
+add_executable(fifo_ring_reader ${SOURCE_FILES})
