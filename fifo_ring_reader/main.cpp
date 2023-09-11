@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <exception>
+#include <stdexcept>
 #include <memory>
 
 #include <cstddef>
@@ -62,7 +63,6 @@ int main(int argc, char* argv[])
   error(!chunksDirPath.empty(), "chunksDirPath cannot be empty"); 
   error(chunksCount != 0, "chunksCount cannot be 0"); 
   error(chunkLines != 0, "chunkLines cannot be 0"); 
-
 
   auto fclose = [](int fd){ return close(fd); };
   Fifo fifo(fifoPath);
