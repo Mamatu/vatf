@@ -46,9 +46,10 @@ int main(int argc, char* argv[])
   int chunksCount = 0;
   int chunkLines = 0;
   size_t bufferKB = 1024;
-  for (;;)
+  int opt = -1;
+  while ((opt = getopt(argc, argv, "d:f:c:l:b:")) != -1)
   {
-    switch (getopt(argc, argv, "d:f:c:l:b:"))
+    switch (opt)
     {
       case 'd': chunksDirPath = optarg; continue;
       case 'f': fifoPath = optarg; continue;
