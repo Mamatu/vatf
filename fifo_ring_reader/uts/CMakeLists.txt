@@ -1,0 +1,7 @@
+set (TARGET "tests")
+include(GoogleTest)
+file(GLOB TEST_SRC "*.cpp")
+file(GLOB SRC "../*.cpp")
+add_executable(${TARGET} ${TEST_SRC} ${SRC})
+target_link_libraries(${TARGET} gtest gmock pthread)
+target_include_directories(${TARGET} PUBLIC ../include)
