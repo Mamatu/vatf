@@ -14,6 +14,8 @@
 
 #include <sstream>
 
+#include "chunk_file.h"
+
 void error(bool cond, const std::string& msg)
 {
   if (!cond)
@@ -79,8 +81,18 @@ int main(int argc, char* argv[])
   Fifo fifo(fifoPath);
 
   constexpr size_t count = 1024;
-  std::array<std::byte, count> buffer;
-  std::vector<std::byte> bytes/*(1024 * bufferKB)*/;
+  std::array<char, count> buffer;
+  std::vector<char> bytes/*(1024 * bufferKB)*/;
+  
+  size_t chunksCounter = 0;
+  auto getPath = [&chunksCounter, chunksDirPath]() {
+    std::stringstream sstream;
+    sstream << chunksDirPath;
+    sstream << "/";
+    sstream << chunksCounter;
+    return sstream.str();
+  };
+  auto chunk = std::make_unique<ChunkFile>(getPath(), chunkLines);
   while(!stopExecution) 
   {
     ssize_t ccount = read(fifo.get(), buffer.data(), count);
@@ -89,7 +101,8 @@ int main(int argc, char* argv[])
     error (!(ccount < 0), msg);
     if (ccount > 0)
     {
-      std::cout << reinterpret_cast<char*>(buffer.data());
+      //std::cout << reinterpret_cast<char*>(buffer.data());
+      //chunk->write(buffer.data(), buffer.size()); 
       memset(buffer.data(), 0, count);
       bytes.clear();
     }
