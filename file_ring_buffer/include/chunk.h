@@ -12,8 +12,8 @@ class Chunk
     size_t write(const char* bytes, size_t length);
 
   protected:
-    void openOnce();
-    void closeIf(size_t transferredLen, size_t expectedLength, size_t linesToTransfer);
+    void openIfClosed();
+    void closeIf(size_t linesToTransfer);
 
     virtual void _open() = 0;
     virtual void _close() = 0;

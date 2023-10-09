@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
-#include <exception>
 #include <stdexcept>
 #include <memory>
 
@@ -15,40 +14,25 @@
 #include <sstream>
 
 #include "chunk_file.h"
+#include "file_ring.h"
+#include "error.h"
 
-void error(bool cond, const std::string& msg)
+struct FileRingSignal
 {
-  if (!cond)
-  {
-    throw std::runtime_error(msg);
-  }
-}
+  public:
+    std::shared_ptr<FileRing> m_fileRing;
+};
 
-void error(bool cond, const std::stringstream& msg)
-{
-  error(cond, msg.str());
-}
 
-bool stopExecution = false;
+FileRingSignal frSignal;
 
 void signalHandler(int signum)
 {
-  stopExecution = true;
+  if (frSignal.m_fileRing)
+  {
+    frSignal.m_fileRing->stop();
+  }
 }
-
-class Fifo final
-{
-  public:
-    Fifo(const std::string& path) : fd(open(path.c_str(), O_RDONLY /*| O_NONBLOCK*/)) {}
-    ~Fifo() {
-      close(fd);
-    }
-    int get() const {
-      return fd;
-    }
-  private:
-    int fd = 0;
-};
 
 int main(int argc, char* argv[])
 {
@@ -78,34 +62,8 @@ int main(int argc, char* argv[])
   error(chunkLines != 0, "chunkLines cannot be 0"); 
 
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  Fifo fifo(fifoPath);
-
-  constexpr size_t count = 1024;
-  std::array<char, count> buffer;
-  std::vector<char> bytes/*(1024 * bufferKB)*/;
-  
-  size_t chunksCounter = 0;
-  auto getPath = [&chunksCounter, chunksDirPath]() {
-    std::stringstream sstream;
-    sstream << chunksDirPath;
-    sstream << "/";
-    sstream << chunksCounter;
-    return sstream.str();
-  };
-  auto chunk = std::make_unique<ChunkFile>(getPath(), chunkLines);
-  while(!stopExecution) 
-  {
-    ssize_t ccount = read(fifo.get(), buffer.data(), count);
-    std::stringstream msg;
-    msg << "ccount is lower than zero: " << ccount;
-    error (!(ccount < 0), msg);
-    if (ccount > 0)
-    {
-      //std::cout << reinterpret_cast<char*>(buffer.data());
-      //chunk->write(buffer.data(), buffer.size()); 
-      memset(buffer.data(), 0, count);
-      bytes.clear();
-    }
-  }
+  auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines);
+  frSignal.m_fileRing = fileRing;
+  fileRing->start();
   return 0;
 }

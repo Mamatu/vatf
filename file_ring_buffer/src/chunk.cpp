@@ -8,19 +8,19 @@ Chunk::Chunk(size_t linesLimit) : m_linesLimit(linesLimit)
 
 size_t Chunk::write(const char* bytes, size_t length)
 {
-  openOnce();
+  openIfClosed();
   auto [lenToTransfer, linesToTransfer] = getLenToTransfer(bytes, length);
   size_t _len = _write(bytes, lenToTransfer);
   if (_len !=  lenToTransfer)
   {
     throw std::runtime_error("Wrong len transferred");
   }
+  closeIf(linesToTransfer);
   m_lineIdx += linesToTransfer;
-  closeIf(lenToTransfer, length, linesToTransfer);
   return _len;
 }
 
-void Chunk::openOnce()
+void Chunk::openIfClosed()
 {
   if (!m_opened)
   {
@@ -29,9 +29,9 @@ void Chunk::openOnce()
   }
 }
 
-void Chunk::closeIf(size_t transferredLen, size_t expectedLength, size_t linesToTransfer)
+void Chunk::closeIf(size_t linesToTransfer)
 {
-  if (transferredLen != expectedLength || linesToTransfer >= getCurrentLinesLimit())
+  if (linesToTransfer >= getCurrentLinesLimit())
   {
     _close();
     m_opened = false;

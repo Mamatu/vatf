@@ -9,7 +9,6 @@ class ChunkFile : public Chunk
   public:
     ChunkFile(const std::string& path, size_t linesLimit);
     virtual ~ChunkFile() = default;
-    size_t write(const char* bytes, size_t length);
 
   protected:
     void _open() override;

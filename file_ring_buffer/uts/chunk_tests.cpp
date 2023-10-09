@@ -6,10 +6,7 @@
 using namespace testing;
 
 class ChunkTests : public Test
-{
-  public:
-
-};
+{};
 
 class ChunkMock : public Chunk
 {
@@ -51,6 +48,24 @@ TEST_F(ChunkTests, 1lineBuffer) {
   auto lenLines = chunk.getLenToTransfer(buffer.c_str(), buffer.size());
   ASSERT_EQ(buffer.size(), lenLines.length);
   ASSERT_EQ(buffer.size(), chunk.write(buffer.c_str(), buffer.size()));
+}
+
+TEST_F(ChunkTests, 3linesBuffer3linesLimit2buffers) {
+  ChunkMock chunk(3);
+  std::string buffer1 = "a\nb\n";
+  std::string buffer2 = "c\n";
+  EXPECT_CALL(chunk, _write(buffer1.data(), buffer1.size())).Times(1).WillOnce(Return(buffer1.size()));
+  EXPECT_CALL(chunk, _write(buffer2.data(), buffer2.size())).Times(1).WillOnce(Return(buffer2.size()));
+  EXPECT_CALL(chunk, _open()).Times(1);
+  EXPECT_CALL(chunk, _close()).Times(1);
+  auto lenLines = chunk.getLenToTransfer(buffer1.c_str(), buffer1.size());
+  ASSERT_EQ(4, lenLines.length);
+  ASSERT_EQ(2, lenLines.lines);
+  lenLines = chunk.getLenToTransfer(buffer2.c_str(), buffer2.size());
+  ASSERT_EQ(2, lenLines.length);
+  ASSERT_EQ(1, lenLines.lines);
+  ASSERT_EQ(buffer1.size(), chunk.write(buffer1.c_str(), buffer1.size()));
+  ASSERT_EQ(buffer2.size(), chunk.write(buffer2.c_str(), buffer2.size()));
 }
 
 TEST_F(ChunkTests, 3linesBuffer2linesLimit) {
