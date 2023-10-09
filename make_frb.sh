@@ -5,6 +5,7 @@ FRB_PROJECT=/tmp/frb
 
 build () {
   VATF_PWD=$PWD
+  rm -r $FRB_PROJECT/build
   mkdir -p $FRB_PROJECT/build
   cd $FRB_PROJECT/build
   cmake $VATF_PWD/file_ring_buffer
@@ -12,7 +13,4 @@ build () {
   cd -
 }
 
-if [ ! -d "$FRB_PROJECT" ]
-then
-  build
-fi
+build
