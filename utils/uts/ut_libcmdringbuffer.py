@@ -14,7 +14,7 @@ import os
 from vatf.executor import wait
 from vatf.executor import shell
 from vatf.utils import dlt
-from vatf.utils import libfileringbuffer
+from vatf.utils import libcmdringbuffer
 from vatf.utils import os_proxy
 
 _written_lines_count = 0
@@ -63,7 +63,7 @@ def sleep_until_lines_in_file(log_snapshot, count):
     while count > log_snapshot.get_lines_count():
         time.sleep(0.1)
 
-def test_libfileringbuffer():
+def test_libcmdringbuffer():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
         snapshot = lib_log_snapshot.make()
@@ -81,7 +81,7 @@ def test_libfileringbuffer():
             shutil.rmtree(chunks_dir)
         except FileNotFoundError:
             pass
-        fb = libfileringbuffer.make(command, "/tmp/fifo", 2, 2, chunks_dir)
+        fb = libcmdringbuffer.make(command, "/tmp/fifo", chunks_dir, 2, 2)
         try:
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
