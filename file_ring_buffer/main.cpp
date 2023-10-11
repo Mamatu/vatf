@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
   int chunkLines = 0;
   size_t bufferKB = 1024;
   int opt = -1;
-  while ((opt = getopt(argc, argv, "d:f:c:l:b:")) != -1)
+  while ((opt = getopt(argc, argv, "d:f:c:l:b:y")) != -1)
   {
     switch (opt)
     {

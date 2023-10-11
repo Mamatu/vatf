@@ -23,7 +23,6 @@ class FileRing
     std::string m_fifoPath;
     size_t m_chunksCount;
     size_t m_linesLimit;
-
     bool m_isStopped = false;
     size_t m_chunksCounter = 0;
 };

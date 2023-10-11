@@ -1,7 +1,14 @@
 #include "chunk_file.h"
 
+#include <cstdio>
+
 ChunkFile::ChunkFile(const std::string& path, size_t linesLimit) : Chunk(linesLimit), m_path(path)
 {
+}
+
+ChunkFile::~ChunkFile()
+{
+  remove(m_path.c_str());
 }
 
 void ChunkFile::_open()

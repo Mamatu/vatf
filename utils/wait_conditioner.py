@@ -14,6 +14,8 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
     elif config_handler.has_var("wait_for_regex.path", **kwargs):
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
+    elif config_handler.has_var("wait_for_regex.command_ring_buffer", **kwargs):
+        return _wait_for_regex_command_ring_buffer(regex, timeout = timeout, pause = pause, **kwargs)
     else:
         raise Exception("Lack of wait_for_regex attributes: command or path")
 
@@ -304,3 +306,31 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     date_format = config[wait_for_regex_date_format_key]
     date_regex = config[wait_for_regex_date_regex_key]
     return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)
+
+from vatf.utils import libcmdringbuffer
+
+def _wait_for_regex_command_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
+    from vatf.utils import config_handler
+    config = config_handler.get_config(**kwargs)
+    timestamp_format = config.wait_for_regex.date_format
+    timestamp_regex = config.wait_for_regex.date_regex
+    tmp_path = config.tmp.path
+    command = config.wait_for_regex.command
+    cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", f"{tmp_path}/chunks", 1000, 5)
+    from vatf.utils import utils
+    temp_file = utils.get_temp_file()
+    temp_filepath = temp_file.name
+    try:
+        from vatf.utils import config_handler
+        config = config_handler.get_config(**kwargs)
+        command = config.wait_for_regex.command
+        command = command.format(log_path = temp_filepath)
+        timestamps_kwargs = {"timestamp_format" : timestamp_format, "timestamp_regex" : timestamp_regex}
+        cmdringbuffer.start()
+        start_point = _get_start_point(config)
+        if start_point is not None:
+            kwargs["start_point"] = start_point
+        return _wait_loop(regex, timeout, pause, temp_filepath, **kwargs)
+    finally:
+        cmdringbuffer.stop()
+        temp_file.close()

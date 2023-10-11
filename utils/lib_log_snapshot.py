@@ -18,7 +18,6 @@ class LogSnapshot:
     class LogPathNone(Exception):
         def __init__(self):
             super().__init__("log path is none")
-
     def __init__(self):
         self._log_path = None
         self._shell_cmd = None
@@ -30,7 +29,6 @@ class LogSnapshot:
         self._rb_count = 0
         self._head_offset = 0
         self._lock = Lock()
-
     def call_safe(self, callback):
         with self._lock:
             return callback()
@@ -50,7 +48,6 @@ class LogSnapshot:
                     logging.warn(f"WARNING! {str(nsp)}")
             self._shell_process = shell.bg(self._shell_cmd)
         restart()
-
     def start_copy(self, log_path, in_log_path, **kwargs):
         """
         Starts log_snapshot which will copy part of in_log_path into log_path
@@ -74,7 +71,6 @@ class LogSnapshot:
                 time.sleep(pause)
         self._thread = Thread(target = copy_file, args = [self, line_number, in_log_path, log_path, pause])
         self._thread.start()
-
     def get_lines_count(self):
         if self._log_path is None:
             raise LogSnapshot.LogPathNone()
@@ -82,7 +78,6 @@ class LogSnapshot:
         output = output.replace(self._log_path, "")
         output = output.replace(" ", "")
         return int(output)
-
     def get_seconds(self):
         from datetime import datetime
         first_line_timestamp = self.get_the_first_line_timestamp()
@@ -93,36 +88,28 @@ class LogSnapshot:
         ltp = datetime.strptime(last_line_timestamp, self._timestamp_format)
         d = ltp - ftp
         return d.total_seconds()
-
     def set_timestamp_regex(self, timestamp_regex):
         self._timestamp_regex = timestamp_regex
-
     def set_timestamp_format(self, timestamp_format):
         self._timestamp_format = timestamp_format
-
     def get_the_first_line(self):
         if self._log_path is None:
             raise LogSnapshot.LogPathNone()
         return shell.fg(f"head -n1 {self._log_path}")
-
     def get_the_last_line(self):
         if self._log_path is None:
             raise LogSnapshot.LogPathNone()
         return shell.fg(f"tail -n1 {self._log_path}")
-
     def _get_line_timestamp(self, line):
         from vatf.utils import grep
         outputs = grep.grep_in_text(line, self._timestamp_regex, only_match = True)
         if len(outputs) == 0:
             return None
         return outputs[0].matched
-
     def get_the_first_line_timestamp(self):
         return self._get_line_timestamp(self.get_the_first_line())
-
     def get_the_last_line_timestamp(self):
         return self._get_line_timestamp(self.get_the_last_line())
-
     def remove_head(self, lines_count):
         """
         Removes lines_count from head of log_snapshot file
@@ -130,7 +117,6 @@ class LogSnapshot:
         if self._log_path is None:
             raise LogSnapshot.LogPathNone()
         shell.fg(f"sed -i '{lines_count}d' {self._log_path}")
-
     def _cutter_for_seconds(self, time_in_seconds, is_stopped):
         while not is_stopped():
             seconds = self.get_seconds()
@@ -148,7 +134,6 @@ class LogSnapshot:
                 def _call_safe():
                     self._head_offset = self._head_offset + line_number
                 self.call_safe(_call_safe)
-
     def set_ring_buffer(self, **kwargs):
         """
         Log snapshot will work as ring buffer limited to lines_count lines
@@ -164,20 +149,16 @@ class LogSnapshot:
         else:
             raise Exception("Not supported state")
         self._rb_thread.start()
-
     def stop(self, stop_ring_buffer_thread = True):
         self._stop_command()
         self._stop_thread(stop_ring_buffer_thread = stop_ring_buffer_thread)
-
     def stop_ring_buffer_thread(self):
         self.stop(stop_ring_buffer_thread = True)
-
     def get_ring_buffer_count(self):
         """
         Returns how many times ring buffer algorithm has worked on the file
         """
         return self._rb_count
-
     def _handle_config_on_startup(self, **kwargs):
         from vatf.utils import config_handler
         config = None
@@ -209,13 +190,11 @@ class LogSnapshot:
         if timestamp_delta:
             now = now + timestamp_delta
         return now
-
     def _stop_command(self):
         if self._shell_process:
             from vatf.executor import shell
             shell.kill(self._shell_process)
             self._shell_process = None
-
     def _stop_thread(self, stop_ring_buffer_thread = True):
         if self._thread:
             self._thread.stop()

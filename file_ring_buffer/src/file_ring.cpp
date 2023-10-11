@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <list>
 #include <vector>
 #include <iostream>
 
@@ -52,9 +53,19 @@ void FileRing::start()
   };
 
   auto chunk = createChunk(getPath());
+  std::list<std::shared_ptr<Chunk>> chunks;
+
+  auto removeOldChunks = [&chunks, this]()
+  {
+    while (chunks.size() > m_chunksCount)
+    {
+      chunks.pop_front();
+    }
+  };
 
   while(!m_isStopped) 
   {
+    removeOldChunks();
     ssize_t ccount = read(fifo.get(), buffer.data(), count);
     std::stringstream msg;
     msg << "ccount is lower than zero: " << ccount;
@@ -65,6 +76,7 @@ void FileRing::start()
       if (len < buffer.size())
       {
         m_chunksCounter++;
+        chunks.push_back(std::move(chunk));
         chunk = createChunk(getPath());
       }
       memset(buffer.data(), 0, count);

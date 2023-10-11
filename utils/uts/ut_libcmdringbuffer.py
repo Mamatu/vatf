@@ -58,34 +58,27 @@ def get_receive_path():
     _dlt_receive_path = os.path.join(_dlt_rootfs, "bin/dlt-receive")
     return _dlt_receive_path
 
-def sleep_until_lines_in_file(log_snapshot, count):
-    import time
-    while count > log_snapshot.get_lines_count():
-        time.sleep(0.1)
-
 def test_libcmdringbuffer():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
-        snapshot = lib_log_snapshot.make()
         writer = dlt.DltWriter(get_project_path())
         writer_t = None
-        command = f"{get_receive_path()} -a 127.0.0.1 | grep 'LOG- TEST'"
-        #command = f"{get_receive_path()} -a 127.0.0.1"
+        #command = f"{get_receive_path()} -a 127.0.0.1 | grep 'LOG- TEST'"
+        command = f"{get_receive_path()} -a 127.0.0.1"
         import tempfile
         from vatf.utils import os_proxy
         tempdir = tempfile.TemporaryDirectory(dir="/tmp")
-        #chunks_dir = str(tempdir)
-        chunks_dir = "/tmp/chunks"
+        chunks_dir = f"{str(tempdir)}/chunks"
         try:
             import shutil
             shutil.rmtree(chunks_dir)
         except FileNotFoundError:
             pass
-        fb = libcmdringbuffer.make(command, "/tmp/fifo", chunks_dir, 2, 2)
+        fb = libcmdringbuffer.make(command, f"{str(tempdir)}/fifo", chunks_dir, 2, 2)
         try:
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
-            wait.sleep(10)
+            wait.sleep(20)
             writer_t.stop()
             fb.stop()
         except shell.StderrException as ex:
