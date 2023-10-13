@@ -345,7 +345,7 @@ def test_py_config():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils.uts.data.ut_config.config_1"
+    config_py_path = "vatf.utils.uts.data.ut_config.config_1"
     config = config_py_loader.load(config_py_path)
     assert config["assets"]["audio"]["path"] == "./assets/audio_files"
 
@@ -354,7 +354,7 @@ def test_py_config_1():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils/uts/data/ut_config/config_1.py"
+    config_py_path = "vatf/utils/uts/data/ut_config/config_1.py"
     config = config_py_loader.load(config_py_path)
     assert config["assets"]["audio"]["path"] == "./assets/audio_files"
 
@@ -363,7 +363,7 @@ def test_py_config_2():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils.uts.data.ut_config.config_1"
+    config_py_path = "vatf.utils.uts.data.ut_config.config_1"
     config_handler.init_configs([config_py_path])
     output = config_handler.handle(["assets.audio.path"])
     assert output["assets.audio.path"] == "./assets/audio_files"
@@ -373,7 +373,7 @@ def test_py_config_3():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils/uts/data/ut_config/config_1.py"
+    config_py_path = "vatf/utils/uts/data/ut_config/config_1.py"
     config_handler.init_configs([config_py_path])
     output = config_handler.handle(["assets.audio.path"])
     assert output["assets.audio.path"] == "./assets/audio_files"
@@ -531,7 +531,7 @@ def test_use_case_2(mocker):
         foo()
 
 def test_use_case_3(mocker):
-    ut_data_path = "./utils/uts/data/ut_config/test_use_case_3"
+    ut_data_path = "./vatf/utils/uts/data/ut_config/test_use_case_3"
     with mocked_now(datetime.datetime(2020, 2, 2, 23, 45, 50)):
         config_path = os.path.join(ut_data_path, "config.py")
         config_handler.init_configs([config_path])
