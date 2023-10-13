@@ -68,13 +68,13 @@ def test_libcmdringbuffer():
         import tempfile
         from vatf.utils import os_proxy
         tempdir = tempfile.TemporaryDirectory(dir="/tmp")
-        chunks_dir = f"{str(tempdir)}/chunks"
+        chunks_dir = os.path.join(tempdir.name, "chunks")
         try:
             import shutil
             shutil.rmtree(chunks_dir)
         except FileNotFoundError:
             pass
-        fb = libcmdringbuffer.make(command, f"{str(tempdir)}/fifo", chunks_dir, 2, 2)
+        fb = libcmdringbuffer.make(command, os.path.join(tempdir.name, "fifo"), chunks_dir, 100, 2)
         try:
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
