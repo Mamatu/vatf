@@ -60,8 +60,8 @@ int main(int argc, char* argv[])
   error(!chunksDirPath.empty(), "chunksDirPath cannot be empty"); 
   error(chunksCount != 0, "chunksCount cannot be 0"); 
   error(chunkLines != 0, "chunkLines cannot be 0"); 
+  std::cout << __FILE__ << " " << __LINE__ << " " << chunksDirPath << " " << fifoPath << " " << chunksCount << " " << chunkLines << std::endl;
 
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines);
   frSignal.m_fileRing = fileRing;
   fileRing->start();

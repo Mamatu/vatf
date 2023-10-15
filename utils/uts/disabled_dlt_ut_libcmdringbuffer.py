@@ -79,6 +79,9 @@ def test_libcmdringbuffer():
             fb.start()
             writer_t = writer.write_in_async_loop(pre_callback = generate_line)
             wait.sleep(20)
+            print(f"lsitdir {os.listdir(tempdir.name)}")
+            chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
+            print(f"lsitdir {chunks_dir_1}")
             writer_t.stop()
             fb.stop()
         except shell.StderrException as ex:

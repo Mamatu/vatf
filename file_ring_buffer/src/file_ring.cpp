@@ -57,7 +57,7 @@ void FileRing::start()
 
   auto removeOldChunks = [&chunks, this]()
   {
-    while (chunks.size() > m_chunksCount)
+    while (chunks.size() >= m_chunksCount)
     {
       chunks.pop_front();
     }
