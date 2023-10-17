@@ -48,6 +48,23 @@ def get_file_content(path):
     with open(path, "r") as f:
         return f.read()
 
+def test_libcmdringbuffer_small_1():
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
+        from vatf.utils import lib_log_snapshot
+        import tempfile
+        from vatf.utils import os_proxy
+        with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
+            chunks_dir = os.path.join(tempdir, "chunks")
+            fifo_path = os.path.join(tempdir, "fifo")
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 1, 3)
+            crb.start()
+            generate_and_write_lines(fifo_path, 3)
+            time.sleep(1)
+            crb.stop()
+            chunks_list = os.listdir(chunks_dir)
+            chunks_list.sort()
+            assert chunks_list == ["0", "1", "2"]
+
 def test_libcmdringbuffer_1():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
@@ -62,7 +79,8 @@ def test_libcmdringbuffer_1():
             time.sleep(1)
             crb.stop()
             chunks_list = os.listdir(chunks_dir)
-            assert chunks_list == ["2", "1", "0"]
+            chunks_list.sort()
+            assert chunks_list == ["0", "1", "2"]
 
 def test_libcmdringbuffer_2():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
@@ -78,9 +96,10 @@ def test_libcmdringbuffer_2():
             time.sleep(1)
             crb.stop()
             chunks_list = os.listdir(chunks_dir)
-            assert chunks_list == ["3", "2", "1"]
+            chunks_list.sort()
+            assert chunks_list == ["1", "2", "3"]
 
-def test_libcmdringbuffer_2():
+def test_libcmdringbuffer_3():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
         import tempfile
@@ -95,5 +114,6 @@ def test_libcmdringbuffer_2():
             time.sleep(1)
             crb.stop()
             chunks_list = os.listdir(chunks_dir)
-            assert chunks_list == ["6", "5", "7"]
+            chunks_list.sort()
+            assert chunks_list == ["5", "6", "7"]
             print(get_file_content(os.path.join(tempdir, "chunks/6")))
