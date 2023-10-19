@@ -48,6 +48,21 @@ def get_file_content(path):
     with open(path, "r") as f:
         return f.read()
 
+def print_chunk(chunks_dir, chunk):
+    path = os.path.join(chunks_dir, chunk)
+    with open(path, "r") as f:
+        print(f"FILE: {path}")
+        print(f.read())
+
+def expect_lines(chunks_dir, chunk, _min, _max):
+    path = os.path.join(chunks_dir, chunk)
+    with open(path, "r") as f:
+        data = f.read()
+        expected_data = ""
+        for x in range(_min, _max + 1):
+            expected_data = expected_data + f"line_{x}\n"
+        assert data == expected_data
+
 def test_libcmdringbuffer_1():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
@@ -63,6 +78,9 @@ def test_libcmdringbuffer_1():
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
             assert chunks_list == ["0", "1", "2"]
+            expect_lines(chunks_dir, "0", 0, 99)
+            expect_lines(chunks_dir, "1", 100, 199)
+            expect_lines(chunks_dir, "2", 200, 299)
             crb.stop()
 
 def test_libcmdringbuffer_2():
