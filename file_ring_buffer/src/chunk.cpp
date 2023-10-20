@@ -10,14 +10,14 @@ size_t Chunk::write(const char* bytes, size_t length)
 {
   openIfClosed();
   auto [lenToTransfer, linesToTransfer] = getLenToTransfer(bytes, length);
-  size_t _len = _write(bytes, lenToTransfer);
-  if (_len !=  lenToTransfer)
+  size_t _realLenTransferred = _write(bytes, lenToTransfer);
+  if (_realLenTransferred !=  lenToTransfer)
   {
     throw std::runtime_error("Wrong len transferred");
   }
   closeIf(linesToTransfer);
   m_lineIdx += linesToTransfer;
-  return _len;
+  return _realLenTransferred;
 }
 
 void Chunk::openIfClosed()

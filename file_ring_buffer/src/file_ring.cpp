@@ -38,8 +38,7 @@ void FileRing::start()
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
   Fifo fifo(m_fifoPath);
 
-  constexpr size_t count = 1024;
-  std::array<char, count> buffer;
+  std::array<char, 1024> buffer;
   std::vector<char> bytes/*(1024 * bufferKB)*/;
   
 
@@ -66,20 +65,27 @@ void FileRing::start()
   while(!m_isStopped) 
   {
     removeOldChunks();
-    ssize_t ccount = read(fifo.get(), buffer.data(), count);
+    ssize_t ccount = read(fifo.get(), buffer.data(), buffer.size());
     std::stringstream msg;
     msg << "ccount is lower than zero: " << ccount;
     error (!(ccount < 0), msg);
     if (ccount > 0)
     {
-      auto len = chunk->write(buffer.data(), buffer.size());
-      if (len < buffer.size())
+      auto len = chunk->write(buffer.data(), ccount);
+      if (len < ccount)
+      {
+        m_chunksCounter++;
+        chunks.push_back(std::move(chunk));
+        chunk = createChunk(getPath());
+        chunk->write(buffer.data() + len, ccount - len);
+      }
+      else if (len == ccount && chunk->getCurrentLinesLimit() == 0)
       {
         m_chunksCounter++;
         chunks.push_back(std::move(chunk));
         chunk = createChunk(getPath());
       }
-      memset(buffer.data(), 0, count);
+      memset(buffer.data(), 0, buffer.size());
       bytes.clear();
     }
   }

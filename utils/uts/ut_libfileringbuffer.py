@@ -18,15 +18,9 @@ from vatf.utils import os_proxy
 
 import time
 
-_written_lines_count = 0
-
 def generate_lines(lines_count):
-    global _written_lines_count
-    s = ""
-    for x in range(0, lines_count - 1):
-        s += f"line_{_written_lines_count}\n"
-        _written_lines_count = _written_lines_count + 1
-    return s
+    s = [f"line_{x}" for x in range(0, lines_count)]
+    return "\n".join(s)
 
 def generate_and_write_lines(path, lines_count):
     with open(path, "w") as f:
@@ -54,13 +48,13 @@ def print_chunk(chunks_dir, chunk):
         print(f"FILE: {path}")
         print(f.read())
 
-def expect_lines(chunks_dir, chunk, _min, _max):
+def expect_lines(chunks_dir, chunk, _min, _max, extra = ""):
     path = os.path.join(chunks_dir, chunk)
     with open(path, "r") as f:
         data = f.read()
-        expected_data = ""
-        for x in range(_min, _max + 1):
-            expected_data = expected_data + f"line_{x}\n"
+        expected_data = [f"line_{x}" for x in range(_min, _max + 1)]
+        expected_data = "\n".join(expected_data)
+        expected_data = f"{expected_data}{extra}"
         assert data == expected_data
 
 def test_libcmdringbuffer_1():
@@ -78,8 +72,8 @@ def test_libcmdringbuffer_1():
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
             assert chunks_list == ["0", "1", "2"]
-            expect_lines(chunks_dir, "0", 0, 99)
-            expect_lines(chunks_dir, "1", 100, 199)
+            expect_lines(chunks_dir, "0", 0, 99, "\n")
+            expect_lines(chunks_dir, "1", 100, 199, "\n")
             expect_lines(chunks_dir, "2", 200, 299)
             crb.stop()
 
@@ -106,7 +100,6 @@ def test_libcmdringbuffer_3():
         import tempfile
         from vatf.utils import os_proxy
         with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
-            print(tempdir)
             chunks_dir = os.path.join(tempdir, "chunks")
             fifo_path = os.path.join(tempdir, "fifo")
             crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3)
@@ -115,5 +108,6 @@ def test_libcmdringbuffer_3():
             time.sleep(1)
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
+            time.sleep(60)
             assert chunks_list == ["6", "7", "8"]
             crb.stop()

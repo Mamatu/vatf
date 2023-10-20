@@ -11,6 +11,7 @@ class Chunk
     virtual ~Chunk() = default;
     size_t write(const char* bytes, size_t length);
 
+    size_t getCurrentLinesLimit() const;
   protected:
     void openIfClosed();
     void closeIf(size_t linesToTransfer);
@@ -25,13 +26,11 @@ class Chunk
       size_t lines;  
     };
     LenLines getLenToTransfer(const char* bytes, size_t length) const;
-    size_t getCurrentLinesLimit() const;
 
   private:
     bool m_opened = false;
     size_t m_lineIdx = 0;
     size_t  m_linesLimit = 0;
-
 };
 
 #endif

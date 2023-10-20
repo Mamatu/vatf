@@ -19,6 +19,8 @@ class ChunkFile : public Chunk
     size_t getLinesLimit() const;
 
   private:
+    bool m_isClosed = false;
+    void close();
     std::string m_path;
     FILE* m_file;
 };
