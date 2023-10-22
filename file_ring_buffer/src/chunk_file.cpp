@@ -33,9 +33,6 @@ void ChunkFile::close()
 size_t ChunkFile::_write(const char* buffer, size_t length)
 {
   std::string m(buffer, length);
-  fprintf(stderr, "\n");
-  fprintf(stderr, "%s\n", m_path.c_str());
-  fprintf(stderr, "%s", m.c_str());
   auto writeSize = fwrite(buffer, sizeof(char), length, m_file);
   fflush(m_file);
   return writeSize;

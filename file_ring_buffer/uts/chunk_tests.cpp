@@ -3,6 +3,8 @@
 
 #include "chunk.h"
 
+namespace chunk_tests {
+
 using namespace testing;
 
 class ChunkTests : public Test
@@ -79,4 +81,5 @@ TEST_F(ChunkTests, 3linesBuffer2linesLimit) {
   ASSERT_EQ(4, lenLines.length);
   ASSERT_EQ(2, lenLines.lines);
   ASSERT_EQ(subbuffer.size(), chunk.write(buffer.c_str(), buffer.size()));
+}
 }

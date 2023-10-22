@@ -2,6 +2,7 @@
 #define FILE_RING_H
 
 #include "chunk.h"
+#include "fifo.h"
 
 #include <string>
 #include <sstream>
@@ -15,8 +16,14 @@ class FileRing
     void start();
     void stop();
 
+    std::string getChunksDirPath() const;
+    std::string getFifoPath() const;
+    size_t getChunksCount() const;
+    size_t getLinesLimit() const;
+
   protected:
-    virtual std::unique_ptr<Chunk> createChunk(const std::string& path);
+    virtual std::shared_ptr<Chunk> createChunk(const std::string& path);
+    virtual std::unique_ptr<Fifo> createFifo(const std::string& path);
 
   private:
     std::string m_chunksDirPath;

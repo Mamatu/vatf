@@ -1,32 +1,15 @@
 #include "chunk_file.h"
+#include "fifo_linux.h"
 #include "file_ring.h"
 #include "error.h"
 
 #include <array>
 #include <csignal>
 #include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
 #include <list>
 #include <vector>
 #include <iostream>
-
-class Fifo final
-{
-  public:
-    Fifo(const std::string& path) : fd(open(path.c_str(), O_RDONLY /*| O_NONBLOCK*/)) {}
-
-    ~Fifo() {
-      close(fd);
-    }
-
-    int get() const {
-      return fd;
-    }
-
-  private:
-    int fd = 0;
-};
 
 FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit) :
         m_chunksDirPath(chunksDirPath), m_fifoPath(fifoPath), m_chunksCount(chunksCount), m_linesLimit(linesLimit)
@@ -36,14 +19,12 @@ FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath
 void FileRing::start()
 {
   std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  Fifo fifo(m_fifoPath);
+  auto fifo = createFifo(m_fifoPath);
 
   std::array<char, 1024> buffer;
   std::vector<char> bytes/*(1024 * bufferKB)*/;
-  
 
-  size_t chunksCounter = 0;
-  auto getPath = [&chunksCounter, this]() {
+  auto getPath = [this]() {
     std::stringstream sstream;
     sstream << m_chunksDirPath;
     sstream << "/";
@@ -65,29 +46,40 @@ void FileRing::start()
   while(!m_isStopped) 
   {
     removeOldChunks();
-    ssize_t ccount = read(fifo.get(), buffer.data(), buffer.size());
+    ssize_t bufferSizeWithData = fifo->read(buffer.data(), buffer.size());
     std::stringstream msg;
-    msg << "ccount is lower than zero: " << ccount;
-    error (!(ccount < 0), msg);
-    if (ccount > 0)
+    msg << "bufferSizeWithData is lower than zero: " << bufferSizeWithData;
+    error (!(bufferSizeWithData < 0), msg);
+    if (bufferSizeWithData == 0) { continue; }
+    if (!chunk)
     {
-      auto len = chunk->write(buffer.data(), ccount);
-      if (len < ccount)
-      {
-        m_chunksCounter++;
-        chunks.push_back(std::move(chunk));
-        chunk = createChunk(getPath());
-        chunk->write(buffer.data() + len, ccount - len);
-      }
-      else if (len == ccount && chunk->getCurrentLinesLimit() == 0)
-      {
-        m_chunksCounter++;
-        chunks.push_back(std::move(chunk));
-        chunk = createChunk(getPath());
-      }
-      memset(buffer.data(), 0, buffer.size());
-      bytes.clear();
+      chunk = createChunk(getPath());  
     }
+    auto len = chunk->write(buffer.data(), bufferSizeWithData);
+    if (len < bufferSizeWithData)
+    {
+      m_chunksCounter++;
+      chunks.push_back(std::move(chunk));
+      chunk = createChunk(getPath());
+      chunk->write(buffer.data() + len, bufferSizeWithData - len);
+    }
+    else if (len == bufferSizeWithData && chunk->getCurrentLinesLimit() == 0)
+    {
+      m_chunksCounter++;
+      chunks.push_back(std::move(chunk));
+    }
+    /*if ((len == bufferSizeWithData && chunk->getCurrentLinesLimit() == 0) || len < bufferSizeWithData)
+    {
+      m_chunksCounter++;
+      chunks.push_back(std::move(chunk));
+    }
+    if (len < bufferSizeWithData)
+    {
+      chunk = createChunk(getPath());
+      chunk->write(buffer.data() + len, bufferSizeWithData - len);
+    }*/
+    memset(buffer.data(), 0, buffer.size());
+    bytes.clear();
   }
 }
 
@@ -96,7 +88,32 @@ void FileRing::stop()
   m_isStopped = true;
 }
 
-std::unique_ptr<Chunk> FileRing::createChunk(const std::string& path)
+std::string FileRing::getChunksDirPath() const
 {
-  return std::make_unique<ChunkFile>(path, m_linesLimit);
+  return m_chunksDirPath;
+}
+
+std::string FileRing::getFifoPath() const
+{
+  return m_fifoPath;
+}
+
+size_t FileRing::getChunksCount() const
+{
+  return m_chunksCount;
+}
+
+size_t FileRing::getLinesLimit() const
+{
+  return m_linesLimit;
+}
+
+std::shared_ptr<Chunk> FileRing::createChunk(const std::string& path)
+{
+  return std::make_shared<ChunkFile>(path, m_linesLimit);
+}
+
+std::unique_ptr<Fifo> FileRing::createFifo(const std::string& path)
+{
+  return std::make_unique<FifoLinux>(path);
 }
