@@ -62,7 +62,7 @@ Chunk::LenLines Chunk::getLenToTransfer(const char* bytes, size_t length) const
   return lenLines;
 }
 
-size_t Chunk::getCurrentLinesLimit() const
+int Chunk::getCurrentLinesLimit() const
 {
   return m_linesLimit - m_lineIdx;
 }

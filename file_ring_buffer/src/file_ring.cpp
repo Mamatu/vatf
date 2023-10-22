@@ -51,33 +51,21 @@ void FileRing::start()
     msg << "bufferSizeWithData is lower than zero: " << bufferSizeWithData;
     error (!(bufferSizeWithData < 0), msg);
     if (bufferSizeWithData == 0) { continue; }
-    if (!chunk)
+    
+    ssize_t len = 0;
+    while (bufferSizeWithData - len > 0)
     {
-      chunk = createChunk(getPath());  
+      if (!chunk)
+      {
+        chunk = createChunk(getPath());  
+      }
+      len = len + chunk->write(buffer.data() + len, bufferSizeWithData - len);
+      if (chunk->getCurrentLinesLimit() <= 0)
+      {
+        m_chunksCounter++;
+        chunks.push_back(std::move(chunk));
+      }
     }
-    auto len = chunk->write(buffer.data(), bufferSizeWithData);
-    if (len < bufferSizeWithData)
-    {
-      m_chunksCounter++;
-      chunks.push_back(std::move(chunk));
-      chunk = createChunk(getPath());
-      chunk->write(buffer.data() + len, bufferSizeWithData - len);
-    }
-    else if (len == bufferSizeWithData && chunk->getCurrentLinesLimit() == 0)
-    {
-      m_chunksCounter++;
-      chunks.push_back(std::move(chunk));
-    }
-    /*if ((len == bufferSizeWithData && chunk->getCurrentLinesLimit() == 0) || len < bufferSizeWithData)
-    {
-      m_chunksCounter++;
-      chunks.push_back(std::move(chunk));
-    }
-    if (len < bufferSizeWithData)
-    {
-      chunk = createChunk(getPath());
-      chunk->write(buffer.data() + len, bufferSizeWithData - len);
-    }*/
     memset(buffer.data(), 0, buffer.size());
     bytes.clear();
   }
