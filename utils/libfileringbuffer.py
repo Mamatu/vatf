@@ -19,7 +19,10 @@ class FileRingBuffer:
     def start(self):
         if not os.path.exists(self.fifo_file):
             shell.fg(f"mkfifo {self.fifo_file}")
-        os.makedirs(self.chunks_dir)
+        try:
+            os.makedirs(self.chunks_dir)
+        except:
+            pass
         self.bg_process = shell.bg(f"bin/file_ring_buffer -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines}")
     def stop(self):
         shell.kill(self.bg_process)
