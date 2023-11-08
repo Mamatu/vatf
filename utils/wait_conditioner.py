@@ -8,6 +8,8 @@ __maintainer__ = "Marcin Matula"
 from vatf.utils.wait_types import Label
 from vatf.utils.wait_types import RegexOperator
 
+import os
+
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
     if config_handler.has_var("wait_for_regex.command", **kwargs):
@@ -316,6 +318,8 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
     timestamp_format = config.wait_for_regex.date_format
     timestamp_regex = config.wait_for_regex.date_regex
     tmp_path = config.tmp.path
+    if not os.path.exists(tmp_path):
+        os.makedirs(tmp_path)
     command = config.wait_for_regex.command
     cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", f"{tmp_path}/chunks", 1000, 5)
     from vatf.utils import utils
