@@ -15,6 +15,7 @@ class FileRingBuffer:
         self.chunks_dir = chunks_dir
         self.chunk_lines = chunk_lines
         self.chunks_count = chunks_count
+        self.bg_process = None
     def start(self):
         if not os.path.exists(self.fifo_file):
             shell.fg(f"mkfifo {self.fifo_file}")
