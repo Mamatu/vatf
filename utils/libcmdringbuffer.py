@@ -12,6 +12,7 @@ class CmdRingBuffer:
         self.fifo_file = fifo_file
         self.redirection_operator = redirection_operator
         self.fileringbuffer = libfileringbuffer.make(fifo_file, chunks_dir, chunk_lines, chunks_count)
+        self.bg_process = None
     def start(self):
         if not os.path.exists(self.fifo_file):
             shell.fg(f"mkfifo {self.fifo_file}")
