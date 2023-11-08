@@ -5,16 +5,6 @@
   "description": "Test framework",
   "type": "object",
   "properties": {
-    "vatf" : {
-      "type" : "object",
-      "description" : "vatf branch to clone",
-      "properties" : {
-        "branch" : {
-          "type" : "string",
-          "description" : "vatf branch to clone"
-        }
-      }
-    },
     "assets" : {
       "type" : "object",
       "properties" : {
