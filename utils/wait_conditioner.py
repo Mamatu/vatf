@@ -11,11 +11,12 @@ from vatf.utils.wait_types import RegexOperator
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
     if config_handler.has_var("wait_for_regex.command", **kwargs):
-        return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
+        if config_handler.has_var("wait_for_regex.file_ring_buffer", **kwargs):
+            return _wait_for_regex_command_file_ring_buffer(regex, timeout = timeout, pause = pause, **kwargs)
+        else:
+            return _wait_for_regex_command(regex, timeout = timeout, pause = pause, **kwargs)
     elif config_handler.has_var("wait_for_regex.path", **kwargs):
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
-    elif config_handler.has_var("wait_for_regex.command_ring_buffer", **kwargs):
-        return _wait_for_regex_command_ring_buffer(regex, timeout = timeout, pause = pause, **kwargs)
     else:
         raise Exception("Lack of wait_for_regex attributes: command or path")
 
@@ -309,7 +310,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
 
 from vatf.utils import libcmdringbuffer
 
-def _wait_for_regex_command_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
+def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     timestamp_format = config.wait_for_regex.date_format
