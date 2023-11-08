@@ -2,6 +2,7 @@
 #include <csignal>
 #include <stdio.h>
 #include <fcntl.h>
+#include <getopt.h>
 #include <string.h>
 #include <stdexcept>
 #include <memory>
