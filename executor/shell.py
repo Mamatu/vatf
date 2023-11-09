@@ -80,7 +80,7 @@ def kill(process):
         children = parent.children(recursive=True)
         for child in children:
             try:
-                child.kill()
+                child.terminate()
             except psutil.NoSuchProcess as nsp:
                 logging.warn(nsp)
         process.terminate()
