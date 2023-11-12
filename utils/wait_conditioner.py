@@ -321,10 +321,9 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
     if not os.path.exists(tmp_path):
         os.makedirs(tmp_path)
     command = config.wait_for_regex.command
-    cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", f"{tmp_path}/chunks", 1000, 5)
-    from vatf.utils import utils
-    temp_file = utils.get_temp_file()
-    temp_filepath = temp_file.name
+    chunks_dir_path = f"{tmp_path}/chunks"
+    cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", chunks_dir_path, 1000, 5)
+    temp_filepath = chunks_dir_path
     try:
         from vatf.utils import config_handler
         config = config_handler.get_config(**kwargs)
@@ -338,4 +337,3 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
         return _wait_loop(regex, timeout, pause, temp_filepath, **kwargs)
     finally:
         cmdringbuffer.stop()
-        temp_file.close()
