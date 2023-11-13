@@ -67,7 +67,7 @@ def _find(filepath, regex, **kwargs):
         if line is None:
             return []
         line_number = line.line_number
-    return search.find(filepath = filepath, regex = regex, from_line = line_number)
+    return search.find(filepath = filepath, regex = regex, from_line = line_number, support_directory = True)
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
