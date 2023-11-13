@@ -7,8 +7,34 @@ __maintainer__ = "Marcin Matula"
 
 from vatf.utils.wait_types import Label
 from vatf.utils.wait_types import RegexOperator
+from vatf.utils import libcmdringbuffer
 
 import os
+
+cmdringbuffer = None
+
+def start(**kwargs):
+    global cmdringbuffer
+    from vatf.utils import config_handler
+    config = config_handler.get_config(**kwargs)
+    command = config.wait_for_regex.command
+    if command is "":
+        raise Exception("Command is empty")
+    is_file_ring_buffer = config.wait_for_regex.is_file_ring_buffer
+    if command and is_file_ring_buffer:
+        tmp_path = config.wait_for_regex.tmp
+        if not os.path.exists(tmp_path):
+            os.makedirs(tmp_path)
+        chunks_dir_path = os.path.join(tmp_path, "chunks")
+        command = command.format(log_path = chunks_dir_path)
+        chunks_count = config.wait_for_regex.chunks_count
+        lines_count = config.wait_for_regex.lines_count
+        cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", chunks_dir_path, lines_count, chunks_count)
+        cmdringbuffer.start()
+
+def stop():
+    if cmdringbuffer is not None:
+        cmdringbuffer.stop()
 
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
@@ -21,6 +47,36 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
     else:
         raise Exception("Lack of wait_for_regex attributes: command or path")
+
+def _parse_wait_for_regex_with_file_ring_buffer(**kwargs):
+    from dataclasses import dataclass
+    @dataclass
+    class ConfigData:
+        command : str = ""
+        is_file_ring_buffer : bool = False
+        lines_count : int = -1
+        chunks_count : int = -1
+    from vatf.utils import config_handler
+    config = config_handler.get_config(**kwargs)
+    cdata = ConfigData()
+    cdata.command = config_handler.has_var("wait_for_regex.command", **kwargs)
+    if cdata.command:
+        cdata.command = config.wait_for_regex.command
+    if cdata.command is "":
+        raise Exception("Command is empty")
+    cdata.is_file_ring_buffer = config_handler.has_var("wait_for_regex.is_file_ring_buffer", **kwargs)
+    if cdata.is_file_ring_buffer:
+        cdata.is_file_ring_buffer = config.wait_for_regex.is_file_ring_buffer
+    if cdata.command and cdata.is_file_ring_buffer:
+        has_lines_count = config_handler.has_var("wait_for_regex.lines_count", **kwargs)
+        if not has_lines_count:
+            raise Exception("wait_for_regex.lines_count is required if file_ring_buffer mode is enabled")
+        cdata.lines_count = config.wait_for_regex.lines_count
+        has_chunks_count = config_handler.has_var("wait_for_regex.chunks_count", **kwargs)
+        if not has_chunks_count:
+            raise Exception("wait_for_regex.chunks_count is required if file_ring_buffer mode is enabled")
+        cdata.chunks_count = config.wait_for_regex.chunks_count
+    return cdata
 
 def _check_if_start_point_is_before_time(filepath, **kwargs):
     from vatf.utils.kw_utils import handle_kwargs
@@ -310,8 +366,6 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     date_regex = config[wait_for_regex_date_regex_key]
     return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)
 
-from vatf.utils import libcmdringbuffer
-
 def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
@@ -320,20 +374,8 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
     tmp_path = config.tmp.path
     if not os.path.exists(tmp_path):
         os.makedirs(tmp_path)
-    command = config.wait_for_regex.command
     chunks_dir_path = f"{tmp_path}/chunks"
-    cmdringbuffer = libcmdringbuffer.make(command, f"{tmp_path}/fifo", chunks_dir_path, 100000, 2)
-    temp_filepath = chunks_dir_path
-    try:
-        from vatf.utils import config_handler
-        config = config_handler.get_config(**kwargs)
-        command = config.wait_for_regex.command
-        command = command.format(log_path = temp_filepath)
-        timestamps_kwargs = {"timestamp_format" : timestamp_format, "timestamp_regex" : timestamp_regex}
-        cmdringbuffer.start()
-        start_point = _get_start_point(config)
-        if start_point is not None:
-            kwargs["start_point"] = start_point
-        return _wait_loop(regex, timeout, pause, temp_filepath, **kwargs)
-    finally:
-        cmdringbuffer.stop()
+    start_point = _get_start_point(config)
+    if start_point is not None:
+        kwargs["start_point"] = start_point
+    return _wait_loop(regex, timeout, pause, chunks_dir_path, **kwargs)

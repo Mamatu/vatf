@@ -25,6 +25,13 @@ def mocked_now(now):
     with patch("datetime.datetime", MockedDatetime):
         yield
 
+def test_start_stop():
+    from vatf.utils import config_handler
+    config_handler.init_configs("utils/uts/data/ut_config/wait_conditioner_frb_config.json")
+    from vatf.utils import wait_conditioner
+    wait_conditioner.start()
+    wait_conditioner.stop()
+
 def test_check_if_start_point_is_before_time():
     date_format = "%Y-%m-%d %H:%M:%S.%f"
     date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
