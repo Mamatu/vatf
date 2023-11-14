@@ -9,6 +9,14 @@ from vatf import vatf_api
 from vatf.utils import wait_conditioner
 
 @vatf_api.public_api("wait")
+def start(**kwargs):
+    return wait_conditioner.start(**kwargs)
+
+@vatf_api.public_api("wait")
+def stop():
+    return wait_conditioner.stop()
+
+@vatf_api.public_api("wait")
 def sleep(duration):
     import time as t
     t.sleep(duration)
