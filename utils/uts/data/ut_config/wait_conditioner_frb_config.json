@@ -4,6 +4,6 @@
     "is_file_ring_buffer" : true,
     "lines_count" : 10000,
     "chunks_count" : 5,
-    "tmp" : "/tmp"
+    "workspace" : "/tmp/workspace/"
   }
 }
