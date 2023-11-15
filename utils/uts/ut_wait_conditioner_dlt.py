@@ -58,13 +58,29 @@ def get_receive_path():
     _dlt_receive_path = os.path.join(_dlt_rootfs, "bin/dlt-receive")
     return _dlt_receive_path
 
-def test_libcmdringbuffer():
+def _test_wrapper(test_func):
+    def inner():
+        import tempfile
+        writer = dlt.DltWriter(get_project_path())
+        tempdir = tempfile.TemporaryDirectory(dir="/tmp")
+        try:
+            test_func(writer, tempdir)
+        except shell.StderrException as ex:
+            print(f"Expected StderrException: {ex}")
+        except Exception as ex:
+            import sys
+            print(ex, file=sys.stderr)
+            assert False
+        finally:
+            writer.stop()
+            tempdir.cleanup()
+    return inner
+
+@_test_wrapper
+def test_libcmdringbuffer_1(writer, tempdir):
     from vatf.utils import lib_log_snapshot
     from vatf.utils import os_proxy
-    import tempfile
-    writer = dlt.DltWriter(get_project_path())
     writer_t = None
-    tempdir = tempfile.TemporaryDirectory(dir="/tmp")
     chunks_dir = os.path.join(tempdir.name, "chunks")
     try:
         import shutil
@@ -80,20 +96,12 @@ def test_libcmdringbuffer():
         "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
-    try:
-        wait.start(config = config)
-        writer_t = writer.write_in_async_loop(pre_callback = generate_line)
-        chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
-        assert wait.wait_for_regex("line_10", timeout = 20, config = config)
-        wait.stop()
-    except shell.StderrException as ex:
-        print(f"Expected StderrException: {ex}")
-    except Exception as ex:
-        import sys
-        print(ex, file=sys.stderr)
-        assert False
-    finally:
-        tempdir.cleanup()
+    wait.start(config = config)
+    writer_t = writer.write_in_async_loop(pre_callback = generate_line)
+    chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
+    assert wait.wait_for_regex("line_10", timeout = 20, config = config)
+    wait.stop()
+
 
 #def test_libcmdringbuffer():
 #    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):

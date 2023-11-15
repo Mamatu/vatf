@@ -57,14 +57,12 @@ def test_log_with_timestamps():
     log_file = utils.get_temp_file()
     log_path = log_file.name
     writer = dlt.DltWriter(_dlt_project_path)
-    writer_t = None
     lines_count = 30
     try:
         log_snapshot.start(log_path, f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}", timestamp_format = timestamp_format, timestamp_regex = timestamp_regex)
-        writer_t = writer.write_in_async_loop(pre_callback = generate_line)
+        writer.write_in_async_loop(pre_callback = generate_line)
         sleep_until_lines_in_file(log_snapshot, lines_count)
         log_snapshot.stop()
-        writer_t.stop()
         with open(log_path, "r") as f:
             lines = f.readlines()
             assert len(lines) >= lines_count
@@ -74,6 +72,8 @@ def test_log_with_timestamps():
         import sys
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        writer.stop()
 
 def test_log_with_timestamps_with_config():
     timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
@@ -84,17 +84,15 @@ def test_log_with_timestamps_with_config():
     log_file = utils.get_temp_file()
     log_path = log_file.name
     writer = dlt.DltWriter(_dlt_project_path)
-    writer_t = None
     lines_count = 30
     try:
         config = {"log_snapshot.command" : f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {log_path}", "log_snapshot.path" : log_path}
         config["log_snapshot.date_regex"] = timestamp_regex
         config["log_snapshot.date_format"] = timestamp_format
         log_snapshot.start_from_config(config_attrs = config)
-        writer_t = writer.write_in_async_loop(pre_callback = generate_line)
+        writer.write_in_async_loop(pre_callback = generate_line)
         sleep_until_lines_in_file(log_snapshot, lines_count)
         log_snapshot.stop()
-        writer_t.stop()
         with open(log_path, "r") as f:
             lines = f.readlines()
             assert len(lines) >= lines_count
@@ -104,3 +102,5 @@ def test_log_with_timestamps_with_config():
         import sys
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        writer.stop()
