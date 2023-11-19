@@ -1,20 +1,37 @@
 #include "chunk_file.h"
+#include "timestamp_file_tools.h"
 
-#include <cstdio>
+#include <filesystem>
+#include <sstream>
 
-ChunkFile::ChunkFile(const std::string& path, size_t linesLimit) : Chunk(linesLimit), m_path(path)
+ChunkFile::ChunkFile(const std::string& dirpath, size_t id, size_t linesLimit, bool timestampLock) : Chunk(id, linesLimit), m_dirpath(dirpath), m_timestampLock(timestampLock)
 {
+  std::stringstream sstream;
+  sstream << id;
+  std::filesystem::path path = m_dirpath;
+  path = path / sstream.str();
+  m_filepath = path;
 }
 
 ChunkFile::~ChunkFile()
 {
   close();
-  remove(m_path.c_str());
+  if (m_timestampLock)
+  {
+    std::filesystem::remove(timestamp_file::getTimestampLockPath(m_dirpath, getId()));
+  }
+  std::filesystem::remove(getFilePath().c_str());
+}
+
+std::string ChunkFile::getFilePath() const
+{
+  return m_filepath;
 }
 
 void ChunkFile::_open()
 {
-  m_file = fopen(m_path.c_str(), "w+");
+  const auto& filepath = getFilePath();
+  m_file = fopen(filepath.c_str(), "w+");
 }
 
 void ChunkFile::_close()
@@ -32,8 +49,22 @@ void ChunkFile::close()
 
 size_t ChunkFile::_write(const char* buffer, size_t length)
 {
-  std::string m(buffer, length);
   auto writeSize = fwrite(buffer, sizeof(char), length, m_file);
   fflush(m_file);
+  if (m_timestampLock)
+  {
+    timestamp_file::writeCurrentTimestamp(m_dirpath, getId());
+  }
   return writeSize;
+}
+
+bool ChunkFile::canBeRemoved() const
+{
+  if (!m_timestampLock)
+  {
+    return true;
+  }
+  const auto& path = timestamp_file::getTimestampLockPath(m_dirpath, getId());
+  const bool exists = std::filesystem::exists(path);
+  return !exists;
 }

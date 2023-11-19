@@ -9,19 +9,11 @@ class Fifo
   public:
     Fifo(const std::string& path);
     virtual ~Fifo() = default;
-
+  
+    virtual int getFd() const = 0;
     virtual size_t read(void* buffer, size_t len) = 0;
-
-    void setUserData(void* userData = nullptr) {
-      m_userData = userData;
-    }
-
-    void* getUserData() {
-      return m_userData;
-    }
-
+    
   private:
-    void* m_userData;
     std::string m_path;
 };
 

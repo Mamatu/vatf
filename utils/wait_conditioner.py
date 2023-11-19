@@ -29,7 +29,7 @@ def start(**kwargs):
         command = command.format(log_path = chunks_dir_path)
         chunks_count = config.wait_for_regex.chunks_count
         lines_count = config.wait_for_regex.lines_count
-        cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count)
+        cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
         cmdringbuffer.start()
 
 def stop():
@@ -67,6 +67,31 @@ def _check_if_start_point_is_before_time(filepath, **kwargs):
         dt1 = datetime.strptime(start_point, date_format)
         return dt1 < dt
 
+
+def _pre_grep_callback(path):
+    _filename = os.path.basename(path)
+    _dir = os.path.dirname(path)
+    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
+    return os.path.exists(lock_file_path)
+
+_lock_files_timestamps = {}
+
+def _post_grep_callback(path):
+    global _lock_files_timestamps
+    _filename = os.path.basename(path)
+    _dir = os.path.dirname(path)
+    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
+    if os.path.exists(lock_file_path):
+        with open(lock_file_path, "rb") as f:
+            data = f.read()
+            saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+            timestamp = int.from_bytes(data, "little")
+            if saved_timestamp == timestamp:
+                os.remove(lock_file_path)
+                del _lock_files_timestamps[lock_file_path]
+            else:
+                _lock_files_timestamps[lock_file_path] = timestamp
+
 def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):
         import datetime
@@ -78,6 +103,7 @@ def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     date_format = config.wait_for_regex.date_format
     date_regex = config.wait_for_regex.date_regex
     from vatf.executor import search
+    handle_kwargs("", default_ouput = None)
     out = search.find(filepath = filepath, regex = date_regex, only_match = True)
     out = [o for o in out if strp(o.matched) > strp(start_point)]
     if len(out) == 0:
@@ -94,7 +120,10 @@ def _find(filepath, regex, **kwargs):
         if line is None:
             return []
         line_number = line.line_number
-    return search.find(filepath = filepath, regex = regex, from_line = line_number, support_directory = True)
+    callbacks = {}
+    if handle_kwargs("_wait_for_regex_command_file_ring_buffer", default_output = False, is_required = False, **kwargs):
+        callbacks = {"pre_grep_callback" : _pre_grep_callback, "post_grep_callback" : _post_grep_callback}
+    return search.find(filepath = filepath, regex = regex, from_line = line_number, support_directory = True, **callbacks)
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
@@ -347,4 +376,4 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
     start_point = _get_start_point(config)
     if start_point is not None:
         kwargs["start_point"] = start_point
-    return _wait_loop(regex, timeout, pause, chunks_dir_path, **kwargs)
+    return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)

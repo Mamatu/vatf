@@ -10,12 +10,13 @@ class FileRingBuffer:
     """
     Ringbuffer realized by files in the fs
     """
-    def __init__(self, fifo_file, chunks_dir, chunk_lines, chunks_count):
+    def __init__(self, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock = True):
         self.fifo_file = fifo_file
         self.chunks_dir = chunks_dir
         self.chunk_lines = chunk_lines
         self.chunks_count = chunks_count
         self.bg_process = None
+        self.timestamp_lock = 1 if timestamp_lock else 0
     def start(self):
         if not os.path.exists(self.fifo_file):
             shell.fg(f"mkfifo {self.fifo_file}")
@@ -25,11 +26,11 @@ class FileRingBuffer:
             pass
         vatf_path = Path(__file__).parents[1]
         file_ring_buffer_path = os.path.join(vatf_path, "bin/file_ring_buffer")
-        self.bg_process = shell.bg(f"{file_ring_buffer_path} -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines}")
+        self.bg_process = shell.bg(f"{file_ring_buffer_path} -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines} -t {self.timestamp_lock}")
     def stop(self):
         shell.kill(self.bg_process)
         if os.path.exists(self.fifo_file):
             shell.fg(f"rm {self.fifo_file}")
 
-def make(fifo_file, chunks_dir, chunk_lines, chunks_count):
-    return FileRingBuffer(fifo_file, chunks_dir, chunk_lines, chunks_count)
+def make(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock):
+    return FileRingBuffer(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock)

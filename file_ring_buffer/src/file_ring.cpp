@@ -5,42 +5,40 @@
 
 #include <array>
 #include <csignal>
+#include <filesystem>
 #include <stdio.h>
 #include <string.h>
 #include <list>
 #include <vector>
-#include <iostream>
 
-FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit) :
-        m_chunksDirPath(chunksDirPath), m_fifoPath(fifoPath), m_chunksCount(chunksCount), m_linesLimit(linesLimit)
+FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, bool timestampLock) :
+        m_chunksDirPath(chunksDirPath),
+        m_fifoPath(fifoPath),
+        m_chunksCount(chunksCount),
+        m_linesLimit(linesLimit),
+        m_timestampLock(timestampLock)
 {
 }
 
 void FileRing::start()
 {
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   auto fifo = createFifo(m_fifoPath);
+  int fd = fifo->getFd();
+  m_openCallbacks.call(fd);
 
   std::array<char, 1024> buffer;
   std::vector<char> bytes/*(1024 * bufferKB)*/;
 
   auto getPath = [this]() {
-    std::stringstream sstream;
-    sstream << m_chunksDirPath;
-    sstream << "/";
-    sstream << m_chunksCounter;
-    return sstream.str();
+    return std::make_pair(m_chunksDirPath, m_chunksCounter);
   };
 
-  auto chunk = createChunk(getPath());
+  std::shared_ptr<Chunk> chunk = nullptr;
   std::list<std::shared_ptr<Chunk>> chunks;
 
   auto removeOldChunks = [&chunks, this]()
   {
-    while (chunks.size() >= m_chunksCount)
-    {
-      chunks.pop_front();
-    }
+    FileRing::removeOldChunks(chunks, m_chunksCount);
   };
 
   while(!m_isStopped) 
@@ -49,21 +47,24 @@ void FileRing::start()
     ssize_t bufferSizeWithData = fifo->read(buffer.data(), buffer.size());
     std::stringstream msg;
     msg << "bufferSizeWithData is lower than zero: " << bufferSizeWithData;
-    error (!(bufferSizeWithData < 0), msg);
-    if (bufferSizeWithData == 0) { continue; }
-    
+
+    //error (!(bufferSizeWithData < 0), msg);
+    if (bufferSizeWithData <= 0) { continue; }
+
     ssize_t len = 0;
     while (bufferSizeWithData - len > 0)
     {
       if (!chunk)
       {
-        chunk = createChunk(getPath());  
+        const auto& pathId = getPath();
+        chunk = createChunk(pathId.first, pathId.second);
+        chunks.push_back(chunk);
       }
       len = len + chunk->write(buffer.data() + len, bufferSizeWithData - len);
       if (chunk->getCurrentLinesLimit() <= 0)
       {
         m_chunksCounter++;
-        chunks.push_back(std::move(chunk));
+        chunk = nullptr;
       }
     }
     memset(buffer.data(), 0, buffer.size());
@@ -96,9 +97,9 @@ size_t FileRing::getLinesLimit() const
   return m_linesLimit;
 }
 
-std::shared_ptr<Chunk> FileRing::createChunk(const std::string& path)
+std::shared_ptr<Chunk> FileRing::createChunk(const std::string& path, size_t id)
 {
-  return std::make_shared<ChunkFile>(path, m_linesLimit);
+  return std::make_shared<ChunkFile>(path, id, m_linesLimit, m_timestampLock);
 }
 
 std::unique_ptr<Fifo> FileRing::createFifo(const std::string& path)

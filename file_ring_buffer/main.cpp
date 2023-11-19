@@ -9,7 +9,6 @@
 
 #include <cstddef>
 #include <vector>
-#include <iostream>
 #include <thread>
 
 #include <sstream>
@@ -43,8 +42,9 @@ int main(int argc, char* argv[])
   int chunksCount = 0;
   int chunkLines = 0;
   size_t bufferKB = 1024;
+  bool timestampLock = false;
   int opt = -1;
-  while ((opt = getopt(argc, argv, "d:f:c:l:b:y")) != -1)
+  while ((opt = getopt(argc, argv, "d:f:c:l:t:")) != -1)
   {
     switch (opt)
     {
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
       case 'f': fifoPath = optarg; continue;
       case 'c': chunksCount = std::stoi(optarg); continue;
       case 'l': chunkLines = std::stoi(optarg); continue;
-      case 'b': bufferKB = std::stoi(optarg); continue;
+      case 't': timestampLock = static_cast<bool>(std::stoi(optarg)); continue;
       break;
     };
   }
@@ -61,9 +61,8 @@ int main(int argc, char* argv[])
   error(!chunksDirPath.empty(), "chunksDirPath cannot be empty"); 
   error(chunksCount != 0, "chunksCount cannot be 0"); 
   error(chunkLines != 0, "chunkLines cannot be 0"); 
-  std::cout << __FILE__ << " " << __LINE__ << " " << chunksDirPath << " " << fifoPath << " " << chunksCount << " " << chunkLines << std::endl;
 
-  auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines);
+  auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines, timestampLock);
   frSignal.m_fileRing = fileRing;
   fileRing->start();
   return 0;

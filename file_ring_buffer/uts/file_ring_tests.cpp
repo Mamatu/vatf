@@ -9,12 +9,16 @@
 
 #include <chrono>
 #include <thread>
+#include <list>
+#include <vector>
 
 #include "error.h"
 #include "file_ring.h"
 #include "fifo_linux.h"
 
 #include <filesystem>
+
+#include <condition_variable>
 
 namespace file_ring_tests {
 
@@ -26,7 +30,7 @@ class FileRingTests : public Test
 class ChunkMock : public Chunk
 {
   public:
-    ChunkMock(const std::string& path, size_t linesLimit) : Chunk(linesLimit), m_path(path) {}
+    ChunkMock(const std::string& path, size_t id, size_t linesLimit) : Chunk(id, linesLimit), m_path(path) {}
 
     Chunk::LenLines getLenToTransfer(const char* bytes, size_t length) const
     {
@@ -48,20 +52,26 @@ class ChunkMock : public Chunk
       return length;
     }
 
+    bool canBeRemoved() const override
+    {
+      return true;
+    }
+
     std::string m_path;
     std::string m_data;
 };
 
 using ChunkMocks = std::vector<std::shared_ptr<ChunkMock>>;
+using ChunkMocksList = std::list<std::shared_ptr<ChunkMock>>;
 
 class TestFileRing : public FileRing
 {
   public:
     TestFileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, const ChunkMocks& chunkMocks) : 
-      FileRing(chunksDirPath, fifoPath, chunksCount, linesLimit), m_chunkMocks(chunkMocks)
+      FileRing(chunksDirPath, fifoPath, chunksCount, linesLimit, false), m_chunkMocks(chunkMocks)
     {}
 
-    std::shared_ptr<Chunk> createChunk(const std::string& path) override
+    std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id) override
     {
       if (m_chunkMocks.size() <= m_chunkIdx)
       {
@@ -80,6 +90,11 @@ class TestFileRing : public FileRing
       return std::make_unique<FifoLinux>(path);
     }
 
+    template<typename Chunks>
+    static void removeOldChunks(Chunks& chunks, size_t chunksCount)
+    {
+      FileRing::removeOldChunks(chunks, chunksCount);
+    }
   private:
     ChunkMocks m_chunkMocks;
     size_t m_chunkIdx = 0;
@@ -89,9 +104,7 @@ class FifoWriter
 {
   public:
     FifoWriter(const std::string& path) : m_path(path)
-    {
-      error(0 == mkfifo(path.c_str(), 0666), "mkfifo is not 0");
-    }
+    {}
 
     void write(const std::string& data)
     {
@@ -138,6 +151,38 @@ std::string generateLines (size_t min, size_t max)
   return sstream.str();
 }
 
+TEST_F(FileRingTests, test_remove_old_chunks_1)
+{
+  size_t linesLimit = 100;
+
+  ChunkMocksList list;
+  list.push_back(std::make_shared<ChunkMock>("chunk0", 0, linesLimit));
+  list.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
+  list.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
+
+  TestFileRing::removeOldChunks(list, 2);
+  ASSERT_EQ(2, list.size());
+  auto it = list.begin();
+  EXPECT_EQ((*it)->getId(), 1);
+  it++;
+  EXPECT_EQ((*it)->getId(), 2);
+}
+
+TEST_F(FileRingTests, test_remove_old_chunks_2)
+{
+  size_t linesLimit = 100;
+
+  ChunkMocksList list;
+  list.push_back(std::make_shared<ChunkMock>("chunk0", 0, linesLimit));
+  list.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
+  list.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
+
+  TestFileRing::removeOldChunks(list, 1);
+  ASSERT_EQ(1, list.size());
+  auto it = list.begin();
+  EXPECT_EQ((*it)->getId(), 2);
+}
+
 TEST_F(FileRingTests, test_1)
 {
   using namespace std::chrono_literals;
@@ -150,17 +195,39 @@ TEST_F(FileRingTests, test_1)
   std::filesystem::remove_all(dir);
 
   ChunkMocks cmocks;
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", linesLimit)); 
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", 0, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
 
   fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
   ASSERT_TRUE(fs::create_directories(dir));
 
+  std::condition_variable cv;
+  std::mutex mutex;
+  bool opened = false;
+ 
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
+  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+    if (fd <= 0)
+    {
+      std::stringstream sstream;
+      sstream << "File descriptor is invalid. It is " << fd;
+      std::runtime_error(sstream.str());
+    }
+    {
+      std::unique_lock ul(mutex);
+      opened = true;
+    }
+    cv.notify_one();
+  });
+
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
+  {
+    std::unique_lock ul(mutex);
+    cv.wait(ul, [&opened]() {return opened;});
+  }
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(300);
 
@@ -188,18 +255,39 @@ TEST_F(FileRingTests, test_2)
   std::filesystem::remove_all(dir);
 
   ChunkMocks cmocks;
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", linesLimit)); 
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk3", linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", 0, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk3", 3, linesLimit));
 
   fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
   ASSERT_TRUE(fs::create_directories(dir));
 
+  std::condition_variable cv;
+  std::mutex mutex;
+  bool opened = false;
+
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
+  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+    if (fd <= 0)
+    {
+      std::stringstream sstream;
+      sstream << "File descriptor is invalid. It is " << fd;
+      std::runtime_error(sstream.str());
+    }
+    {
+      std::unique_lock ul(mutex);
+      opened = true;
+    }
+    cv.notify_one();
+  });
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
+  {
+    std::unique_lock ul(mutex);
+    cv.wait(ul, [&opened]() {return opened;});
+  }
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(400);
 
@@ -229,23 +317,45 @@ TEST_F(FileRingTests, test_3)
   std::filesystem::remove_all(dir);
 
   ChunkMocks cmocks;
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", linesLimit)); 
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk3", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk4", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk5", linesLimit)); 
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk6", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk7", linesLimit));
-  cmocks.push_back(std::make_shared<ChunkMock>("chunk8", linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk0", 0, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk3", 3, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk4", 4, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk5", 5, linesLimit)); 
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk6", 6, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk7", 7, linesLimit));
+  cmocks.push_back(std::make_shared<ChunkMock>("chunk8", 8, linesLimit));
 
   fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
   ASSERT_TRUE(fs::create_directories(dir));
 
+  std::condition_variable cv;
+  std::mutex mutex;
+  bool opened = false;
+
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
+  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+    if (fd <= 0)
+    {
+      std::stringstream sstream;
+      sstream << "File descriptor is invalid. It is " << fd;
+      std::runtime_error(sstream.str());
+    }
+    {
+      std::unique_lock ul(mutex);
+      opened = true;
+    }
+    cv.notify_one();
+  });
+
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
+  {
+    std::unique_lock ul(mutex);
+    cv.wait(ul, [&opened]() {return opened;});
+  }
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(900);
 

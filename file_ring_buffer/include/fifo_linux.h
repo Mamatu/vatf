@@ -10,8 +10,8 @@ class FifoLinux : public Fifo
 
     ~FifoLinux() override;
 
+    int getFd() const override;
     size_t read(void* buffer, size_t bufferLen) override;
-
   private:
     int fd = 0;
 };

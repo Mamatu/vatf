@@ -7,8 +7,11 @@
 class ChunkFile : public Chunk
 {
   public:
-    ChunkFile(const std::string& path, size_t linesLimit);
+    ChunkFile(const std::string& dirpath, size_t id, size_t linesLimit, bool timestampLock);
     virtual ~ChunkFile();
+
+    std::string getFilePath() const;
+    bool canBeRemoved() const override;
 
   protected:
     void _open() override;
@@ -21,8 +24,10 @@ class ChunkFile : public Chunk
   private:
     bool m_isClosed = false;
     void close();
-    std::string m_path;
+    std::string m_dirpath;
+    std::string m_filepath;
     FILE* m_file;
+    bool m_timestampLock = false;
 };
 
 #endif

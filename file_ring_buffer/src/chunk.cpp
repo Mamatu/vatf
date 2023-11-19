@@ -1,9 +1,11 @@
 #include "chunk.h"
 
+#include "timestamp_file_tools.h"
+
 #include <stdexcept>
 #include <stdio.h>
 
-Chunk::Chunk(size_t linesLimit) : m_linesLimit(linesLimit)
+Chunk::Chunk(size_t id, size_t linesLimit) : m_id(id), m_linesLimit(linesLimit)
 {}
 
 size_t Chunk::write(const char* bytes, size_t length)
@@ -60,6 +62,11 @@ Chunk::LenLines Chunk::getLenToTransfer(const char* bytes, size_t length) const
   lenLines.length = length;
   lenLines.lines = count;
   return lenLines;
+}
+
+size_t Chunk::getId() const
+{
+  return m_id;
 }
 
 int Chunk::getCurrentLinesLimit() const

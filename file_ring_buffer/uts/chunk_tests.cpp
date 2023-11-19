@@ -13,7 +13,7 @@ class ChunkTests : public Test
 class ChunkMock : public Chunk
 {
   public:
-    ChunkMock(size_t linesLimit) : Chunk(linesLimit) {}
+    ChunkMock(size_t id, size_t linesLimit) : Chunk(id, linesLimit) {}
 
     Chunk::LenLines getLenToTransfer(const char* bytes, size_t length) const
     {
@@ -25,13 +25,18 @@ class ChunkMock : public Chunk
       return Chunk::getCurrentLinesLimit();
     }
 
+    bool canBeRemoved() const override
+    {
+      return true;
+    }
+
     MOCK_METHOD(void, _open, (), (override));
     MOCK_METHOD(void, _close, (), (override));
     MOCK_METHOD(size_t, _write, (const char* buffer, size_t length), (override));
 };
 
 TEST_F(ChunkTests, emptyBuffer) {
-  ChunkMock chunk(1);
+  ChunkMock chunk(0, 1);
   std::string buffer = "";
   EXPECT_CALL(chunk, _write(_, _)).Times(1).WillOnce(Return(buffer.size()));
   EXPECT_CALL(chunk, _open()).Times(1);
@@ -42,7 +47,7 @@ TEST_F(ChunkTests, emptyBuffer) {
 }
 
 TEST_F(ChunkTests, 1lineBuffer) {
-  ChunkMock chunk(1);
+  ChunkMock chunk(0, 1);
   std::string buffer = "a\n";
   EXPECT_CALL(chunk, _write(_, _)).Times(1).WillOnce(Return(buffer.size()));
   EXPECT_CALL(chunk, _open()).Times(1);
@@ -53,7 +58,7 @@ TEST_F(ChunkTests, 1lineBuffer) {
 }
 
 TEST_F(ChunkTests, 3linesBuffer3linesLimit2buffers) {
-  ChunkMock chunk(3);
+  ChunkMock chunk(0, 3);
   std::string buffer1 = "a\nb\n";
   std::string buffer2 = "c\n";
   EXPECT_CALL(chunk, _write(buffer1.data(), buffer1.size())).Times(1).WillOnce(Return(buffer1.size()));
@@ -71,7 +76,7 @@ TEST_F(ChunkTests, 3linesBuffer3linesLimit2buffers) {
 }
 
 TEST_F(ChunkTests, 3linesBuffer2linesLimit) {
-  ChunkMock chunk(2);
+  ChunkMock chunk(0, 2);
   std::string subbuffer = "a\nb\n";
   std::string buffer = subbuffer + "c\n";
   EXPECT_CALL(chunk, _write(buffer.data(), subbuffer.size())).Times(1).WillOnce(Return(subbuffer.size()));

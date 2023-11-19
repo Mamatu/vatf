@@ -65,10 +65,10 @@ def test_libcmdringbuffer_1():
         with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
             chunks_dir = os.path.join(tempdir, "chunks")
             fifo_path = os.path.join(tempdir, "fifo")
-            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3)
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3, timestamp_lock = False)
             crb.start()
             generate_and_write_lines(fifo_path, 300)
-            time.sleep(1)
+            time.sleep(2)
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
             assert chunks_list == ["0", "1", "2"]
@@ -85,14 +85,16 @@ def test_libcmdringbuffer_2():
         with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
             chunks_dir = os.path.join(tempdir, "chunks")
             fifo_path = os.path.join(tempdir, "fifo")
-            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3)
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3, timestamp_lock = False)
             crb.start()
             generate_and_write_lines(fifo_path, 400)
-            time.sleep(1)
+            time.sleep(10)
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
-            assert chunks_list == ["1", "2", "3"]
-            crb.stop()
+            try:
+                assert chunks_list == ["1", "2", "3"]
+            finally:
+                crb.stop()
 
 def test_libcmdringbuffer_3():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
@@ -102,12 +104,11 @@ def test_libcmdringbuffer_3():
         with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
             chunks_dir = os.path.join(tempdir, "chunks")
             fifo_path = os.path.join(tempdir, "fifo")
-            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3)
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3, timestamp_lock = False)
             crb.start()
             generate_and_write_lines(fifo_path, 900)
-            time.sleep(1)
+            time.sleep(2)
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
-            time.sleep(60)
             assert chunks_list == ["6", "7", "8"]
             crb.stop()

@@ -7,11 +7,15 @@
 class Chunk
 {
   public:
-    Chunk(size_t linesLimit);
+    Chunk(size_t id, size_t linesLimit);
     virtual ~Chunk() = default;
     size_t write(const char* bytes, size_t length);
 
+    size_t getId() const;
     int getCurrentLinesLimit() const;
+
+    virtual bool canBeRemoved() const = 0;
+
   protected:
     void openIfClosed();
     void closeIf(size_t linesToTransfer);
@@ -30,7 +34,9 @@ class Chunk
   private:
     bool m_opened = false;
     size_t m_lineIdx = 0;
+    size_t m_id;
     size_t  m_linesLimit = 0;
+    std::string m_chunkTimestampLockName;
 };
 
 #endif
