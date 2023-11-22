@@ -5,6 +5,8 @@ __license__ = "Apache License"
 __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
+from vatf.utils import config_handler
+
 from contextlib import contextmanager
 from unittest.mock import patch
 
@@ -19,6 +21,9 @@ def mocked_now(now):
             return now
     with patch("datetime.datetime", MockedDatetime):
         yield
+
+def setup_function(function):
+    config_handler.init_configs(None)
 
 def test_log_copy():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
