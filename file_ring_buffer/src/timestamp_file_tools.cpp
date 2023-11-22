@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <sstream>
 
+#include <sys/file.h>
+
 namespace timestamp_file
 {
   class File final
@@ -35,6 +37,13 @@ namespace timestamp_file
     return path;
   }
 
+  Fd openfd(const std::filesystem::path& dirPath, size_t id, int mode)
+  {
+    const auto& tlPath = getTimestampLockPath(dirPath, id);
+    Fd fd(tlPath.c_str(), mode);
+    return fd;
+  }
+
   void write(const std::filesystem::path& dirPath, size_t id, size_t value)
   {
     std::stringstream sstream;
@@ -51,5 +60,27 @@ namespace timestamp_file
     const auto now = std::chrono::system_clock::now();
     size_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();   
     timestamp_file::write(dirPath, id, timestamp);
+  }
+
+  bool existsCurrentTimestampUnderLock(const std::filesystem::path& dirPath, size_t id)
+  {
+    const auto& tlPath = getTimestampLockPath(dirPath, id); 
+    auto fd = openfd(dirPath, id, O_RDONLY);
+    bool exists = true;
+    flockFile([&tlPath, &exists]() { exists = std::filesystem::exists(tlPath); }, fd.get());
+    return exists;
+  }
+
+  void writeCurrentTimestampUnderLock(const std::filesystem::path& dirPath, size_t id)
+  {
+    auto fd = openfd(dirPath, id, O_WRONLY);
+    flockFile([dirPath, id]() { writeCurrentTimestamp(dirPath, id); }, fd.get());
+  }
+
+  void removeTimestampFileUnderLock(const std::filesystem::path& dirPath, size_t id)
+  {
+    const auto& tlPath = getTimestampLockPath(dirPath, id); 
+    auto fd = openfd(dirPath, id, O_WRONLY);
+    flockFile([tlPath]() { std::filesystem::remove(tlPath); }, fd.get());
   }
 }

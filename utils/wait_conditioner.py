@@ -76,6 +76,8 @@ def _pre_grep_callback(path):
 
 _lock_files_timestamps = {}
 
+import fcntl
+
 def _post_grep_callback(path):
     global _lock_files_timestamps
     _filename = os.path.basename(path)
@@ -83,14 +85,18 @@ def _post_grep_callback(path):
     lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
     if os.path.exists(lock_file_path):
         with open(lock_file_path, "rb") as f:
-            data = f.read()
-            saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
-            timestamp = int.from_bytes(data, "little")
-            if saved_timestamp == timestamp:
-                os.remove(lock_file_path)
-                del _lock_files_timestamps[lock_file_path]
-            else:
-                _lock_files_timestamps[lock_file_path] = timestamp
+            while not fcntl.flock(f, fcntl.LOCK_EX): pass
+            try:
+                data = f.read()
+                saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+                timestamp = int.from_bytes(data, "little")
+                if saved_timestamp == timestamp:
+                    os.remove(lock_file_path)
+                    del _lock_files_timestamps[lock_file_path]
+                else:
+                    _lock_files_timestamps[lock_file_path] = timestamp
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
 
 def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):

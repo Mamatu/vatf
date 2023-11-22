@@ -18,7 +18,7 @@ ChunkFile::~ChunkFile()
   close();
   if (m_timestampLock)
   {
-    std::filesystem::remove(timestamp_file::getTimestampLockPath(m_dirpath, getId()));
+    timestamp_file::removeTimestampFileUnderLock(m_dirpath, getId());
   }
   std::filesystem::remove(getFilePath().c_str());
 }
@@ -53,7 +53,7 @@ size_t ChunkFile::_write(const char* buffer, size_t length)
   fflush(m_file);
   if (m_timestampLock)
   {
-    timestamp_file::writeCurrentTimestamp(m_dirpath, getId());
+    timestamp_file::writeCurrentTimestampUnderLock(m_dirpath, getId());
   }
   return writeSize;
 }
@@ -64,7 +64,6 @@ bool ChunkFile::canBeRemoved() const
   {
     return true;
   }
-  const auto& path = timestamp_file::getTimestampLockPath(m_dirpath, getId());
-  const bool exists = std::filesystem::exists(path);
+  const bool exists = timestamp_file::existsCurrentTimestampUnderLock(m_dirpath, getId());
   return !exists;
 }
