@@ -10,7 +10,8 @@ from vatf.utils.wait_types import RegexOperator
 from vatf.utils import libcmdringbuffer
 
 import os
-
+import sys
+import time
 cmdringbuffer = None
 
 def start(**kwargs):
@@ -78,25 +79,66 @@ _lock_files_timestamps = {}
 
 import fcntl
 
+def _flock(path):
+    def wrapper(func):
+        def flock_sync(path):
+            fd = None
+            while True:
+                try:
+                    fd = os.open(path, os.O_RDWR)
+                    print(f"DEBUG 89 fd = {fd}")
+                except (IOError, OSError) as e:
+                    print(f"DEBUG EXCEPT 91a {e}", file=sys.stderr)
+                    time.sleep(0.1)
+                try:
+                    print(f"DEBUG 94 fd = {fd}")
+                    ret = fcntl.flock(fd, fcntl.LOCK_EX)
+                    print(f"DEBUG 96 fd = {fd} ret = {ret}")
+                except (IOError, OSError) as e:
+                    print(f"DEBUG EXCEPT 91b {e}", file=sys.stderr)
+                    time.sleep(0.1)
+                else:
+                    print(f"DEBUG 94 {fd}", file=sys.stderr)
+                    return fd
+            if fd is None:
+                raise Exception("fd is None")
+        def inner_wrapper(*args, **kwargs):
+            print(f"DEBUG 85 {path}", file=sys.stderr)
+            fd = flock_sync(path)
+            print(f"DEBUG 86 {path} {fd}", file=sys.stderr)
+            try:
+                print(f"DEBUG 88 {path}", file=sys.stderr)
+                return func(*args, fd = fd, **kwargs)
+            finally:
+                print(f"DEBUG 100 {path} {fd}", file=sys.stderr)
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                    os.close(fd)
+                except (IOError, OSError) as e:
+                    pass
+                print(f"DEBUG 102 {path} {fd}", file=sys.stderr)
+        return inner_wrapper
+    return wrapper
+
 def _post_grep_callback(path):
     global _lock_files_timestamps
     _filename = os.path.basename(path)
     _dir = os.path.dirname(path)
     lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
+    @_flock(lock_file_path)
+    def handle_lock_file(lock_file_path, fd):
+        with os.fdopen(fd, "w+b") as f:
+            data = f.read()
+            saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+            timestamp = int.from_bytes(data, "little")
+            if saved_timestamp == timestamp:
+                zero = 0
+                f.write(zero.to_bytes(8, byteorder = 'little', signed = False))
+                del _lock_files_timestamps[lock_file_path]
+            else:
+                _lock_files_timestamps[lock_file_path] = timestamp
     if os.path.exists(lock_file_path):
-        with open(lock_file_path, "rb") as f:
-            while not fcntl.flock(f, fcntl.LOCK_EX): pass
-            try:
-                data = f.read()
-                saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
-                timestamp = int.from_bytes(data, "little")
-                if saved_timestamp == timestamp:
-                    os.remove(lock_file_path)
-                    del _lock_files_timestamps[lock_file_path]
-                else:
-                    _lock_files_timestamps[lock_file_path] = timestamp
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+        handle_lock_file(lock_file_path)
 
 def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):

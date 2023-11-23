@@ -1,7 +1,7 @@
-#ifndef FIFO_LINUX_H
-#define FIFO_LINUX_H
+#ifndef FIFO_LINUX_HPP
+#define FIFO_LINUX_HPP
 
-#include "fifo.h"
+#include "fifo.hpp"
 
 class FifoLinux : public Fifo
 {

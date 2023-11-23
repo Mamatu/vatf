@@ -1,5 +1,5 @@
-#ifndef CALLBACKS_H
-#define CALLBACKS_H
+#ifndef CALLBACKS_HPP
+#define CALLBACKS_HPP
 
 #include <functional>
 #include <mutex>

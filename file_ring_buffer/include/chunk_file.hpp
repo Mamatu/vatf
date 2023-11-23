@@ -1,7 +1,7 @@
-#ifndef CHUNK_FILE_H
-#define CHUNK_FILE_H
+#ifndef CHUNK_FILE_HPP
+#define CHUNK_FILE_HPP
 
-#include "chunk.h"
+#include "chunk.hpp"
 #include <stdio.h>
 
 class ChunkFile : public Chunk

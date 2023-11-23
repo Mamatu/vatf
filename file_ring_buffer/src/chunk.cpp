@@ -1,6 +1,6 @@
-#include "chunk.h"
+#include "chunk.hpp"
 
-#include "timestamp_file_tools.h"
+#include "timestamp_file_tools.hpp"
 
 #include <stdexcept>
 #include <stdio.h>

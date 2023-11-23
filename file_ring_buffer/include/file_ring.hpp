@@ -1,9 +1,9 @@
-#ifndef FILE_RING_H
-#define FILE_RING_H
+#ifndef FILE_RING_HPP
+#define FILE_RING_HPP
 
-#include "chunk.h"
-#include "fifo.h"
-#include "callbacks.h"
+#include "chunk.hpp"
+#include "fifo.hpp"
+#include "callbacks.hpp"
 
 #include <functional>
 #include <list>

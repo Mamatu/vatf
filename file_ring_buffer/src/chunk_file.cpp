@@ -1,5 +1,5 @@
-#include "chunk_file.h"
-#include "timestamp_file_tools.h"
+#include "chunk_file.hpp"
+#include "timestamp_file_tools.hpp"
 
 #include <filesystem>
 #include <sstream>
@@ -18,7 +18,7 @@ ChunkFile::~ChunkFile()
   close();
   if (m_timestampLock)
   {
-    timestamp_file::removeTimestampFileUnderLock(m_dirpath, getId());
+    //timestamp_file::removeTimestampFileUnderLock(m_dirpath, getId());
   }
   std::filesystem::remove(getFilePath().c_str());
 }
@@ -64,6 +64,6 @@ bool ChunkFile::canBeRemoved() const
   {
     return true;
   }
-  const bool exists = timestamp_file::existsCurrentTimestampUnderLock(m_dirpath, getId());
+  const bool exists = timestamp_file::isCurrentTimestampUnderLock(m_dirpath, getId());
   return !exists;
 }

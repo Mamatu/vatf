@@ -12,9 +12,9 @@
 #include <list>
 #include <vector>
 
-#include "error.h"
-#include "file_ring.h"
-#include "fifo_linux.h"
+#include "error.hpp"
+#include "file_ring.hpp"
+#include "fifo_linux.hpp"
 
 #include <filesystem>
 
@@ -124,7 +124,7 @@ class FifoWriter
       };
 
       Fd fd(m_path);
-      ::write(fd.m_fd, data.data(), data.size());
+      ::write(fd.m_fd, data.data(), data.size() * sizeof(char));
     }
 
     void writeLines (size_t count)
@@ -199,35 +199,32 @@ TEST_F(FileRingTests, test_1)
   cmocks.push_back(std::make_shared<ChunkMock>("chunk1", 1, linesLimit)); 
   cmocks.push_back(std::make_shared<ChunkMock>("chunk2", 2, linesLimit));
 
-  fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
+  fs::path fifoPath =  dir / "fifo";
   ASSERT_TRUE(fs::create_directories(dir));
+  ASSERT_TRUE(0 == mkfifo(fifoPath.c_str(), S_IWUSR | S_IRUSR));
+  fprintf(stderr, "%s %s %d %s\n", __FUNCTION__, __FILE__, __LINE__, fifoPath.c_str());
 
   std::condition_variable cv;
   std::mutex mutex;
   bool opened = false;
  
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-    if (fd <= 0)
-    {
-      std::stringstream sstream;
-      sstream << "File descriptor is invalid. It is " << fd;
-      std::runtime_error(sstream.str());
-    }
-    {
-      std::unique_lock ul(mutex);
-      opened = true;
-    }
-    cv.notify_one();
-  });
+  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+  //  ASSERT_TRUE(fd > 0);
+  //  {
+  //    std::unique_lock ul(mutex);
+  //    opened = true;
+  //  }
+  //  cv.notify_one();
+  //});
 
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
-  {
-    std::unique_lock ul(mutex);
-    cv.wait(ul, [&opened]() {return opened;});
-  }
+  //{
+  //  std::unique_lock ul(mutex);
+  //  cv.wait(ul, [&opened]() {return opened;});
+  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(300);
 
@@ -262,32 +259,33 @@ TEST_F(FileRingTests, test_2)
 
   fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
   ASSERT_TRUE(fs::create_directories(dir));
+  ASSERT_TRUE(0 == mkfifo(fifoPath.c_str(), S_IWUSR | S_IRUSR));
 
   std::condition_variable cv;
   std::mutex mutex;
   bool opened = false;
 
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-    if (fd <= 0)
-    {
-      std::stringstream sstream;
-      sstream << "File descriptor is invalid. It is " << fd;
-      std::runtime_error(sstream.str());
-    }
-    {
-      std::unique_lock ul(mutex);
-      opened = true;
-    }
-    cv.notify_one();
-  });
+  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+  //  if (fd <= 0)
+  //  {
+  //    std::stringstream sstream;
+  //    sstream << "File descriptor is invalid. It is " << fd;
+  //    std::runtime_error(sstream.str());
+  //  }
+  //  {
+  //    std::unique_lock ul(mutex);
+  //    opened = true;
+  //  }
+  //  cv.notify_one();
+  //});
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
-  {
-    std::unique_lock ul(mutex);
-    cv.wait(ul, [&opened]() {return opened;});
-  }
+  //{
+  //  std::unique_lock ul(mutex);
+  //  cv.wait(ul, [&opened]() {return opened;});
+  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(400);
 
@@ -329,33 +327,34 @@ TEST_F(FileRingTests, test_3)
 
   fs::path fifoPath =  tmp / "file_ring_buffer/fifo";
   ASSERT_TRUE(fs::create_directories(dir));
+  ASSERT_TRUE(0 == mkfifo(fifoPath.c_str(), S_IWUSR | S_IRUSR));
 
   std::condition_variable cv;
   std::mutex mutex;
   bool opened = false;
 
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-    if (fd <= 0)
-    {
-      std::stringstream sstream;
-      sstream << "File descriptor is invalid. It is " << fd;
-      std::runtime_error(sstream.str());
-    }
-    {
-      std::unique_lock ul(mutex);
-      opened = true;
-    }
-    cv.notify_one();
-  });
+  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
+  //  if (fd <= 0)
+  //  {
+  //    std::stringstream sstream;
+  //    sstream << "File descriptor is invalid. It is " << fd;
+  //    std::runtime_error(sstream.str());
+  //  }
+  //  {
+  //    std::unique_lock ul(mutex);
+  //    opened = true;
+  //  }
+  //  cv.notify_one();
+  //});
 
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
   thread.detach();
 
-  {
-    std::unique_lock ul(mutex);
-    cv.wait(ul, [&opened]() {return opened;});
-  }
+  //{
+  //  std::unique_lock ul(mutex);
+  //  cv.wait(ul, [&opened]() {return opened;});
+  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(900);
 

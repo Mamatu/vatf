@@ -1,5 +1,5 @@
-#ifndef CHUNK_H
-#define CHUNK_H
+#ifndef CHUNK_HPP
+#define CHUNK_HPP
 
 #include <string>
 #include <utility>

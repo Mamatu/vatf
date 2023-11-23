@@ -13,9 +13,9 @@
 
 #include <sstream>
 
-#include "chunk_file.h"
-#include "file_ring.h"
-#include "error.h"
+#include "chunk_file.hpp"
+#include "file_ring.hpp"
+#include "error.hpp"
 
 struct FileRingSignal
 {

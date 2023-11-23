@@ -8,7 +8,7 @@ build () {
   mkdir -p $FRB_PROJECT/build
   cd $FRB_PROJECT/build
   cmake -DCMAKE_INSTALL_PREFIX:PATH=$VATF_PWD/bin $VATF_PWD/file_ring_buffer
-  make
+  make -j4
   make install
   cd -
 }

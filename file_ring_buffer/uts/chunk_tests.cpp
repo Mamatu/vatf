@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "chunk.h"
+#include "chunk.hpp"
 
 namespace chunk_tests {
 
