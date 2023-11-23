@@ -1,2 +1,8 @@
 #!/bin/bash
-./make_frb.sh
+
+MODE=Release
+if [[ ! -z "$1" ]]; then
+  MODE=$1
+fi
+
+./build_frb.sh $MODE
