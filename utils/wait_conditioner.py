@@ -8,6 +8,7 @@ __maintainer__ = "Marcin Matula"
 from vatf.utils.wait_types import Label
 from vatf.utils.wait_types import RegexOperator
 from vatf.utils import libcmdringbuffer
+from vatf.utils.pylibcommons import libprint
 
 import os
 import sys
@@ -68,7 +69,6 @@ def _check_if_start_point_is_before_time(filepath, **kwargs):
         dt1 = datetime.strptime(start_point, date_format)
         return dt1 < dt
 
-
 def _pre_grep_callback(path):
     _filename = os.path.basename(path)
     _dir = os.path.dirname(path)
@@ -80,43 +80,35 @@ _lock_files_timestamps = {}
 import fcntl
 
 def _flock(path):
-    def wrapper(func):
-        def flock_sync(path):
-            fd = None
-            while True:
-                try:
-                    fd = os.open(path, os.O_RDWR)
-                    print(f"DEBUG 89 fd = {fd}")
-                except (IOError, OSError) as e:
-                    print(f"DEBUG EXCEPT 91a {e}", file=sys.stderr)
-                    time.sleep(0.1)
-                try:
-                    print(f"DEBUG 94 fd = {fd}")
-                    ret = fcntl.flock(fd, fcntl.LOCK_EX)
-                    print(f"DEBUG 96 fd = {fd} ret = {ret}")
-                except (IOError, OSError) as e:
-                    print(f"DEBUG EXCEPT 91b {e}", file=sys.stderr)
-                    time.sleep(0.1)
-                else:
-                    print(f"DEBUG 94 {fd}", file=sys.stderr)
-                    return fd
-            if fd is None:
-                raise Exception("fd is None")
-        def inner_wrapper(*args, **kwargs):
-            print(f"DEBUG 85 {path}", file=sys.stderr)
-            fd = flock_sync(path)
-            print(f"DEBUG 86 {path} {fd}", file=sys.stderr)
+    def flock_sync(path):
+        fd = None
+        while True:
             try:
-                print(f"DEBUG 88 {path}", file=sys.stderr)
+                fd = os.open(path, os.O_RDWR)
+            except (IOError, OSError) as e:
+                time.sleep(0.1)
+            try:
+                ret = fcntl.flock(fd, fcntl.LOCK_EX)
+            except (IOError, OSError) as e:
+                time.sleep(0.1)
+            else:
+                return fd
+        if fd is None:
+            raise Exception("fd is None")
+    def wrapper(func):
+        def inner_wrapper(*args, **kwargs):
+            fd = flock_sync(path)
+            try:
                 return func(*args, fd = fd, **kwargs)
             finally:
-                print(f"DEBUG 100 {path} {fd}", file=sys.stderr)
                 try:
                     fcntl.flock(fd, fcntl.LOCK_UN)
+                except (IOError, OSError) as e:
+                    print(f"Exception {e}")
+                try:
                     os.close(fd)
                 except (IOError, OSError) as e:
-                    pass
-                print(f"DEBUG 102 {path} {fd}", file=sys.stderr)
+                    print(f"Exception {e}")
         return inner_wrapper
     return wrapper
 
