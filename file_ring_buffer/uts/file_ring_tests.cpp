@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "error.hpp"
+#include "thrower.hpp"
 #include "file_ring.hpp"
 #include "fifo_linux.hpp"
 
@@ -124,7 +125,11 @@ class FifoWriter
       };
 
       Fd fd(m_path);
-      ::write(fd.m_fd, data.data(), data.size() * sizeof(char));
+      ssize_t size = ::write(fd.m_fd, data.data(), data.size() * sizeof(char));
+      throw_exception_ifnot(size == data.size() * sizeof(char), [size, &data](auto& in)
+      {
+        in << __FILE__ << " " << __FUNCTION__ << " size = " << size << " data.size = " << data.size();
+      });
     }
 
     void writeLines (size_t count)

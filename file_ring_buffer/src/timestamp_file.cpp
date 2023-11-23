@@ -118,7 +118,6 @@ namespace timestamp_file
       public:
         Flock(int fd) : m_fd(fd)
         {
-          fprintf(stderr, "%s %s %d fd = %d\n",__FUNCTION__, __FILE__, __LINE__, fd);
           while (true)
           {
             auto ret = flock(m_fd, LOCK_EX);
@@ -130,15 +129,12 @@ namespace timestamp_file
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(5ms);
           }
-          fprintf(stderr, "%s %s %d fd = %d\n",__FUNCTION__, __FILE__, __LINE__, fd);
         }
 
         ~Flock()
         {
-          fprintf(stderr, "%s %s %d fd = %d\n",__FUNCTION__, __FILE__, __LINE__,m_fd);
-          //flock(m_fd, LOCK_UN);
+          flock(m_fd, LOCK_UN);
           close(m_fd);
-          fprintf(stderr, "%s %s %d fd = %d\n",__FUNCTION__, __FILE__, __LINE__,m_fd);
         }
 
       private:
@@ -172,13 +168,11 @@ namespace timestamp_file
       try
       {
         fd = std::make_shared<Fd>(tlPath.c_str(), mode);
-        fprintf(stderr, "%s %s %d fd = %d path = %s mode = %d\n",__FUNCTION__, __FILE__, __LINE__, fd->getFd(), tlPath.c_str(), mode);
         return fd;
       } catch (const std::runtime_error& error)
       {
         if (!isFirstInvocation && waitForOpen)
         {
-          fprintf(stderr, "EXCEPTION %s %s %d path = %s, mode = %d\n", __FUNCTION__, __FILE__, __LINE__, tlPath.c_str(), mode);
           isFirstInvocation = true;
         }
         if (!waitForOpen)
@@ -212,7 +206,6 @@ namespace timestamp_file
   bool isCurrentTimestampUnderLock(const std::filesystem::path& dirPath, size_t id)
   {
     const auto& tlPath = getTimestampLockPath(dirPath, id); 
-    fprintf(stderr, "%s %s %d %s\n",__FUNCTION__, __FILE__, __LINE__, tlPath.c_str());
     std::shared_ptr<Fd> fd = nullptr;
     try
     {
@@ -222,7 +215,6 @@ namespace timestamp_file
       return false;
     }
     bool exists = false;
-    fprintf(stderr, "%s %s %d\n",__FUNCTION__, __FILE__, __LINE__);
     if (fd)
     {
       flockFile([&tlPath, &exists](int fd)
@@ -238,30 +230,22 @@ namespace timestamp_file
         }
       }, fd);
     }
-    fprintf(stderr, "%s %s %d exists = %d \n",__FUNCTION__, __FILE__, __LINE__, exists);
     return exists;
   }
 
   void writeCurrentTimestampUnderLock(const std::filesystem::path& dirPath, size_t id)
   {
     const auto& tlPath = getTimestampLockPath(dirPath, id); 
-    fprintf(stderr, "%s %s %d %s\n",__FUNCTION__, __FILE__, __LINE__, tlPath.c_str());
     auto fd = openfd(dirPath, id, O_RDWR | O_CREAT, true);
-    fprintf(stderr, "%s %s %d fd = %d\n",__FUNCTION__, __FILE__, __LINE__, fd->getFd());
     flockFile([](int fd) { writeCurrentTimestamp(fd); }, fd);
-    fprintf(stderr, "%s %s %d\n",__FUNCTION__, __FILE__, __LINE__);
   }
 
   void removeTimestampFileUnderLock(const std::filesystem::path& dirPath, size_t id)
   {
     const auto& tlPath = getTimestampLockPath(dirPath, id); 
-    fprintf(stderr, "%s %s %d %s\n",__FUNCTION__, __FILE__, __LINE__, tlPath.c_str());
     auto fd = openfd(dirPath, id, O_RDWR | O_CREAT, true);
-    fprintf(stderr, "%s %s %d\n",__FUNCTION__, __FILE__, __LINE__);
     flockFile([tlPath](int) {
-                    fprintf(stderr, "REMOVE %s %s %d %s\n",__FUNCTION__, __FILE__, __LINE__, tlPath.c_str());
-                    std::filesystem::remove(tlPath);
-                    }, fd);
-    fprintf(stderr, "%s %s %d\n",__FUNCTION__, __FILE__, __LINE__);
+      std::filesystem::remove(tlPath);
+    }, fd);
   }
 }
