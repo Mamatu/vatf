@@ -18,7 +18,7 @@ ChunkFile::~ChunkFile()
   close();
   if (m_timestampLock)
   {
-    //timestamp_file::removeTimestampFileUnderLock(m_dirpath, getId());
+    timestamp_file::removeTimestampFileUnderLock(m_dirpath, getId());
   }
   std::filesystem::remove(getFilePath().c_str());
 }
