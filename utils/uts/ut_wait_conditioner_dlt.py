@@ -106,7 +106,63 @@ def _test_wrapper(test_func):
 #    wait.stop()
 
 @_test_wrapper
-def test_libcmdringbuffer_1(writer, tempdir):
+def test_libcmdringbuffer_lines_count_1_chunks_count_1(writer, tempdir):
+    from vatf.utils import lib_log_snapshot
+    from vatf.utils import os_proxy
+    writer_t = None
+    chunks_dir = os.path.join(tempdir.name, "chunks")
+    try:
+        import shutil
+        shutil.rmtree(chunks_dir)
+    except FileNotFoundError:
+        pass
+    config = {
+        "wait_for_regex.command" : f"{get_receive_path()} -a 127.0.0.1",
+        "wait_for_regex.is_file_ring_buffer" : True,
+        "wait_for_regex.lines_count" : 1,
+        "wait_for_regex.chunks_count" : 1,
+        "wait_for_regex.workspace" : f"{tempdir.name}",
+        "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
+        "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    }
+    wait.start(config = config)
+    writer_t = writer.write_in_async_loop(pre_callback = generate_line)
+    chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
+    try:
+        assert wait.wait_for_regex("line_3", timeout = 8, config = config)
+    finally:
+        wait.stop()
+
+@_test_wrapper
+def test_libcmdringbuffer_lines_count_1_chunks_count_2(writer, tempdir):
+    from vatf.utils import lib_log_snapshot
+    from vatf.utils import os_proxy
+    writer_t = None
+    chunks_dir = os.path.join(tempdir.name, "chunks")
+    try:
+        import shutil
+        shutil.rmtree(chunks_dir)
+    except FileNotFoundError:
+        pass
+    config = {
+        "wait_for_regex.command" : f"{get_receive_path()} -a 127.0.0.1",
+        "wait_for_regex.is_file_ring_buffer" : True,
+        "wait_for_regex.lines_count" : 1,
+        "wait_for_regex.chunks_count" : 2,
+        "wait_for_regex.workspace" : f"{tempdir.name}",
+        "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
+        "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    }
+    wait.start(config = config)
+    writer_t = writer.write_in_async_loop(pre_callback = generate_line)
+    chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
+    try:
+        assert wait.wait_for_regex("line_1", timeout = 5, config = config)
+    finally:
+        wait.stop()
+
+@_test_wrapper
+def test_libcmdringbuffer_lines_count_2_chunks_count_2_match_line_10(writer, tempdir):
     from vatf.utils import lib_log_snapshot
     from vatf.utils import os_proxy
     writer_t = None
@@ -134,7 +190,7 @@ def test_libcmdringbuffer_1(writer, tempdir):
         wait.stop()
 
 @_test_wrapper
-def test_libcmdringbuffer_2(writer, tempdir):
+def test_libcmdringbuffer_lines_count_2_chunks_count_2_match_line_3(writer, tempdir):
     from vatf.utils import lib_log_snapshot
     from vatf.utils import os_proxy
     writer_t = None
@@ -157,6 +213,34 @@ def test_libcmdringbuffer_2(writer, tempdir):
     writer.write_in_async_loop(pre_callback = generate_line)
     chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
     try:
-        assert wait.wait_for_regex("line_3", timeout = 20, config = config)
+        assert wait.wait_for_regex("line_3", timeout = 8, config = config)
+    finally:
+        wait.stop()
+
+@_test_wrapper
+def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5(writer, tempdir):
+    from vatf.utils import lib_log_snapshot
+    from vatf.utils import os_proxy
+    writer_t = None
+    chunks_dir = os.path.join(tempdir.name, "chunks")
+    try:
+        import shutil
+        shutil.rmtree(chunks_dir)
+    except FileNotFoundError:
+        pass
+    config = {
+        "wait_for_regex.command" : f"{get_receive_path()} -a 127.0.0.1",
+        "wait_for_regex.is_file_ring_buffer" : True,
+        "wait_for_regex.lines_count" : 3,
+        "wait_for_regex.chunks_count" : 3,
+        "wait_for_regex.workspace" : f"{tempdir.name}",
+        "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
+        "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    }
+    wait.start(config = config)
+    writer.write_in_async_loop(pre_callback = generate_line)
+    chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
+    try:
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config)
     finally:
         wait.stop()
