@@ -35,6 +35,7 @@ def start(**kwargs):
         cmdringbuffer.start()
 
 def stop():
+    global cmdringbuffer
     if cmdringbuffer is not None:
         cmdringbuffer.stop()
 
@@ -76,10 +77,9 @@ def _pre_grep_callback(path):
     return os.path.exists(lock_file_path)
 
 _lock_files_timestamps = {}
-
 import fcntl
 
-def _flock(path):
+def _flock(path, mode):
     def flock_sync(path):
         fd = None
         while True:
@@ -87,28 +87,33 @@ def _flock(path):
                 fd = os.open(path, os.O_RDWR)
             except (IOError, OSError) as e:
                 time.sleep(0.1)
+                raise e
             try:
-                ret = fcntl.flock(fd, fcntl.LOCK_EX)
+                fcntl.flock(fd, fcntl.LOCK_EX)
             except (IOError, OSError) as e:
                 time.sleep(0.1)
+                raise e
             else:
                 return fd
         if fd is None:
             raise Exception("fd is None")
+    def unlock(fd):
+        try:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        except (IOError, OSError) as e:
+            raise e
+        try:
+            os.close(fd)
+        except (IOError, OSError) as e:
+            raise e
     def wrapper(func):
         def inner_wrapper(*args, **kwargs):
             fd = flock_sync(path)
             try:
-                return func(*args, fd = fd, **kwargs)
+                with os.fdopen(fd, mode, closefd = False) as file:
+                    return func(*args, file = file, **kwargs)
             finally:
-                try:
-                    fcntl.flock(fd, fcntl.LOCK_UN)
-                except (IOError, OSError) as e:
-                    print(f"Exception {e}")
-                try:
-                    os.close(fd)
-                except (IOError, OSError) as e:
-                    print(f"Exception {e}")
+                unlock(fd)
         return inner_wrapper
     return wrapper
 
@@ -117,18 +122,17 @@ def _post_grep_callback(path):
     _filename = os.path.basename(path)
     _dir = os.path.dirname(path)
     lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
-    @_flock(lock_file_path)
-    def handle_lock_file(lock_file_path, fd):
-        with os.fdopen(fd, "w+b") as f:
-            data = f.read()
-            saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
-            timestamp = int.from_bytes(data, "little")
-            if saved_timestamp == timestamp:
-                zero = 0
-                f.write(zero.to_bytes(8, byteorder = 'little', signed = False))
-                del _lock_files_timestamps[lock_file_path]
-            else:
-                _lock_files_timestamps[lock_file_path] = timestamp
+    @_flock(lock_file_path, "w+b")
+    def handle_lock_file(lock_file_path, file):
+        data = file.read()
+        saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+        timestamp = int.from_bytes(data, "little")
+        if saved_timestamp == timestamp:
+            zero = 0
+            file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
+            del _lock_files_timestamps[lock_file_path]
+        else:
+            _lock_files_timestamps[lock_file_path] = timestamp
     if os.path.exists(lock_file_path):
         handle_lock_file(lock_file_path)
 
