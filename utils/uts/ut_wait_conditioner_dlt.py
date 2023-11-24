@@ -43,7 +43,8 @@ def mocked_now(now):
 _dlt_daemon = None
 
 def setup_function():
-    global _dlt_daemon
+    global _dlt_daemon, _written_lines_count
+    _written_lines_count = 0
     _dlt_daemon = dlt.DltDaemon(get_project_path())
     _dlt_daemon.start()
 
@@ -128,7 +129,7 @@ def test_libcmdringbuffer_1(writer, tempdir):
     writer_t = writer.write_in_async_loop(pre_callback = generate_line)
     chunks_dir_1 = os.listdir(os.path.join(tempdir.name, "chunks"))
     try:
-        assert wait.wait_for_regex("line_10", timeout = 25, config = config)
+        assert wait.wait_for_regex("line_10", timeout = 20, config = config)
     finally:
         wait.stop()
 
