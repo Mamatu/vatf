@@ -70,52 +70,34 @@ def _check_if_start_point_is_before_time(filepath, **kwargs):
         dt1 = datetime.strptime(start_point, date_format)
         return dt1 < dt
 
+
+def _encapsulate_grep_callback(process, path):
+    _filename = os.path.basename(path)
+    _dir = os.path.dirname(path)
+    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
+    @_flock(lock_file_path, "w+b")
+    def execute_process(lock_file_path, file):
+        process()
+        data = file.read()
+        saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+        timestamp = int.from_bytes(data, "little")
+        if saved_timestamp == timestamp:
+            zero = 0
+            file.seek(0, 0)
+            file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
+            file.seek(0, 0)
+            data = file.read()
+            assert int.from_bytes(data,'little') == zero
+            del _lock_files_timestamps[lock_file_path]
+        else:
+            _lock_files_timestamps[lock_file_path] = timestamp
+    execute_process(lock_file_path)
+
 def _pre_grep_callback(path):
     _filename = os.path.basename(path)
     _dir = os.path.dirname(path)
     lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
     return os.path.exists(lock_file_path)
-
-_lock_files_timestamps = {}
-import fcntl
-
-def _flock(path, mode):
-    def flock_sync(path):
-        fd = None
-        while True:
-            try:
-                fd = os.open(path, os.O_RDWR)
-            except (IOError, OSError) as e:
-                time.sleep(0.1)
-                raise e
-            try:
-                fcntl.flock(fd, fcntl.LOCK_EX)
-            except (IOError, OSError) as e:
-                time.sleep(0.1)
-                raise e
-            else:
-                return fd
-        if fd is None:
-            raise Exception("fd is None")
-    def unlock(fd):
-        try:
-            fcntl.flock(fd, fcntl.LOCK_UN)
-        except (IOError, OSError) as e:
-            raise e
-        try:
-            os.close(fd)
-        except (IOError, OSError) as e:
-            raise e
-    def wrapper(func):
-        def inner_wrapper(*args, **kwargs):
-            fd = flock_sync(path)
-            try:
-                with os.fdopen(fd, mode, closefd = False) as file:
-                    return func(*args, file = file, **kwargs)
-            finally:
-                unlock(fd)
-        return inner_wrapper
-    return wrapper
 
 def _post_grep_callback(path):
     global _lock_files_timestamps
@@ -129,7 +111,11 @@ def _post_grep_callback(path):
         timestamp = int.from_bytes(data, "little")
         if saved_timestamp == timestamp:
             zero = 0
+            file.seek(0, 0)
             file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
+            file.seek(0, 0)
+            data = file.read()
+            assert int.from_bytes(data,'little') == zero
             del _lock_files_timestamps[lock_file_path]
         else:
             _lock_files_timestamps[lock_file_path] = timestamp
@@ -166,7 +152,7 @@ def _find(filepath, regex, **kwargs):
         line_number = line.line_number
     callbacks = {}
     if handle_kwargs("_wait_for_regex_command_file_ring_buffer", default_output = False, is_required = False, **kwargs):
-        callbacks = {"pre_grep_callback" : _pre_grep_callback, "post_grep_callback" : _post_grep_callback}
+        callbacks = {"encapsulate_grep_callback" : _encapsulate_grep_callback}
     return search.find(filepath = filepath, regex = regex, from_line = line_number, support_directory = True, **callbacks)
 
 def _get_operators(regex):
@@ -421,3 +407,48 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
     if start_point is not None:
         kwargs["start_point"] = start_point
     return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
+
+_lock_files_timestamps = {}
+import fcntl
+
+def _flock(path, mode):
+    def flock_sync(path):
+        if not os.path.exists(path):
+            return None
+        fd = None
+        while True:
+            try:
+                fd = os.open(path, os.O_RDWR)
+            except (IOError, OSError) as e:
+                time.sleep(0.1)
+                raise e
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX)
+            except (IOError, OSError) as e:
+                time.sleep(0.1)
+                raise e
+            else:
+                return fd
+        if fd is None:
+            raise Exception("fd is None")
+    def unlock(fd):
+        if fd is None: return
+        try:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        except (IOError, OSError) as e:
+            raise e
+        try:
+            os.close(fd)
+        except (IOError, OSError) as e:
+            raise e
+    def wrapper(func):
+        def inner_wrapper(*args, **kwargs):
+            fd = flock_sync(path)
+            try:
+                if fd is not None:
+                    with os.fdopen(fd, mode, closefd = False) as file:
+                        return func(*args, file = file, **kwargs)
+            finally:
+                unlock(fd)
+        return inner_wrapper
+    return wrapper
