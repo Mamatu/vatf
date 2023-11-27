@@ -14,9 +14,10 @@ import os
 import sys
 import time
 cmdringbuffer = None
+log_thread = None
 
 def start(**kwargs):
-    global cmdringbuffer
+    global cmdringbuffer, log_thread
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     command = config.wait_for_regex.command
@@ -33,11 +34,15 @@ def start(**kwargs):
         lines_count = config.wait_for_regex.lines_count
         cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
         cmdringbuffer.start()
+        log_thread = createRemoveLogThread(chunks_dir_path, config, _is_paused)
+        log_thread.start()
 
 def stop():
-    global cmdringbuffer
+    global cmdringbuffer, log_thread
     if cmdringbuffer is not None:
         cmdringbuffer.stop()
+    if log_thread is not None:
+        log_thread.stop()
 
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
@@ -51,6 +56,16 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
     else:
         raise Exception("Lack of wait_for_regex attributes: command or path")
+
+__is_paused = False
+
+def _set_paused(paused):
+    global __is_paused
+    __is_paused = paused
+
+def _is_paused():
+    global __is_paused
+    return __is_paused
 
 def _check_if_start_point_is_before_time(filepath, **kwargs):
     from vatf.utils.kw_utils import handle_kwargs
@@ -70,57 +85,91 @@ def _check_if_start_point_is_before_time(filepath, **kwargs):
         dt1 = datetime.strptime(start_point, date_format)
         return dt1 < dt
 
+def _read_timestamp_from_file(file):
+    def read_timestamp(file):
+        data = file.read()
+        return int.from_bytes(data, "little")
+    if isinstance(file, str):
+        @_flock(file, "w+b")
+        def read_timestamp_flock(path, file):
+            return read_timestamp(file)
+        o = read_timestamp_flock(file)
+        return o
+    if hasattr(file, "read") and callable(file.read):
+        o = read_timestamp(file)
+        return o
+    raise Exception("Not supported type in file")
 
-def _encapsulate_grep_callback(process, path):
-    _filename = os.path.basename(path)
-    _dir = os.path.dirname(path)
-    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
+def __split(path):
+    if isinstance(path, str):
+        _filename = os.path.basename(path)
+        _dir = os.path.dirname(path)
+        return (_dir, _filename)
+
+def get_timestamp_lock_file_path(path):
+    if isinstance(path, str):
+        _dir, _filename = __split(path)
+        try:
+            _filename = int(_filename)
+        except ValueError:
+            return None
+        return os.path.join(_dir, f"{_filename}.timestamp.lock")
+    if isinstance(path, int):
+        return f"{path}.timestamp.lock"
+
+def get_next_timestamp_lock_file_path(path):
+    if isinstance(path, str):
+        _dir, _filename = __split(path)
+        try:
+            _filename = int(_filename)
+        except ValueError:
+            return None
+        _filename = _filename + 1
+        return os.path.join(_dir, f"{_filename}.timestamp.lock")
+    if isinstance(path, int):
+        return f"{path + 1}.timestamp.lock"
+
+def _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
+    if timestamp2 is None:
+        return True
+    return not (timestamp1 > wait_for_regex_epoch_timestamp and timestamp2 > wait_for_regex_epoch_timestamp)
+
+def _disable_lock_file(file):
+    zero = 0
+    file.seek(0, 0)
+    file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
+
+def _debug_check_if_timestamp_is_zero(file):
+    zero = 0
+    file.seek(0, 0)
+    data = file.read()
+    assert int.from_bytes(data,'little') == zero
+
+def _encapsulate_grep_callback(process, path, wait_for_regex_epoch_timestamp):
+    if wait_for_regex_epoch_timestamp is None:
+        raise Exception("Arg wait_for_regex_epoch_timestamp cannot be none")
+    lock_file_path = get_timestamp_lock_file_path(path)
+    lock_file_path_next = get_next_timestamp_lock_file_path(path)
+    if lock_file_path is None or lock_file_path_next is None:
+        return
     @_flock(lock_file_path, "w+b")
     def execute_process(lock_file_path, file):
-        process()
-        data = file.read()
-        saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
-        timestamp = int.from_bytes(data, "little")
-        if saved_timestamp == timestamp:
-            zero = 0
-            file.seek(0, 0)
-            file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
-            file.seek(0, 0)
-            data = file.read()
-            assert int.from_bytes(data,'little') == zero
+        timestamp1 = _read_timestamp_from_file(file)
+        timestamp2 = _read_timestamp_from_file(lock_file_path_next)
+        if _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
+            process()
+        else:
+            _disable_lock_file(file)
+            if lock_file_path in _lock_files_timestamps:
+                del _lock_files_timestamps[lock_file_path]
+        _dict_timestamp = _lock_files_timestamps.get(lock_file_path, None)
+        if _dict_timestamp == timestamp1:
+            _disable_lock_file(file)
+            _debug_check_if_timestamp_is_zero(file)
             del _lock_files_timestamps[lock_file_path]
         else:
-            _lock_files_timestamps[lock_file_path] = timestamp
+            _lock_files_timestamps[lock_file_path] = timestamp1
     execute_process(lock_file_path)
-
-def _pre_grep_callback(path):
-    _filename = os.path.basename(path)
-    _dir = os.path.dirname(path)
-    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
-    return os.path.exists(lock_file_path)
-
-def _post_grep_callback(path):
-    global _lock_files_timestamps
-    _filename = os.path.basename(path)
-    _dir = os.path.dirname(path)
-    lock_file_path = os.path.join(_dir, f"{_filename}.timestamp.lock")
-    @_flock(lock_file_path, "w+b")
-    def handle_lock_file(lock_file_path, file):
-        data = file.read()
-        saved_timestamp = _lock_files_timestamps.get(lock_file_path, None)
-        timestamp = int.from_bytes(data, "little")
-        if saved_timestamp == timestamp:
-            zero = 0
-            file.seek(0, 0)
-            file.write(zero.to_bytes(8, byteorder = 'little', signed = False))
-            file.seek(0, 0)
-            data = file.read()
-            assert int.from_bytes(data,'little') == zero
-            del _lock_files_timestamps[lock_file_path]
-        else:
-            _lock_files_timestamps[lock_file_path] = timestamp
-    if os.path.exists(lock_file_path):
-        handle_lock_file(lock_file_path)
 
 def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):
@@ -151,8 +200,11 @@ def _find(filepath, regex, **kwargs):
             return []
         line_number = line.line_number
     callbacks = {}
+    def encapsulate_grep_callback(process, path):
+        wait_for_regex_epoch_timestamp = handle_kwargs('wait_for_regex_epoch_timestamp', default_output = None, is_required = True, **kwargs)
+        _encapsulate_grep_callback(process, path, wait_for_regex_epoch_timestamp = wait_for_regex_epoch_timestamp)
     if handle_kwargs("_wait_for_regex_command_file_ring_buffer", default_output = False, is_required = False, **kwargs):
-        callbacks = {"encapsulate_grep_callback" : _encapsulate_grep_callback}
+        callbacks = {"encapsulate_grep_callback" : encapsulate_grep_callback}
     return search.find(filepath = filepath, regex = regex, from_line = line_number, support_directory = True, **callbacks)
 
 def _get_operators(regex):
@@ -397,16 +449,22 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)
 
 def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
-    from vatf.utils import config_handler
-    config = config_handler.get_config(**kwargs)
-    timestamp_format = config.wait_for_regex.date_format
-    timestamp_regex = config.wait_for_regex.date_regex
-    workspace = config.wait_for_regex.workspace
-    chunks_dir_path = f"{workspace}/chunks"
-    start_point = _get_start_point(config)
-    if start_point is not None:
-        kwargs["start_point"] = start_point
-    return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
+    _set_paused(True)
+    try:
+        from vatf.utils import config_handler
+        wait_for_regex_epoch_timestamp = time.time()
+        config = config_handler.get_config(**kwargs)
+        timestamp_format = config.wait_for_regex.date_format
+        timestamp_regex = config.wait_for_regex.date_regex
+        workspace = config.wait_for_regex.workspace
+        chunks_dir_path = f"{workspace}/chunks"
+        start_point = _get_start_point(config)
+        if start_point is not None:
+            kwargs["start_point"] = start_point
+        kwargs["wait_for_regex_epoch_timestamp"] = wait_for_regex_epoch_timestamp
+        return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
+    finally:
+        _set_paused(False)
 
 _lock_files_timestamps = {}
 import fcntl
@@ -452,3 +510,33 @@ def _flock(path, mode):
                 unlock(fd)
         return inner_wrapper
     return wrapper
+
+from vatf.utils.thread_with_stop import Thread as ThreadStop
+from vatf.utils import loop
+from vatf.utils.kw_utils import handle_kwargs
+from vatf.utils.pylibcommons import libgrep
+
+def createRemoveLogThread(chunks_dir_path, config, is_paused):
+    def target(is_stopped, chunks_dir_path, config, is_paused):
+        chunks_count = config.wait_for_regex.chunks_count
+        def filter_chunk(chunk):
+            try:
+                chunk = int(chunk)
+                return True
+            except ValueError:
+                return False
+        def remove_logs():
+            if not is_paused():
+                try:
+                    chunks_list = libgrep.get_directory_content(chunks_dir_path)
+                except FileNotFoundError:
+                    return True
+                chunks_list = list(filter(lambda c: filter_chunk(c), chunks_list))
+                for chunk in chunks_list[:-chunks_count]:
+                    chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
+                    chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
+                    _disable_lock_file(chunk_lock_file_1)
+            return is_stopped()
+        assert loop.wait_until_true(remove_logs, pause = 5, timeout = -1)
+    kwargs = {"chunks_dir_path" : chunks_dir_path, "config" : config, "is_paused" : is_paused}
+    return ThreadStop(target, [], kwargs)
