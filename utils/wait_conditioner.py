@@ -511,8 +511,10 @@ def createCleanupLogThread(chunks_dir_path, config):
         nonlocal chunks_dir_path, config
         chunks_count = config.wait_for_regex.chunks_count
         def filter_chunk(chunk):
+            _filename = os.path.basename(chunk)
+            _dir = os.path.dirname(chunk)
             try:
-                chunk = int(chunk)
+                _filename = int(_filename)
                 return True
             except ValueError:
                 return False
@@ -524,7 +526,17 @@ def createCleanupLogThread(chunks_dir_path, config):
         for chunk in chunks_list[:-chunks_count]:
             chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
             chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
-            _disable_lock_file(chunk_lock_file_1)
-        return pause_thread_control.is_stopped()
-    thread = loop.async_loop(callback, 5, -1)
+            print(chunk_lock_file_1)
+            @_flock(chunk_lock_file_1, "w+b")
+            def disable_lock_file_(path, file):
+                _disable_lock_file(file)
+            disable_lock_file_(chunk_lock_file_1)
+        o = pause_thread_control.is_stopped()
+        print(o)
+    _break = 5
+    try:
+        _break = config.wait_for_regex.clean_break
+    except AttributeError:
+        pass
+    thread = loop.async_loop(callback, _break, -1)
     return thread
