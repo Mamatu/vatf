@@ -14,10 +14,10 @@ import os
 import sys
 import time
 cmdringbuffer = None
-log_thread = None
+log_cleanup_thread = None
 
 def start(**kwargs):
-    global cmdringbuffer, log_thread
+    global cmdringbuffer, log_cleanup_thread
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     command = config.wait_for_regex.command
@@ -34,15 +34,14 @@ def start(**kwargs):
         lines_count = config.wait_for_regex.lines_count
         cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
         cmdringbuffer.start()
-        log_thread = createRemoveLogThread(chunks_dir_path, config, _is_paused)
-        log_thread.start()
+        log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
 
 def stop():
-    global cmdringbuffer, log_thread
+    global cmdringbuffer, log_cleanup_thread
     if cmdringbuffer is not None:
         cmdringbuffer.stop()
-    if log_thread is not None:
-        log_thread.stop()
+    if log_cleanup_thread is not None:
+        log_cleanup_thread.stop()
 
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
     from vatf.utils import config_handler
@@ -56,16 +55,6 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         return _wait_for_regex_path(regex, timeout = timeout, pause = pause, **kwargs)
     else:
         raise Exception("Lack of wait_for_regex attributes: command or path")
-
-__is_paused = False
-
-def _set_paused(paused):
-    global __is_paused
-    __is_paused = paused
-
-def _is_paused():
-    global __is_paused
-    return __is_paused
 
 def _check_if_start_point_is_before_time(filepath, **kwargs):
     from vatf.utils.kw_utils import handle_kwargs
@@ -449,7 +438,8 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)
 
 def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
-    _set_paused(True)
+    global log_cleanup_thread
+    log_cleanup_thread.pause()
     try:
         from vatf.utils import config_handler
         wait_for_regex_epoch_timestamp = time.time()
@@ -464,7 +454,7 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, *
         kwargs["wait_for_regex_epoch_timestamp"] = wait_for_regex_epoch_timestamp
         return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
     finally:
-        _set_paused(False)
+        log_cleanup_thread.resume()
 
 _lock_files_timestamps = {}
 import fcntl
@@ -516,8 +506,9 @@ from vatf.utils import loop
 from vatf.utils.kw_utils import handle_kwargs
 from vatf.utils.pylibcommons import libgrep
 
-def createRemoveLogThread(chunks_dir_path, config, is_paused):
-    def target(is_stopped, chunks_dir_path, config, is_paused):
+def createCleanupLogThread(chunks_dir_path, config):
+    def callback(pause_thread_control):
+        nonlocal chunks_dir_path, config
         chunks_count = config.wait_for_regex.chunks_count
         def filter_chunk(chunk):
             try:
@@ -525,18 +516,15 @@ def createRemoveLogThread(chunks_dir_path, config, is_paused):
                 return True
             except ValueError:
                 return False
-        def remove_logs():
-            if not is_paused():
-                try:
-                    chunks_list = libgrep.get_directory_content(chunks_dir_path)
-                except FileNotFoundError:
-                    return True
-                chunks_list = list(filter(lambda c: filter_chunk(c), chunks_list))
-                for chunk in chunks_list[:-chunks_count]:
-                    chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
-                    chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
-                    _disable_lock_file(chunk_lock_file_1)
-            return is_stopped()
-        assert loop.wait_until_true(remove_logs, pause = 5, timeout = -1)
-    kwargs = {"chunks_dir_path" : chunks_dir_path, "config" : config, "is_paused" : is_paused}
-    return ThreadStop(target, [], kwargs)
+        try:
+            chunks_list = libgrep.get_directory_content(chunks_dir_path)
+        except FileNotFoundError:
+            return True
+        chunks_list = list(filter(lambda c: filter_chunk(c), chunks_list))
+        for chunk in chunks_list[:-chunks_count]:
+            chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
+            chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
+            _disable_lock_file(chunk_lock_file_1)
+        return pause_thread_control.is_stopped()
+    thread = loop.async_loop(callback, 5, -1)
+    return thread

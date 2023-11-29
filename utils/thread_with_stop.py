@@ -16,15 +16,9 @@ class Thread(threading.Thread):
         super().__init__(target = target, args = args, kwargs = kwargs)
 
     def stop(self):
-        try:
-            self.mutex.acquire()
+        with self.mutex:
             self.stopped = True
-        finally:
-            self.mutex.release()
 
     def is_stopped(self):
-        try:
-            self.mutex.acquire()
+        with self.mutex:
             return self.stopped
-        finally:
-            self.mutex.release()

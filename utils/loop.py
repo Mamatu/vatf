@@ -18,6 +18,19 @@ def wait_until_true(callback, pause, timeout):
 
 def async_loop(callback, pause_duration, timeout):
     from vatf.utils.thread_with_stop import Thread
+    class ThreadWrapper:
+        def __init__(self, thread):
+            self.thread = thread
+        def stop(self):
+            self.thread.stop()
+        def pause(self):
+            self.thread.pause()
+        def resume(self):
+            self.thread.resume()
+        def is_paused(self):
+            return self.thread.is_paused()
+        def is_stopped(self):
+            return self.thread.is_stopped()
     class PauseThread(Thread):
         def __init__(self):
             self.pause_cond = threading.Condition()
@@ -25,38 +38,35 @@ def async_loop(callback, pause_duration, timeout):
             self.paused = False
             self.pause_mutex = threading.Lock()
             def target(*args, **kwargs):
+                self = args[0]
+                callback = args[1]
                 is_stopped = args[-1]
                 while not is_stopped():
-                    class Control:
-                        def __init__(self, pause_thread):
-                            self.pause_thread = pause_thread
-                        def is_paused(self):
-                            return self.pause_thread.is_paused()
-                        def is_stopped(self):
-                            return self.pause_thread.is_stopped()
-                        def wait_in_pause(self):
-                            return self.pause_thread.wait_in_pause()
-                    status = callback(pause_thread_control = Control(self))
+                    status = callback(pause_thread_control = ThreadWrapper(self))
                     if status: return True
                     self.wait_in_pause()
-                    with self.break_cond:
-                        self.break_cond.wait_for(lambda: not self.is_stopped(), pause_duration)
-            #super().__init__(target, args, kwargs)
-            super().__init__(target)
+                    self._wait_in_break()
+            super().__init__(target, args = [self, callback])
         def pause(self):
             with self.pause_cond:
                 self.paused = True
         def resume(self):
             with self.pause_cond:
                 self.paused = False
-            self.pause_cond.notify()
+                self.pause_cond.notify()
         def is_paused(self):
             with self.pause_cond:
                 return self.paused
         def wait_in_pause(self):
-            self.pause_cond.wait_for(lambda: not self.is_paused(), None)
+            with self.pause_cond:
+                self.pause_cond.wait_for(lambda: not self.is_paused(), None)
+        def _wait_in_break(self):
+            with self.break_cond:
+                self.break_cond.wait_for(lambda: self.is_stopped(), pause_duration)
         def stop(self):
             with self.break_cond:
                 super().stop()
                 self.break_cond.notify()
-    return PauseThread()
+    thread = PauseThread()
+    thread.start()
+    return ThreadWrapper(thread)
