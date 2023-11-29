@@ -58,13 +58,14 @@ def test_loop_async_thread_pause_resume():
         return False
     callback.side_effect = side_effect
     thread = loop.async_loop(callback, 0.01, None)
-    assert loop.wait_until_true(lambda: callback.called, 0.01, 5)
+    assert loop.wait_until_true(lambda: callback.called, 0.001, 5)
     with lock:
         pause = thread.pause
-    assert loop.wait_until_true(thread.is_paused, 0.01, 5)
+    assert loop.wait_until_true(thread.is_paused, 0.001, 5)
     thread.resume()
     end = timer()
     td = timedelta(seconds = end - start)
     print(td)
+    #assert td < timedelta(microseconds = 100000)
     assert td < timedelta(microseconds = 50000)
     callback.assert_called()
