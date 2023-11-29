@@ -34,7 +34,6 @@ def async_loop(callback, pause_duration, timeout):
     class PauseThread(Thread):
         def __init__(self):
             self.pause_cond = threading.Condition()
-            self.break_cond = threading.Condition()
             self.paused = False
             self.pause_mutex = threading.Lock()
             def target(*args, **kwargs):
@@ -61,12 +60,9 @@ def async_loop(callback, pause_duration, timeout):
             with self.pause_cond:
                 self.pause_cond.wait_for(lambda: not self.is_paused(), None)
         def _wait_in_break(self):
-            with self.break_cond:
-                self.break_cond.wait_for(lambda: self.is_stopped(), pause_duration)
+            wait_until_true(self.is_stopped, 0.005, pause_duration)
         def stop(self):
-            with self.break_cond:
-                super().stop()
-                self.break_cond.notify()
+            super().stop()
     thread = PauseThread()
     thread.start()
     return ThreadWrapper(thread)
