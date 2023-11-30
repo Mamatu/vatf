@@ -526,13 +526,11 @@ def createCleanupLogThread(chunks_dir_path, config):
         for chunk in chunks_list[:-chunks_count]:
             chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
             chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
-            print(chunk_lock_file_1)
             @_flock(chunk_lock_file_1, "w+b")
             def disable_lock_file_(path, file):
                 _disable_lock_file(file)
             disable_lock_file_(chunk_lock_file_1)
-        o = pause_thread_control.is_stopped()
-        print(o)
+        return pause_thread_control.is_stopped()
     _break = 5
     try:
         _break = config.wait_for_regex.clean_break
