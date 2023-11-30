@@ -28,6 +28,8 @@ class FileRingBuffer:
             raise Exception(f"Chunks dir doesn't exist {self.chunks_dir}")
         vatf_path = Path(__file__).parents[1]
         file_ring_buffer_path = os.path.join(vatf_path, "bin/file_ring_buffer")
+        if not os.path.exists(file_ring_buffer_path):
+            raise Exception(f"{file_ring_buffer_path} doesn't exists")
         self.bg_process = shell.bg(f"{file_ring_buffer_path} -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines} -t {self.timestamp_lock}")
     def stop(self):
         shell.kill(self.bg_process)
