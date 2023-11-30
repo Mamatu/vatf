@@ -1,20 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/product.schema.json",
-  "title": "Test framework config for voice assistance",
+  "title": "Test framework config for voice assistant",
   "description": "Test framework",
   "type": "object",
   "properties": {
-    "vatf" : {
-      "type" : "object",
-      "description" : "vatf branch to clone",
-      "properties" : {
-        "branch" : {
-          "type" : "string",
-          "description" : "vatf branch to clone"
-        }
-      }
-    },
     "assets" : {
       "type" : "object",
       "properties" : {
@@ -51,9 +41,9 @@
         }
       }
     },
-    "va_log" : {
+    "log_snapshot" : {
       "type" : "object",
-      "description" : "voice assitance debug log configuration",
+      "description" : "log_snapshot config parameters",
       "properties" : {
         "path" : {
           "type" : "string",
@@ -162,11 +152,31 @@
         },
         "date_regex" : {
           "type" : "string",
-          "description" : "date regex of timestamp in log for instance: \"^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\""}
+          "description" : "date regex of timestamp in log for instance: \"^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\""},
+        "is_file_ring_buffer" : {
+          "type" : "boolean",
+          "description" : "If true file ring buffer is in an use"
+        },
+        "lines_count" : {
+          "type" : "number",
+          "description" : "lines count in every chunk"
+        },
+        "chunks_count" : {
+          "type" : "number",
+          "description" : "chunks count of file rung buffer"
+        },
+        "workspace" : {
+          "type" : "string",
+          "description" : "path to folder where fifo and chunks are created by file ring buffer feature"
+        },
+        "break_cleanup" : {
+          "type" : "number",
+          "description" : "break for cleanup thread"
+        }
     },
     "utterance_to_va" : {
       "type" : "object",
-      "description" : "defines regexes which determine begin and end of utterance to voice assistance from user",
+      "description" : "defines regexes which determine begin and end of utterance to voice assistant from user",
       "properties" : {
         "regexes" : {
           "type" : "array",
@@ -191,7 +201,7 @@
     },
     "utterance_from_va" : {
       "type" : "object",
-      "description" : "defines regexes which determine begin and end of utterance from voice assistance to user",
+      "description" : "defines regexes which determine begin and end of utterance from voice assistant to user",
       "properties" : {
         "regexes" : {
           "type" : "array",

@@ -1,0 +1,9 @@
+{
+  "wait_for_regex" : {
+    "command" : "log 127.0.0.1",
+    "is_file_ring_buffer" : true,
+    "lines_count" : 10000,
+    "chunks_count" : 5,
+    "workspace" : "/tmp/workspace/"
+  }
+}

@@ -23,14 +23,14 @@ def check_if_invoked():
         raise Exception("log_snapshot.start was already invoked!")
 
 @vatf_api.public_api("log_snapshot")
-def start(log_path, shell_cmd):
-    return start_cmd(log_path, shell_cmd)
+def start(log_path, shell_cmd, **kwargs):
+    return start_cmd(log_path, shell_cmd, **kwargs)
 
 @vatf_api.public_api("log_snapshot")
 def start_from_config(**kwargs):
-    log_command_key = "va_log.command"
-    log_path_key = "va_log.path"
-    in_log_path_key = "va_log.in_path"
+    log_command_key = "log_snapshot.command"
+    log_path_key = "log_snapshot.path"
+    in_log_path_key = "log_snapshot.in_path"
     config = config_handler.get_config(**kwargs)
     cmd_mode = False
     copy_mode = False
@@ -54,38 +54,38 @@ def start_from_config(**kwargs):
         raise Exception("Not supported mode")
 
 @vatf_api.public_api("log_snapshot")
-def start_cmd(log_path, shell_cmd):
+def start_cmd(log_path, shell_cmd, **kwargs):
     check_if_invoked()
     global _log_snapshot
     _log_snapshot = lib_log_snapshot.make()
-    _log_snapshot.start_cmd(log_path = log_path, shell_cmd = shell_cmd)
+    _log_snapshot.start_cmd(log_path = log_path, shell_cmd = shell_cmd, **kwargs)
 
 @vatf_api.public_api("log_snapshot")
 def start_cmd_from_config(**kwargs):
-    log_command_key = "va_log.command"
-    log_path_key = "va_log.path"
+    log_command_key = "log_snapshot.command"
+    log_path_key = "log_snapshot.path"
     config = config_handler.get_config(**kwargs)
     shell_cmd = config[log_command_key]
     log_path = config[log_path_key]
     mkdir.mkdir(os_proxy.dirname(log_path))
-    start_cmd(log_path, shell_cmd)
+    start_cmd(log_path, shell_cmd, **kwargs)
 
 @vatf_api.public_api("log_snapshot")
-def start_copy(log_path, in_log_path):
+def start_copy(log_path, in_log_path, **kwargs):
     check_if_invoked()
     global _log_snapshot
     _log_snapshot = lib_log_snapshot.make()
-    _log_snapshot.start_copy(log_path = log_path, in_log_path = in_log_path)
+    _log_snapshot.start_copy(log_path = log_path, in_log_path = in_log_path, **kwargs)
 
 @vatf_api.public_api("log_snapshot")
 def start_copy_from_config(**kwargs):
-    in_log_path_key = "va_log.in_path"
-    log_path_key = "va_log.path"
+    in_log_path_key = "log_snapshot.in_path"
+    log_path_key = "log_snapshot.path"
     config = config_handler.get_config(**kwargs)
     in_log_path = config[in_log_path_key]
     log_path =config[log_path_key]
     mkdir.mkdir(os_proxy.dirname(log_path))
-    start_copy(log_path, in_log_path)
+    start_copy(log_path, in_log_path, **kwargs)
 
 @vatf_api.public_api("log_snapshot")
 def stop():

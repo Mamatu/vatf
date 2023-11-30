@@ -1,5 +1,5 @@
 {
-  "va_log": {
+  "log_snapshot": {
     "path" : "/tmp/tmp_search_test_config.log",
     "timedelta" : {
       "hours" : -1

@@ -70,7 +70,7 @@ def test_extract_samples():
     assert (len(samples) == 2)
     def checksum(path):
         with open(path, 'rb') as f:
-            hashlib.md5(f.read()).hexdigest()
+            return hashlib.md5(f.read()).hexdigest()
     sample = samples[0]
     assert checksum(sample) == checksum("executor/uts/data/sampling/sample_0.wav")
     sample = samples[1]

@@ -53,7 +53,7 @@ def test_search_find_one_regex_from_config():
     config_handler.init_configs(["executor/uts/data/search/config.json"])
     file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
-    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
+    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["log_snapshot.path"])["log_snapshot.path"]
     output = search.find("line5")
     assert len(output) == 1
     assert output[0][0] == 5
@@ -91,7 +91,7 @@ def test_search_find_one_regex_only_match_from_config():
     config_handler.init_configs(["executor/uts/data/search/config.json"])
     file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
-    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
+    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["log_snapshot.path"])["log_snapshot.path"]
     output = search.find("line5", only_match = True)
     assert len(output) == 1
     assert output[0][0] == 5
@@ -133,7 +133,7 @@ def test_search_find_regex_only_match_path_from_config():
     config_handler.init_configs(["executor/uts/data/search/config.json"])
     file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
-    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
+    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["log_snapshot.path"])["log_snapshot.path"]
     output = search.find("line[5,6,7]", filepath = None, only_match = True)
     assert len(output) == 3
     assert output[0][0] == 5
@@ -174,7 +174,7 @@ def test_search_contains_path_from_config():
     config_handler.init_configs(["executor/uts/data/search/config.json"])
     file = os_proxy.create_tmp_file("w", data = "".join(text), path = "/tmp/tmp_search_test_config.log")
     path = file.name
-    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["va_log.path"])["va_log.path"]
+    assert "/tmp/tmp_search_test_config.log" == config_handler.handle(["log_snapshot.path"])["log_snapshot.path"]
     assert False == search.contains("line8")
     assert True == search.contains("line7")
     assert False == search.contains("line0")

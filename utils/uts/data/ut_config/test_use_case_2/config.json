@@ -20,7 +20,7 @@
       }]
     }
   },
-  "va_log": {
+  "log_snapshot": {
     "command" : "bash -c \"dlt-receive -o {data_root}/data/{test_name}/session_{config_loading_time}/log/session.log.dlt -a {device_ip} > >(tee {data_root}/data/{test_name}/session_{config_loading_time}/log/session.log | grep \"{log_filter}\")\"",
     "path" : "{data_root}/data/{test_name}/session_{config_loading_time}/log/session.log",
     "date_format" : "%Y/%m/%d %H:%M:%S.%f",

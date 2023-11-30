@@ -32,11 +32,13 @@ def test_thread_with_stop_1():
 def test_thread_with_stop_2():
     from vatf.utils.thread_with_stop import Thread
     from vatf.executor import shell
+    output = [1]
     def target(log, pause, is_stopped):
         import time
         while not is_stopped():
             shell.fg(f"echo \"{log}\"")
             time.sleep(pause)
+            output[0] = 2
     log = "log"
     pause = .2
     t = Thread(target = target, args = [log, pause])
@@ -45,3 +47,4 @@ def test_thread_with_stop_2():
     time.sleep(.4)
     t.stop()
     t.join()
+    assert output[0] == 2

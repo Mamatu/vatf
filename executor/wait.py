@@ -6,6 +6,15 @@ __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
 from vatf import vatf_api
+from vatf.utils import wait_conditioner
+
+@vatf_api.public_api("wait")
+def start(**kwargs):
+    return wait_conditioner.start(**kwargs)
+
+@vatf_api.public_api("wait")
+def stop():
+    return wait_conditioner.stop()
 
 @vatf_api.public_api("wait")
 def sleep(duration):
@@ -20,5 +29,4 @@ def sleep_random(t1, t2):
 
 @vatf_api.public_api("wait")
 def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
-    from vatf.utils import wait_conditioner
     return wait_conditioner.wait_for_regex(regex, timeout, pause, **kwargs)

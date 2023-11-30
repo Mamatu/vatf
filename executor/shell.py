@@ -16,6 +16,7 @@ class StderrException(Exception):
 
 @vatf_api.public_api("shell")
 def fg(command, shell = True):
+    print(f"fb: {command}")
     def read_output(output):
         lines = []
         for line in output:
@@ -33,6 +34,7 @@ def fg(command, shell = True):
 
 @vatf_api.public_api("shell")
 def bg(command, shell = True):
+    print(f"bg: {command}")
     process = subprocess.Popen(command, shell = shell)
     logging.debug(f"Run process {process.pid} in background for command {command}")
     _register_process(process)
@@ -78,7 +80,7 @@ def kill(process):
         children = parent.children(recursive=True)
         for child in children:
             try:
-                child.kill()
+                child.terminate()
             except psutil.NoSuchProcess as nsp:
                 logging.warn(nsp)
         process.terminate()

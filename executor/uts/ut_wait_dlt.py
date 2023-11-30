@@ -5,7 +5,6 @@ __license__ = "Apache License"
 __version__ = "2.0"
 __maintainer__ = "Marcin Matula"
 
-
 import datetime
 import os
 
@@ -51,6 +50,8 @@ def generate_line():
     return s, 2, _lines_in_one_write
 
 def test_wait_for_regex():
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f"
+    timestamp_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-9]:[0-6][0-9]:[0-6][0-9].[0-9][0-9][0-9]"
     _dlt_project_path = "/tmp/dlt-project"
     _dlt_rootfs = os.path.join(_dlt_project_path, "rootfs")
     _dlt_receive_path = os.path.join(_dlt_rootfs, "bin/dlt-receive")
@@ -63,12 +64,13 @@ def test_wait_for_regex():
     try:
         command1 = f"{_dlt_receive_path} -a 127.0.0.1 | grep 'LOG- TEST' > {{log_path}}"
         writer_t = writer.write_in_async_loop(pre_callback = generate_line)
-        config = {"wait_for_regex.command" : command1, "wait_for_regex.date_regex" : "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9]"}
-        assert wait.wait_for_regex(regex = "line_2", timeout = 5, pause = 0.5, config = config)
-        writer_t.stop()
+        config = {"wait_for_regex.command" : command1, "wait_for_regex.date_regex" : timestamp_regex, "wait_for_regex.date_format" : timestamp_format, "wait_for_regex.is_file_ring_buffer" : False}
+        assert wait.wait_for_regex(regex = "line_2", timeout = 8, pause = 0.5, config = config)
     except shell.StderrException as ex:
         print(f"Expected StderrException: {ex}")
     except Exception as ex:
         import sys
         print(ex, file=sys.stderr)
         assert False
+    finally:
+        writer.stop()

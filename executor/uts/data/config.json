@@ -17,7 +17,7 @@
       }]
     }
   },
-  "va_log": {
+  "log_snapshot": {
     "path" : "/tmp/session.log",
     "timedelta" : {
       "hours" : -1

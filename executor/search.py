@@ -16,13 +16,13 @@ from vatf.utils import utils, os_proxy, config_handler
 
 import datetime
 
-_va_log_path = "va_log.path"
+_log_snapshot_path = "log_snapshot.path"
 
 def _get_log_path(filepath, **kwargs):
     if filepath is None:
-        global _va_log_path
-        outcome = config_handler.handle([_va_log_path], **kwargs)
-        filepath = outcome[_va_log_path]
+        global _log_snapshot_path
+        outcome = config_handler.handle([_log_snapshot_path], **kwargs)
+        filepath = outcome[_log_snapshot_path]
         return filepath
     return filepath
 
