@@ -16,10 +16,21 @@ from vatf.executor import shell
 from vatf.utils import dlt
 from vatf.utils import libcmdringbuffer
 from vatf.utils import os_proxy
+from vatf.utils import thread_with_stop
 
 _written_lines_count = 0
 
 import time
+
+def get_thread_with_stop(writer, generate_data):
+    def target(*args):
+        time.sleep(1)
+        writer = args[0]
+        generate_data = args[1]
+        writer.write_in_async_loop(pre_callback = generate_line)
+    thread = thread_with_stop.Thread(target = target, args = [writer, generate_data])
+    thread.start()
+    return thread
 
 def generate_line():
     global _written_lines_count
@@ -99,10 +110,11 @@ def test_libcmdringbuffer_lines_count_1_chunks_count_1(writer, tempdir):
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_3", timeout = 8, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -125,10 +137,11 @@ def test_libcmdringbuffer_lines_count_1_chunks_count_2(writer, tempdir):
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_1", timeout = 5, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -151,10 +164,11 @@ def test_libcmdringbuffer_lines_count_2_chunks_count_2_match_line_10(writer, tem
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_10", timeout = 20, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -177,10 +191,11 @@ def test_libcmdringbuffer_lines_count_2_chunks_count_2_match_line_3(writer, temp
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_3", timeout = 8, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -203,10 +218,11 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5(writer, temp
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_5", timeout = 10, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -229,11 +245,12 @@ def test_libcmdringbuffer_lines_count_1_chunks_count_1_match_line_1_line_2(write
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_1", timeout = 10, config = config)
         assert wait.wait_for_regex("line_2", timeout = 10, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -256,11 +273,12 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6(write
         "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_5", timeout = 10, config = config)
         assert wait.wait_for_regex("line_6", timeout = 10, config = config)
     finally:
+        thread.stop()
         wait.stop()
 
 @_test_wrapper
@@ -284,8 +302,9 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_19_timeout_30(
         "wait_for_regex.clean_break" : 1
     }
     wait.start(config = config)
-    writer.write_in_async_loop(pre_callback = generate_line)
+    thread = get_thread_with_stop(writer, generate_line)
     try:
         assert wait.wait_for_regex("line_19", timeout = 30, config = config)
     finally:
+        thread.stop()
         wait.stop()

@@ -13,6 +13,11 @@ from vatf.utils.pylibcommons import libprint
 import os
 import sys
 import time
+import logging
+
+
+log = logging.getLogger(__name__)
+
 cmdringbuffer = None
 log_cleanup_thread = None
 
@@ -121,7 +126,7 @@ def get_next_timestamp_lock_file_path(path):
 def _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
     if timestamp2 is None:
         return True
-    return not (timestamp1 > wait_for_regex_epoch_timestamp and timestamp2 > wait_for_regex_epoch_timestamp)
+    return not (timestamp1 < wait_for_regex_epoch_timestamp and timestamp2 < wait_for_regex_epoch_timestamp)
 
 def _disable_lock_file(file):
     zero = 0
@@ -468,14 +473,17 @@ def _flock(path, mode):
             try:
                 fd = os.open(path, os.O_RDWR)
             except (IOError, OSError) as e:
+                log.debug(f"{path} {e}")
                 time.sleep(0.01)
                 continue
-            except FileNotFoundError:
+            except FileNotFoundError as e:
+                log.debug(f"{path} {e}")
                 return None
             try:
                 if fd is not None:
                     fcntl.flock(fd, fcntl.LOCK_EX)
             except (IOError, OSError) as e:
+                log.debug(f"{path} {e}")
                 time.sleep(0.01)
                 continue
             else:
