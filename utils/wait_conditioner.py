@@ -469,12 +469,15 @@ def _flock(path, mode):
                 fd = os.open(path, os.O_RDWR)
             except (IOError, OSError) as e:
                 time.sleep(0.01)
+                continue
             except FileNotFoundError:
                 return None
             try:
-                fcntl.flock(fd, fcntl.LOCK_EX)
+                if fd is not None:
+                    fcntl.flock(fd, fcntl.LOCK_EX)
             except (IOError, OSError) as e:
                 time.sleep(0.01)
+                continue
             else:
                 return fd
         if fd is None:
