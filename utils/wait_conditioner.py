@@ -126,6 +126,7 @@ def get_next_timestamp_lock_file_path(path):
 def _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
     if timestamp2 is None:
         return True
+    log.debug(f"cbp {timestamp1} {timestamp2} {wait_for_regex_epoch_timestamp}")
     return not (timestamp1 < wait_for_regex_epoch_timestamp and timestamp2 < wait_for_regex_epoch_timestamp)
 
 def _disable_lock_file(file):
@@ -151,8 +152,10 @@ def _encapsulate_grep_callback(process, path, wait_for_regex_epoch_timestamp):
         timestamp1 = _read_timestamp_from_file(file)
         timestamp2 = _read_timestamp_from_file(lock_file_path_next)
         if _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
+            log.debug(f"process {lock_file_path}")
             process()
         else:
+            log.debug(f"disable {lock_file_path}")
             _disable_lock_file(file)
             if lock_file_path in _lock_files_timestamps:
                 del _lock_files_timestamps[lock_file_path]
