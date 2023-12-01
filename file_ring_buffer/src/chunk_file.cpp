@@ -49,12 +49,12 @@ void ChunkFile::close()
 
 size_t ChunkFile::_write(const char* buffer, size_t length)
 {
-  auto writeSize = fwrite(buffer, sizeof(char), length, m_file);
-  fflush(m_file);
   if (m_timestampLock)
   {
     timestamp_file::writeCurrentTimestampUnderLock(m_dirpath, getId());
   }
+  auto writeSize = fwrite(buffer, sizeof(char), length, m_file);
+  fflush(m_file);
   return writeSize;
 }
 
