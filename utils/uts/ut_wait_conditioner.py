@@ -32,6 +32,11 @@ def test_start_stop():
     wait_conditioner.start()
     wait_conditioner.stop()
 
+def test_get_timestamp_lock_file_path():
+    from vatf.utils import wait_conditioner
+    assert None == wait_conditioner.get_timestamp_lock_file_path("0.timestamp.lock")
+    assert "0.timestamp.lock" == wait_conditioner.get_timestamp_lock_file_path("0")
+
 def test_check_if_start_point_is_before_time():
     date_format = "%Y-%m-%d %H:%M:%S.%f"
     date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
