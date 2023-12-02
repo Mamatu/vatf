@@ -28,5 +28,5 @@ def sleep_random(t1, t2):
     t.sleep(randint(t1, t2))
 
 @vatf_api.public_api("wait")
-def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
+def wait_for_regex(regex, timeout = 30, pause = 0.001, **kwargs):
     return wait_conditioner.wait_for_regex(regex, timeout, pause, **kwargs)
