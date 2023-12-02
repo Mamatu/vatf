@@ -9,6 +9,7 @@ from vatf.utils.wait_types import Label
 from vatf.utils.wait_types import RegexOperator
 from vatf.utils import libcmdringbuffer
 from vatf.utils.pylibcommons import libprint
+from vatf.utils.kw_utils import handle_kwargs
 
 import os
 import sys
@@ -48,7 +49,7 @@ def stop():
     if log_cleanup_thread is not None:
         log_cleanup_thread.stop()
 
-def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
+def wait_for_regex(regex, timeout = 30, pause = 1, **kwargs):
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     if config_handler.has_var("wait_for_regex.command", **kwargs):
@@ -62,7 +63,6 @@ def wait_for_regex(regex, timeout = 30, pause = 0.5, **kwargs):
         raise Exception("Lack of wait_for_regex attributes: command or path")
 
 def _check_if_start_point_is_before_time(filepath, **kwargs):
-    from vatf.utils.kw_utils import handle_kwargs
     start_point = handle_kwargs("start_point", default_output = None, is_required = True, **kwargs)
     with open(filepath, "r") as f:
         line = f.readline()
@@ -124,9 +124,12 @@ def get_next_timestamp_lock_file_path(path):
         return f"{path + 1}.timestamp.lock"
 
 def _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
+    if timestamp1 is None and timestamp2 is None:
+        return False
     if timestamp2 is None:
         return True
-    log.debug(f"cbp {timestamp1} {timestamp2} {wait_for_regex_epoch_timestamp}")
+    #log.debug(f"cbp {timestamp1} {timestamp2} {wait_for_regex_epoch_timestamp}")
+    return True
     return not (timestamp1 < wait_for_regex_epoch_timestamp and timestamp2 < wait_for_regex_epoch_timestamp)
 
 def _disable_lock_file(file):
@@ -152,10 +155,10 @@ def _encapsulate_grep_callback(process, path, wait_for_regex_epoch_timestamp):
         timestamp1 = _read_timestamp_from_file(file)
         timestamp2 = _read_timestamp_from_file(lock_file_path_next)
         if _can_be_processed(timestamp1, timestamp2, wait_for_regex_epoch_timestamp):
-            log.debug(f"process {lock_file_path}")
+            #log.debug(f"process {lock_file_path}")
             process()
         else:
-            log.debug(f"disable {lock_file_path}")
+            #log.debug(f"disable {lock_file_path}")
             _disable_lock_file(file)
             if lock_file_path in _lock_files_timestamps:
                 del _lock_files_timestamps[lock_file_path]
@@ -172,14 +175,12 @@ def _find_closest_date_greater_than_start_point(filepath, **kwargs):
     def strp(matched):
         import datetime
         return datetime.datetime.strptime(matched, date_format)
-    from vatf.utils.kw_utils import handle_kwargs
     start_point = handle_kwargs("start_point", default_output = None, is_required = True, **kwargs)
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     date_format = config.wait_for_regex.date_format
     date_regex = config.wait_for_regex.date_regex
     from vatf.executor import search
-    handle_kwargs("", default_ouput = None)
     out = search.find(filepath = filepath, regex = date_regex, only_match = True)
     out = [o for o in out if strp(o.matched) > strp(start_point)]
     if len(out) == 0:
@@ -188,7 +189,6 @@ def _find_closest_date_greater_than_start_point(filepath, **kwargs):
 
 def _find(filepath, regex, **kwargs):
     from vatf.executor import search
-    from vatf.utils.kw_utils import handle_kwargs
     start_point = handle_kwargs("start_point", default_output = None, is_required = False, **kwargs)
     line_number = 1
     if start_point:
@@ -231,7 +231,6 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
     outputs = []
     label_local_keys = []
     _regex = []
-    from vatf.utils.kw_utils import handle_kwargs
     labels = handle_kwargs("labels", default_output = None, is_required = False, **kwargs)
     labels_objects = handle_kwargs("labels_objects", default_output = None, is_required = True, **kwargs)
     for r in regex:
@@ -425,12 +424,12 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.5, **kwargs):
         start_point = _get_start_point(config)
         if start_point is not None:
             kwargs["start_point"] = start_point
-        return _wait_loop(regex, timeout, pause, temp_filepath, **kwargs)
+        return _wait_loop(regex, timeout, 0.001, temp_filepath, **kwargs)
     finally:
         log_snapshot.stop()
         temp_file.close()
 
-def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
+def _wait_for_regex_path(regex, timeout = 30, pause = 1, **kwargs):
     wait_for_regex_path_key = "wait_for_regex.path"
     wait_for_regex_date_format_key = "wait_for_regex.date_format"
     wait_for_regex_date_regex_key = "wait_for_regex.date_regex"
@@ -445,20 +444,27 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.5, **kwargs):
     date_regex = config[wait_for_regex_date_regex_key]
     return _wait_loop(regex, timeout, pause, log_filepath, **kwargs)
 
-def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.5, **kwargs):
+def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 1, **kwargs):
     global log_cleanup_thread
     log_cleanup_thread.pause()
     try:
         from vatf.utils import config_handler
-        wait_for_regex_epoch_timestamp = time.time()
+        wait_for_regex_epoch_timestamp = handle_kwargs("epoch_timestamp", default_output = None, is_required = False, **kwargs)
         config = config_handler.get_config(**kwargs)
+        start_point = _get_start_point(config)
+        print(f"{start_point}")
+        if wait_for_regex_epoch_timestamp is None:
+            wait_for_regex_epoch_timestamp = time.time()
+        epoch_timestamp_callback = handle_kwargs("epoch_timestamp_callback", default_output = None, is_required = False, **kwargs)
+        if epoch_timestamp_callback:
+            epoch_timestamp_callback(wait_for_regex_epoch_timestamp)
         timestamp_format = config.wait_for_regex.date_format
         timestamp_regex = config.wait_for_regex.date_regex
         workspace = config.wait_for_regex.workspace
         chunks_dir_path = f"{workspace}/chunks"
-        start_point = _get_start_point(config)
         if start_point is not None:
             kwargs["start_point"] = start_point
+        print(f"wait_for_regex {regex} {wait_for_regex_epoch_timestamp}")
         kwargs["wait_for_regex_epoch_timestamp"] = wait_for_regex_epoch_timestamp
         return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
     finally:
@@ -477,8 +483,8 @@ def _flock(path, mode):
                 fd = os.open(path, os.O_RDWR)
             except (IOError, OSError) as e:
                 log.debug(f"{path} {e}")
-                time.sleep(0.01)
-                continue
+                #time.sleep(0.1)
+                return None
             except FileNotFoundError as e:
                 log.debug(f"{path} {e}")
                 return None
@@ -487,7 +493,8 @@ def _flock(path, mode):
                     fcntl.flock(fd, fcntl.LOCK_EX)
             except (IOError, OSError) as e:
                 log.debug(f"{path} {e}")
-                time.sleep(0.01)
+                return None
+                time.sleep(0.1)
                 continue
             else:
                 return fd
@@ -517,7 +524,6 @@ def _flock(path, mode):
 
 from vatf.utils.thread_with_stop import Thread as ThreadStop
 from vatf.utils import loop
-from vatf.utils.kw_utils import handle_kwargs
 from vatf.utils.pylibcommons import libgrep
 
 def createCleanupLogThread(chunks_dir_path, config):
@@ -545,7 +551,7 @@ def createCleanupLogThread(chunks_dir_path, config):
                 _disable_lock_file(file)
             disable_lock_file_(chunk_lock_file_1)
         return pause_thread_control.is_stopped()
-    _break = 5
+    _break = 1
     try:
         _break = config.wait_for_regex.clean_break
     except AttributeError:
