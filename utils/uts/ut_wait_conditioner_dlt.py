@@ -35,9 +35,20 @@ def get_thread_with_stop(writer, generate_data):
 def generate_line():
     global _written_lines_count
     now = datetime.datetime.now()
-    s = f"{now} line_{_written_lines_count}"
+    s = f"{now} {time.time()} line_{_written_lines_count}"
     print(s)
     _written_lines_count = _written_lines_count + 1
+    global _lines_in_one_write
+    return s, 2, 1
+
+def generate_lines(lines_count):
+    global _written_lines_count
+    s = ""
+    for line_count in range(_written_lines_count, lines_count + _written_lines_count):
+        now = datetime.datetime.now()
+        s = f"{s}\n{now} line_{line_count}"
+        _written_lines_count = _written_lines_count + 1
+    print(s)
     global _lines_in_one_write
     return s, 2, 1
 
@@ -88,6 +99,21 @@ def _test_wrapper(test_func):
         finally:
             writer.stop()
             #tempdir.cleanup()
+    return inner
+
+def profile(test_func):
+    def inner():
+        from cProfile import Profile
+        from pstats import SortKey, Stats
+        with Profile() as profile:
+            try:
+                test_func()
+            finally:
+                stats = Stats(profile)
+                stats.strip_dirs()
+                #stats.sort_stats(SortKey.CUMULATIVE)
+                stats.sort_stats(SortKey.TIME)
+                stats.print_stats()
     return inner
 
 @_test_wrapper
@@ -275,8 +301,44 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6(write
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
+        timestamp = None
+        def epoch_timestamp_callback(_timestamp):
+            nonlocal timestamp
+            timestamp = _timestamp
         assert wait.wait_for_regex("line_5", timeout = 10, config = config)
         assert wait.wait_for_regex("line_6", timeout = 10, config = config)
+    finally:
+        thread.stop()
+        wait.stop()
+
+@_test_wrapper
+def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_modifications(writer, tempdir):
+    from vatf.utils import lib_log_snapshot
+    from vatf.utils import os_proxy
+    chunks_dir = os.path.join(tempdir.name, "chunks")
+    try:
+        import shutil
+        shutil.rmtree(chunks_dir)
+    except FileNotFoundError:
+        pass
+    config = {
+        "wait_for_regex.command" : f"{get_receive_path()} -a 127.0.0.1",
+        "wait_for_regex.is_file_ring_buffer" : True,
+        "wait_for_regex.lines_count" : 3,
+        "wait_for_regex.chunks_count" : 3,
+        "wait_for_regex.workspace" : f"{tempdir.name}",
+        "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
+        "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    }
+    wait.start(config = config)
+    thread = get_thread_with_stop(writer, generate_line)
+    try:
+        timestamp = None
+        def epoch_timestamp_callback(_timestamp):
+            nonlocal timestamp
+            timestamp = _timestamp
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config, epoch_timestamp_callback = epoch_timestamp_callback)
+        assert wait.wait_for_regex("line_6", timeout = 10, config = config, epoch_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()
