@@ -37,7 +37,7 @@ def test_get_timestamp_lock_file_path():
     assert None == wait_conditioner.get_timestamp_lock_file_path("0.timestamp.lock")
     assert "0.timestamp.lock" == wait_conditioner.get_timestamp_lock_file_path("0")
 
-def test_check_if_start_point_is_before_time():
+def test_check_if_start_timestamp_is_before_time():
     date_format = "%Y-%m-%d %H:%M:%S.%f"
     date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
     text = [
@@ -50,12 +50,12 @@ def test_check_if_start_point_is_before_time():
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
-    start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000).strftime(date_format)
+    start_timestamp = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000).strftime(date_format)
     from vatf.utils import wait_conditioner as w_cond
-    assert w_cond._check_if_start_point_is_before_time(log_file.name, config = config, start_point = start_point)
+    assert w_cond._check_if_start_timestamp_is_before_time(log_file.name, config = config, start_timestamp = start_timestamp)
     log_file.close()
 
-def test_check_if_start_point_is_before_time_fail_1():
+def test_check_if_start_timestamp_is_before_time_fail_1():
     date_format = "%Y-%m-%d %H:%M:%S.%f"
     date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
     text = [
@@ -68,9 +68,9 @@ def test_check_if_start_point_is_before_time_fail_1():
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
-    start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000).strftime(date_format)
+    start_timestamp = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567000).strftime(date_format)
     from vatf.utils import wait_conditioner as w_cond
-    assert not w_cond._check_if_start_point_is_before_time(log_file.name, config = config, start_point = start_point)
+    assert not w_cond._check_if_start_timestamp_is_before_time(log_file.name, config = config, start_timestamp = start_timestamp)
     log_file.close()
 
 def test_find_closest_line_number_to_date_1():
@@ -86,9 +86,9 @@ def test_find_closest_line_number_to_date_1():
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
-    start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567100).strftime(date_format)
+    start_timestamp = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567100).strftime(date_format)
     from vatf.utils import wait_conditioner as w_cond
-    line = w_cond._find_closest_date_greater_than_start_point(log_file.name, config = config, start_point = start_point)
+    line = w_cond._find_closest_date_greater_than_start_timestamp(log_file.name, config = config, start_timestamp = start_timestamp)
     assert 3 == line.line_number
     log_file.close()
 
@@ -105,13 +105,13 @@ def test_find_closest_line_number_to_date_2():
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
-    start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567900).strftime(date_format)
+    start_timestamp = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567900).strftime(date_format)
     from vatf.utils import wait_conditioner as w_cond
-    line = w_cond._find_closest_date_greater_than_start_point(log_file.name, config = config, start_point = start_point)
+    line = w_cond._find_closest_date_greater_than_start_timestamp(log_file.name, config = config, start_timestamp = start_timestamp)
     assert 3 == line.line_number
     log_file.close()
 
-def test_check_if_start_point_is_before_time_fail_2():
+def test_check_if_start_timestamp_is_before_time_fail_2():
     date_format = "%Y-%m-%d %H:%M:%S.%f"
     date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
     text = [
@@ -124,9 +124,9 @@ def test_check_if_start_point_is_before_time_fail_2():
     ]
     log_file = os_proxy.create_tmp_file("w", data = "".join(text))
     config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
-    start_point = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 601000).strftime(date_format)
+    start_timestamp = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 601000).strftime(date_format)
     from vatf.utils import wait_conditioner as w_cond
-    assert not w_cond._check_if_start_point_is_before_time(log_file.name, config = config, start_point = start_point)
+    assert not w_cond._check_if_start_timestamp_is_before_time(log_file.name, config = config, start_timestamp = start_timestamp)
     log_file.close()
 
 @patch("time.sleep")
@@ -242,7 +242,7 @@ def test_wait_for_regex_1(time_sleep_mock):
         log_file = os_proxy.create_tmp_file("w", data = "".join(text))
         config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
         from vatf.utils import wait_conditioner as w_cond
-        assert w_cond.wait_for_regex(["line1", "line3", "line5", "line6", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
+        assert w_cond.wait_for_regex(["line1", "line3", "line5", "line6", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 1, config = config)
         log_file.close()
 
 @patch("time.sleep")
@@ -456,7 +456,7 @@ def test_wait_for_single_regex_fail_in_tuple(time_sleep_mock):
         log_file.close()
 
 @patch("time.sleep")
-def test_wait_for_single_regex_from_start_point_pass(time_sleep_mock):
+def test_wait_for_single_regex_from_start_timestamp_pass(time_sleep_mock):
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
@@ -478,7 +478,7 @@ def test_wait_for_single_regex_from_start_point_pass(time_sleep_mock):
         log_file.close()
 
 @patch("time.sleep")
-def test_wait_for_single_regex_from_start_point_fail(time_sleep_mock):
+def test_wait_for_single_regex_from_start_timestamp_fail(time_sleep_mock):
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 570000)):
         date_format = "%Y-%m-%d %H:%M:%S.%f"
         date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"

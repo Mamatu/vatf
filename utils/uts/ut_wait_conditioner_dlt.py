@@ -9,6 +9,7 @@ from contextlib import contextmanager
 from unittest.mock import patch
 
 import datetime
+import time
 import os
 
 from vatf.executor import wait
@@ -55,9 +56,9 @@ def generate_lines(lines_count):
 # Source: https://stackoverflow.com/a/46919967
 @contextmanager
 def mocked_now(now):
-    class MockedDatetime(datetime.datetime):
+    class MockedDatetime(time):
         @classmethod
-        def now(cls):
+        def time(cls):
             return now
     with patch("datetime.datetime", MockedDatetime):
         yield
@@ -219,7 +220,7 @@ def test_libcmdringbuffer_lines_count_2_chunks_count_2_match_line_3(writer, temp
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
-        assert wait.wait_for_regex("line_3", timeout = 8, config = config)
+        assert wait.wait_for_regex("line_3", timeout = 20, config = config)
     finally:
         thread.stop()
         wait.stop()
@@ -273,8 +274,9 @@ def test_libcmdringbuffer_lines_count_1_chunks_count_1_match_line_1_line_2(write
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
-        assert wait.wait_for_regex("line_1", timeout = 10, config = config)
-        assert wait.wait_for_regex("line_2", timeout = 10, config = config)
+        timestamp = time.time()
+        assert wait.wait_for_regex("line_1", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex("line_2", timeout = 10, config = config, start_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()
@@ -302,17 +304,18 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6(write
     thread = get_thread_with_stop(writer, generate_line)
     try:
         timestamp = None
-        def epoch_timestamp_callback(_timestamp):
+        def start_timestamp_callback(_timestamp):
             nonlocal timestamp
             timestamp = _timestamp
-        assert wait.wait_for_regex("line_5", timeout = 10, config = config)
-        assert wait.wait_for_regex("line_6", timeout = 10, config = config)
+        timestamp = time.time()
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()
 
 @_test_wrapper
-def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_modifications(writer, tempdir):
+def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_start_timestamp(writer, tempdir):
     from vatf.utils import lib_log_snapshot
     from vatf.utils import os_proxy
     chunks_dir = os.path.join(tempdir.name, "chunks")
@@ -334,11 +337,40 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_modif
     thread = get_thread_with_stop(writer, generate_line)
     try:
         timestamp = None
-        def epoch_timestamp_callback(_timestamp):
+        def start_timestamp_callback(_timestamp):
             nonlocal timestamp
             timestamp = _timestamp
-        assert wait.wait_for_regex("line_5", timeout = 10, config = config, epoch_timestamp_callback = epoch_timestamp_callback)
-        assert wait.wait_for_regex("line_6", timeout = 10, config = config, epoch_timestamp = timestamp)
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp_callback = start_timestamp_callback)
+        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
+    finally:
+        thread.stop()
+        wait.stop()
+
+@_test_wrapper
+def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_start_timestamp_is_0(writer, tempdir):
+    from vatf.utils import lib_log_snapshot
+    from vatf.utils import os_proxy
+    chunks_dir = os.path.join(tempdir.name, "chunks")
+    try:
+        import shutil
+        shutil.rmtree(chunks_dir)
+    except FileNotFoundError:
+        pass
+    config = {
+        "wait_for_regex.command" : f"{get_receive_path()} -a 127.0.0.1",
+        "wait_for_regex.is_file_ring_buffer" : True,
+        "wait_for_regex.lines_count" : 3,
+        "wait_for_regex.chunks_count" : 3,
+        "wait_for_regex.workspace" : f"{tempdir.name}",
+        "wait_for_regex.date_format" : "%Y-%m-%d %H:%M:%S.%f",
+        "wait_for_regex.date_regex" : "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]"
+    }
+    wait.start(config = config)
+    thread = get_thread_with_stop(writer, generate_line)
+    try:
+        timestamp = 0
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()

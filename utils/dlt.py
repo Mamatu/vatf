@@ -17,6 +17,7 @@ class DltWriter:
             while not is_stopped():
                 payload, log_level, count = pre_callback()
                 try:
+                    print(f"payload {payload}")
                     shell.fg(self._write(payload = payload, log_level = log_level, count = count))
                 except shell.StderrException as ex:
                     import logging
