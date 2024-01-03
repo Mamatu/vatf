@@ -23,12 +23,12 @@ import datetime
 log = logging.getLogger(__name__)
 
 cmdringbuffer = None
-#log_cleanup_thread = None
+log_cleanup_thread = None
 from enum import Enum
 
 def start(**kwargs):
     global cmdringbuffer
-    #global cmdringbuffer, log_cleanup_thread
+    global log_cleanup_thread
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     command = config.wait_for_regex.command
@@ -45,15 +45,15 @@ def start(**kwargs):
         lines_count = config.wait_for_regex.lines_count
         cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
         cmdringbuffer.start()
-        #log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
+        log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
 
 def stop():
     global cmdringbuffer
-    #global cmdringbuffer, log_cleanup_thread
+    global log_cleanup_thread
     if cmdringbuffer is not None:
         cmdringbuffer.stop()
-    #if log_cleanup_thread is not None:
-    #    log_cleanup_thread.stop()
+    if log_cleanup_thread is not None:
+        log_cleanup_thread.stop()
 
 def wait_for_regex(regex, timeout = 30, pause = 0.001, **kwargs):
     from vatf.utils import config_handler
@@ -481,7 +481,7 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.001, **kwargs):
 
 def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.001, **kwargs):
     global log_cleanup_thread
-    #log_cleanup_thread.pause()
+    log_cleanup_thread.pause()
     try:
         from vatf.utils import config_handler
         start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
@@ -496,8 +496,7 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.001,
         kwargs["start_timestamp"] = start_timestamp
         return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
     finally:
-        pass
-        #log_cleanup_thread.resume()
+        log_cleanup_thread.resume()
 
 _lock_files_timestamps = {}
 import fcntl
