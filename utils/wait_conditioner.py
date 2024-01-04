@@ -162,15 +162,9 @@ def _encapsulate_grep_callback(process, path, start_timestamp):
             process()
         else:
             pass
-            #_disable_lock_file(file)
-            #if lock_file_path in _lock_files_timestamps:
-            #    del _lock_files_timestamps[lock_file_path]
         _dict_timestamp = _lock_files_timestamps.get(lock_file_path, None)
         if _dict_timestamp == timestamp1:
             pass
-            #_disable_lock_file(file)
-            #_debug_check_if_timestamp_is_zero(file)
-            #del _lock_files_timestamps[lock_file_path]
         else:
             _lock_files_timestamps[lock_file_path] = timestamp1
     execute_process(lock_file_path)
@@ -414,30 +408,22 @@ def _wait_loop(regex, timeout, pause, filepath, **kwargs):
 
 def _get_start_timestamp(date_format_is_required = False, **kwargs):
     config = config_handler.get_config(**kwargs)
-    start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
-    start_timestamp_callback = handle_kwargs("start_timestamp_callback", default_output = None, is_required = False, **kwargs)
-    if start_timestamp is not None:
-        if start_timestamp_callback:
-            start_timestamp_callback(start_timestamp)
-    else:
-        date_format = None
+    date_format = None
+    timedelta = None
+    timedelta_key = "wait_for_regex.timedelta"
+    try:
+        timedelta = config[timedelta_key]
+        from vatf.utils import config_common
+        timedelta = config_common.convert_dict_to_timedelta(timedelta)
+    except:
         timedelta = None
-        timedelta_key = "wait_for_regex.timedelta"
-        try:
-            timedelta = config[timedelta_key]
-            from vatf.utils import config_common
-            timedelta = config_common.convert_dict_to_timedelta(timedelta)
-        except:
-            timedelta = None
-        import datetime
-        start_timestamp = datetime.datetime.now()
-        start_timestamp = datetime.datetime.timestamp(start_timestamp)
-        if start_timestamp_callback:
-            start_timestamp_callback(start_timestamp)
-        if start_timestamp is None and date_format_is_required:
-            raise Exception(f"{key} is required for this scenario/mode")
-        if start_timestamp and timedelta:
-            start_timestamp = start_timestamp + timedelta
+    import datetime
+    start_timestamp = datetime.datetime.now()
+    start_timestamp = datetime.datetime.timestamp(start_timestamp)
+    if start_timestamp is None and date_format_is_required:
+        raise Exception(f"{key} is required for this scenario/mode")
+    if start_timestamp and timedelta:
+        start_timestamp = start_timestamp + timedelta
     return start_timestamp
 
 def _wait_for_regex_command(regex, timeout = 30, pause = 0.001, **kwargs):
@@ -572,12 +558,12 @@ def createCleanupLogThread(chunks_dir_path, config):
             return True
         chunks_list = list(filter(lambda c: filter_chunk(c), chunks_list))
         for chunk in chunks_list[:-chunks_count]:
-            chunk_lock_file_1 = get_timestamp_lock_file_path(chunk)
-            chunk_lock_file_1 = os.path.join(chunks_dir_path, chunk_lock_file_1)
-            @_flock(chunk_lock_file_1, "w+b")
+            chunk_lock_file_path = get_timestamp_lock_file_path(chunk)
+            chunk_lock_file_path = os.path.join(chunks_dir_path, chunk_lock_file_path)
+            @_flock(chunk_lock_file_path, "w+b")
             def disable_lock_file_(path, file):
                 _disable_lock_file(file)
-            disable_lock_file_(chunk_lock_file_1)
+            disable_lock_file_(chunk_lock_file_path)
         return pause_thread_control.is_stopped()
     _break = 1
     try:

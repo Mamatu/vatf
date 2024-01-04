@@ -13,6 +13,7 @@ import time
 import os
 
 from vatf.executor import wait
+from vatf.utils import wait_types as wt
 from vatf.executor import shell
 from vatf.utils import dlt
 from vatf.utils import libcmdringbuffer
@@ -275,8 +276,7 @@ def test_libcmdringbuffer_lines_count_1_chunks_count_1_match_line_1_line_2(write
     thread = get_thread_with_stop(writer, generate_line)
     try:
         timestamp = time.time()
-        assert wait.wait_for_regex("line_1", timeout = 10, config = config, start_timestamp = timestamp)
-        assert wait.wait_for_regex("line_2", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex(["line_1", "line_2", wt.RegexOperator.IN_ORDER_LINE], timeout = 10, config = config, start_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()
@@ -308,8 +308,7 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6(write
             nonlocal timestamp
             timestamp = _timestamp
         timestamp = time.time()
-        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp = timestamp)
-        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex(["line_5", "line_6", wt.RegexOperator.IN_ORDER_LINE], timeout = 10, config = config, start_timestamp = timestamp)
     finally:
         thread.stop()
         wait.stop()
@@ -336,12 +335,7 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_start
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
-        timestamp = None
-        def start_timestamp_callback(_timestamp):
-            nonlocal timestamp
-            timestamp = _timestamp
-        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp_callback = start_timestamp_callback)
-        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex(["line_5", "line_6", wt.RegexOperator.IN_ORDER_LINE], timeout = 10, config = config)
     finally:
         thread.stop()
         wait.stop()
@@ -368,9 +362,7 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_start
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
-        timestamp = 0
-        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp = timestamp)
-        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = timestamp)
+        assert wait.wait_for_regex(["line_5", "line_6", wt.RegexOperator.IN_ORDER_LINE], timeout = 10, config = config)
     finally:
         thread.stop()
         wait.stop()
