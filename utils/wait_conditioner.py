@@ -59,6 +59,8 @@ def wait_for_regex(regex, timeout = 30, pause = 0.001, **kwargs):
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     if config_handler.has_var("wait_for_regex.command", **kwargs):
+        if not isinstance(config.wait_for_regex.is_file_ring_buffer, bool):
+            raise Exception("config.wait_for_regex.is_file_ring_buffer must be boolean type")
         if config.wait_for_regex.is_file_ring_buffer:
             return _wait_for_regex_command_file_ring_buffer(regex, timeout = timeout, pause = pause, **kwargs)
         else:
