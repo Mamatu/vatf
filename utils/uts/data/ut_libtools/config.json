@@ -1,0 +1,5 @@
+{
+  "tools" : {
+    "pathes" : ["/tmp/data", "/tmp/data/test_1"]
+  }
+}
