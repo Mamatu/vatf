@@ -65,9 +65,9 @@ def print_func_info():
 def get_tmp_file(mode = "r+"):
     return get_temp_file(mode = mode)
 
-def get_temp_file(mode = "r+"):
+def get_temp_file(mode = "r+", suffix = None):
     import tempfile
-    return tempfile.NamedTemporaryFile(mode = mode)
+    return tempfile.NamedTemporaryFile(mode = mode, suffix = suffix)
 
 def open_temp_file(mode = "w+"):
     file = get_temp_file(mode = mode)
