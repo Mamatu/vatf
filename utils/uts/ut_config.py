@@ -345,7 +345,7 @@ def test_py_config():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils.uts.data.ut_config.config_1"
+    config_py_path = "vatf.utils.uts.data.ut_config.config_1.py"
     config = config_py_loader.load(config_py_path)
     assert config["assets"]["audio"]["path"] == "./assets/audio_files"
 
@@ -363,7 +363,7 @@ def test_py_config_2():
     import pathlib
     import logging
     logging.basicConfig(level = logging.DEBUG)
-    config_py_path = "utils.uts.data.ut_config.config_1"
+    config_py_path = "vatf.utils.uts.data.ut_config.config_1.py"
     config_handler.init_configs([config_py_path])
     output = config_handler.handle(["assets.audio.path"])
     assert output["assets.audio.path"] == "./assets/audio_files"
