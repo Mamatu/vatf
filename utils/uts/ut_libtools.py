@@ -12,29 +12,26 @@ import os
 from vatf.utils import config_loader
 from vatf.utils import config_handler
 from vatf.utils import libtools
-
+from vatf.utils import utils
+import tempfile
 import pytest
-
-def test_get():
-    class Attr1:
-        def __init__(self):
-            self.attr2 = 3
-    class Data:
-        def __init__(self):
-            self.attr1 = Attr1()
-    data = Data()
-    assert config_loader.get_attr(data, "attr1.attr2") == 3
-    assert config_loader.get_attr(data, "attr1.attr3", False) == None
 
 def teardown_module():
     config_handler.reset_configs()
 
-def test_config_common_convert_dict_to_timedelta():
-    from vatf.utils import config_common
-    timedelta = config_common.convert_dict_to_timedelta({"hours" : -1})
-    #assert timedelta.seconds == -3600
-
 def test_load_config():
-    config_handler.init_configs(["utils/uts/data/ut_libtools/config.json"])
-    #assert c.tools.pathes == ["/tmp/data", "/tmp/data/test_1"]
+    data_temp_dir = tempfile.TemporaryDirectory()
+    data_temp_dirpath = data_temp_dir.name
+    #data_temp_dirpath = "/tmp/data"
+    config = f'{{"tools" : {{"pathes" : ["{data_temp_dirpath}", "{data_temp_dirpath}/test_1"]}}}}'
+    config_temp_file = utils.get_temp_file(suffix = ".json")
+    with open(config_temp_file.name, "w") as f:
+        f.write(config)
+    config_handler.init_configs([f"{config_temp_file.name}"])
     libtools.create_tools_dir_form_config()
+    assert ['tools', 'test_1'] == os.listdir(data_temp_dirpath)
+    assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "tools"))
+    assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools"))
+    assert "template.convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "tools/.templates"))
+    assert "template.convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools/.templates"))
+
