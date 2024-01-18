@@ -117,7 +117,7 @@ def load(config_pathes, schema_json_path = config_common.get_global_schema_path(
         elif config_path.endswith(".py"):
             config_py_pathes.append(config_path)
         else:
-            config_py_pathes.append(config_path)
+            raise Exception(f"Invalid config file {config_path} . Config doesn't end with .py or .json.")
     c = _load_json(config_json_pathes, schema_json_path)
     from vatf.utils import config_py_loader
     c1 = config_py_loader.load(config_py_pathes)
