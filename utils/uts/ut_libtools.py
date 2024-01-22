@@ -33,5 +33,6 @@ def test_load_config():
     assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "tools"))
     assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools"))
     assert "template.convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "tools/.templates"))
+    assert "convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "tools"))
     assert "template.convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools/.templates"))
-
+    assert "convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools"))
