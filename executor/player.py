@@ -21,6 +21,16 @@ def cvlc_play_audio(path):
     proc = subprocess.Popen(command, shell=True)
     proc.wait()
 
+def _mplayer_command(path):
+    return f"mplayer {path}"
+
+def mplayer_play_audio(path):
+    path = os_proxy.join("assets/audio_files/", path)
+    command = _mplayer_command(path)
+    logging.info(f"{mplayer_play_audio.__name__}: {command}")
+    proc = subprocess.Popen(command, shell=True)
+    proc.wait()
+
 def load_audio_files(**kwargs):
     import os
     from vatf.utils import config_handler
@@ -32,10 +42,9 @@ def load_audio_files(**kwargs):
         path = audio_config.path
         files = os.listdir(path)
 
-
 @vatf_api.public_api("player")
 def play_audio(*args, **kwargs):
     if "path" in kwargs:
-        cvlc_play_audio(kwargs["path"])
+        mplayer_play_audio(kwargs["path"])
     else:
-        cvlc_play_audio(args[0])
+        mplayer_play_audio(args[0])
