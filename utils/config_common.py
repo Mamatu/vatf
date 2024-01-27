@@ -29,7 +29,7 @@ def prepare_format_dict(data, custom_format = None, **kwargs):
             _dict[kv.key] = kv.value
         return _dict
     format_dict = {}
-    if "format" in data and data["format"]:
+    if isinstance(data, dict) and "format" in data and data["format"]:
         format_dict.update(data["format"])
     if custom_format:
         format_dict.update(custom_format)
@@ -38,26 +38,26 @@ def prepare_format_dict(data, custom_format = None, **kwargs):
 
 def process_format(config_dict, format_dict, **kwargs):
     format_dict = prepare_format_dict(config_dict, format_dict, **kwargs)
-    for k,v in config_dict.items():
+    def _process_format(v, format_dict, **kwargs):
         if isinstance(v, dict):
-            process_format(v, format_dict, **kwargs)
+            for k, v1 in v.items():
+                v1 = _process_format(v1, format_dict, **kwargs)
+                v[k] = v1
+            return v
         elif isinstance(v, list):
             for i in range(len(v)):
-                if isinstance(v[i], dict):
-                    process_format(v[i], format_dict, **kwargs)
-                elif isinstance(v, str):
-                    try:
-                        v = v.format(**format_dict)
-                        config_dict[k] = v
-                    except:
-                        pass
+                v1 = _process_format(v[i], format_dict, **kwargs)
+                v[i] = v1
+            return v
         elif isinstance(v, str):
             try:
                 v = v.format(**format_dict)
-                config_dict[k] = v
             except:
                 pass
-    return config_dict
+            return v
+        else:
+            return v
+    return _process_format(config_dict, format_dict, **kwargs)
 
 def convert_dict_to_timedelta(timedelta):
     if isinstance(timedelta, dict):
