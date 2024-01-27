@@ -36,17 +36,22 @@ def prepare_format_dict(data, custom_format = None, **kwargs):
     format_dict = update_with_default_format(format_dict, **kwargs)
     return format_dict
 
-def process_format(config_dict, format_dict, **kwargs):
+def process_format(v, format_dict, **kwargs):
     format_dict = prepare_format_dict(config_dict, format_dict, **kwargs)
-    for k,v in config_dict.items():
-        if isinstance(v, dict):
-            process_format(v, format_dict, **kwargs)
-        elif isinstance(v, str):
-            try:
-                v = v.format(**format_dict)
-                config_dict[k] = v
-            except:
-                pass
+    if isinstance(v, dict):
+        for k, v1 in v.items():
+            process_format(v1, format_dict, **kwargs)
+    elif isinstance(v, list):
+        for i in range(len(v)):
+            process_format(v[i], format_dict, **kwargs)
+    elif isinstance(v, str):
+        try:
+            v = v.format(**format_dict)
+            config_dict[k] = v
+        except:
+            pass
+    else:
+        raise Exception(f"Unknown type of value {v} {type(v)}")
     return config_dict
 
 def convert_dict_to_timedelta(timedelta):
