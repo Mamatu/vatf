@@ -41,6 +41,16 @@ def process_format(config_dict, format_dict, **kwargs):
     for k,v in config_dict.items():
         if isinstance(v, dict):
             process_format(v, format_dict, **kwargs)
+        elif isinstance(v, list):
+            for i in range(len(v)):
+                if isinstance(v[i], dict):
+                    process_format(v[i], format_dict, **kwargs)
+                elif isinstance(v, str):
+                    try:
+                        v = v.format(**format_dict)
+                        config_dict[k] = v
+                    except:
+                        pass
         elif isinstance(v, str):
             try:
                 v = v.format(**format_dict)
