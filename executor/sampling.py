@@ -160,3 +160,8 @@ def main(args):
             f.write("\n".join(array))
     sample_pathes = extract_samples(start_date, regexes, args.path_to_recording, args.path_to_samples)
     logging.info(f"Created: {sample_pathes}")
+
+def start_from_config(**kwargs):
+    from vatf.utils import config
+    config = config_handler.get_config(**kwargs)
+    main(config.sampling)
