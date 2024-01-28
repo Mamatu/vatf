@@ -15,8 +15,7 @@ class StderrException(Exception):
     pass
 
 @vatf_api.public_api("shell")
-def fg(command, shell = True):
-    print(f"fb: {command}")
+def fg(command, shell = True, stderr_exception = True):
     def read_output(output):
         lines = []
         for line in output:
@@ -25,10 +24,11 @@ def fg(command, shell = True):
         return lines
     process = subprocess.Popen(command, shell = shell, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     process.wait()
-    lines = read_output(process.stderr)
-    if len(lines) > 0:
-        lines = "\n".join(lines)
-        raise StderrException(f"Stderr from {command}: {lines}")
+    if stderr_exception:
+        lines = read_output(process.stderr)
+        if len(lines) > 0:
+            lines = "\n".join(lines)
+            raise StderrException(f"Stderr from {command}: {lines}")
     lines = read_output(process.stdout)
     return "\n".join(lines)
 

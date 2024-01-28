@@ -11,9 +11,9 @@ from vatf.utils import utils
 def _get_api():
     return vatf_api.get_api("shell")
 
-def fg(command):
+def fg(command, shell = True, stderr_exception = True):
     utils.print_func_info()
-    _get_api().fg(command)
+    _get_api().fg(command, shell, stderr_exception)
 
 def bg(command, shell = True):
     utils.print_func_info()
