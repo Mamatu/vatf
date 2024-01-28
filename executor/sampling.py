@@ -126,7 +126,7 @@ def find_start_end_regexes(path_to_log, start_regex, end_regex, from_line, max_c
 def _checks_args(args):
     def mandatory(arg, path):
         if not (path and os.path.exists(path)):
-            raise Exception(f"Mandatory {arg} doesn't exist")
+            raise Exception(f"Mandatory {arg} {path} doesn't exist")
     def not_mandatory(arg, path):
         if path and not os.path.exists(path):
             raise Exception(f"Not existed {arg}: {path}")
