@@ -30,6 +30,7 @@ def start(**kwargs):
     global cmdringbuffer
     global log_cleanup_thread
     from vatf.utils import config_handler
+    set_line_number(None)
     config = config_handler.get_config(**kwargs)
     command = None
     try:
@@ -206,15 +207,15 @@ def _find_closest_date_greater_than_start_timestamp(filepath, **kwargs):
         return None
     return min(out, key = lambda x: abs(strp(x.matched) - strp(start_timestamp)))
 
-def _handle_file(directory, filename, line_number, regex, callbacks):
+def _handle_file(directory, filename, regex, callbacks):
     filename = str(filename)
-    return search.find(filepath = os.path.join(directory, filename), regex = regex, from_line = line_number, support_directory = True, debug_cat = True, **callbacks)
+    return search.find(filepath = os.path.join(directory, filename), regex = regex, from_line = get_line_number(), support_directory = True, debug_cat = True, **callbacks)
 
-def _handle_numered_chunks(directory, filename, line_number, regex, callbacks):
+def _handle_numered_chunks(directory, filename, regex, callbacks):
     out = []
     while True:
         try:
-            _out = _handle_file(directory, filename, line_number, regex, callbacks)
+            _out = _handle_file(directory, filename, regex, callbacks)
             out.extend(_out)
             if len(out) > 0:
                 return out
@@ -226,21 +227,22 @@ def _handle_numered_chunks(directory, filename, line_number, regex, callbacks):
 
 def _find(filepath, regex, **kwargs):
     start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
-    line_number = 1
-    if start_timestamp:
+    if start_timestamp and get_line_number() == None:
         match = _find_closest_date_greater_than_start_timestamp(filepath = filepath, **kwargs)
         if match is None:
             return []
-        line_number = match.line_number
+        set_line_number(match.line_number)
         filepath = match.filepath
+    if get_line_number() is None:
+        set_line_number(1)
     callbacks = _get_encapsulate_gerp_callback_kwargs(**kwargs)
     filename = os.path.basename(filepath)
     directory = os.path.dirname(filepath)
     try:
         filename = int(filename)
-        return _handle_numered_chunks(directory, filename, line_number, regex, callbacks)
+        return _handle_numered_chunks(directory, filename, regex, callbacks)
     except ValueError:
-        return _handle_file(directory, filename, line_number, regex, callbacks)
+        return _handle_file(directory, filename, regex, callbacks)
 
 def _get_operators(regex):
     def regex_index(_regex, _ro):
@@ -459,6 +461,7 @@ def _wait_for_regex_command(regex, timeout = 30, pause = 0.001, **kwargs):
         temp_file.close()
 
 def _wait_for_regex_path(regex, timeout = 30, pause = 0.001, **kwargs):
+    set_line_number(None)
     wait_for_regex_path_key = "wait_for_regex.path"
     wait_for_regex_date_format_key = "wait_for_regex.date_format"
     wait_for_regex_date_regex_key = "wait_for_regex.date_regex"
@@ -579,3 +582,17 @@ def createCleanupLogThread(chunks_dir_path, config):
         pass
     thread = loop.async_loop(callback, _break, -1)
     return thread
+
+_line_number = None
+
+def is_line_number_initialized():
+    global _line_number
+    return _line_number
+
+def set_line_number(value):
+    global _line_number
+    _line_number = value
+
+def get_line_number():
+    global _line_number
+    return _line_number
