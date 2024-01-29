@@ -31,21 +31,26 @@ def start(**kwargs):
     global log_cleanup_thread
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
-    command = config.wait_for_regex.command
-    if command == "":
+    command = None
+    try:
+        command = config.wait_for_regex.command
+    except AttributeError:
+        pass
+    if command is not None and command == "":
         raise Exception("Command is empty")
-    is_file_ring_buffer = config.wait_for_regex.is_file_ring_buffer
-    if command and is_file_ring_buffer:
-        workspace_path = config.wait_for_regex.workspace
-        if not os.path.exists(workspace_path):
-            os.makedirs(workspace_path)
-        chunks_dir_path = os.path.join(workspace_path, "chunks")
-        command = command.format(log_path = chunks_dir_path)
-        chunks_count = config.wait_for_regex.chunks_count
-        lines_count = config.wait_for_regex.lines_count
-        cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
-        cmdringbuffer.start()
-        log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
+    if command:
+        is_file_ring_buffer = config.wait_for_regex.is_file_ring_buffer
+        if is_file_ring_buffer:
+            workspace_path = config.wait_for_regex.workspace
+            if not os.path.exists(workspace_path):
+                os.makedirs(workspace_path)
+            chunks_dir_path = os.path.join(workspace_path, "chunks")
+            command = command.format(log_path = chunks_dir_path)
+            chunks_count = config.wait_for_regex.chunks_count
+            lines_count = config.wait_for_regex.lines_count
+            cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
+            cmdringbuffer.start()
+            log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
 
 def stop():
     global cmdringbuffer
