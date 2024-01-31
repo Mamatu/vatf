@@ -12,6 +12,7 @@ from vatf.executor import log_snapshot, shell
 from vatf.utils import utils
 from vatf.utils import os_proxy
 from vatf.utils import dlt
+from vatf.utils import config_handler
 
 _written_lines_count = None
 _generated_lines = []
@@ -23,6 +24,7 @@ _lines_in_one_write = 10
 
 def setup_function():
     from vatf import vatf_api
+    config_handler.reset_configs()
     global _written_lines_count
     _written_lines_count = 0
     vatf_api.set_api_type(vatf_api.API_TYPE.EXECUTOR)
