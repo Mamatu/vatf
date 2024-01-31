@@ -305,6 +305,11 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
         labels[llk] = out
     return out
 
+def regsiter_line_number(outputs):
+    for o in outputs:
+        if o is not None and not isinstance(o, bool):
+            set_line_number_for_file(o.line_number, o.filepath)
+
 def _handle_exists(regex, filepath, **kwargs):
     def callback(outputs, regex):
         if len(outputs) == 0:
@@ -313,7 +318,10 @@ def _handle_exists(regex, filepath, **kwargs):
             raise Exception(f"{RegexOperator.EXISTS} handles only single operator")
         if len(outputs) == 0:
             return False
-        return outputs[0] is not None
+        exist = outputs[0] is not None
+        if exist:
+            regsiter_line_number(outputs)
+        return exist
     return _make_outputs(regex, filepath, RegexOperator.EXISTS, callback, **kwargs)
 
 def _handle_and(regex, filepath, **kwargs):
@@ -322,7 +330,9 @@ def _handle_and(regex, filepath, **kwargs):
             return False
         if len(outputs) == len(regex):
             status = all(outputs)
-            if status: return True
+            if status:
+                regsiter_line_number(outputs)
+                return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.AND, callback, **kwargs)
 
@@ -331,7 +341,9 @@ def _handle_or(regex, filepath, **kwargs):
         if len(outputs) == 0:
             return False
         for o in outputs:
-            if o: return True
+            if o:
+                regsiter_line_number(outputs)
+                return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.OR, callback, **kwargs)
 
@@ -348,7 +360,10 @@ def _handle_in_order_line(regex, filepath, **kwargs):
                 _out.append(o is not None)
         if all(_out):
             lines = [o.line_number if o else o for o in outputs]
-            return lines == sorted(lines)
+            o = (lines == sorted(lines))
+            if o:
+                regsiter_line_number(outputs)
+                return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LINE, callback, **kwargs)
 
