@@ -211,7 +211,6 @@ def _handle_file(directory, filename, regex, callbacks):
     filename = str(filename)
     filepath = os.path.join(directory, filename)
     from_file = get_line_number_for_file(filepath)
-    print(f"_handle_file {filepath} {from_file}")
     if from_file is None:
         from_file = 1
     return search.find(filepath = os.path.join(directory, filename), regex = regex, from_line = from_file, support_directory = True, debug_cat = True, **callbacks)
@@ -606,15 +605,11 @@ _files_line_number = {}
 
 def is_line_number_initialized(filepath):
     global _files_line_number
-    print(f"is_line_number_initialized {filepath}")
-    print(_files_line_number)
     return filepath in _files_line_number
 
 def set_line_number_for_file(value, filepath):
     global _files_line_number
-    print(f"set_line_number_for_file {value} {filepath}")
     _files_line_number[filepath] = value
-    print(_files_line_number)
 
 def reset_files_line_number():
     global _files_line_number
@@ -623,6 +618,4 @@ def reset_files_line_number():
 def get_line_number_for_file(filepath):
     global _files_line_number
     output = _files_line_number.get(filepath, None)
-    print(f"get_line_number_for_file {output} {filepath}")
-    print(_files_line_number)
     return output
