@@ -194,7 +194,8 @@ def _find_closest_date_greater_than_start_timestamp(filepath, **kwargs):
             dt = datetime.datetime.fromtimestamp(matched)
             return dt
         return matched
-    start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = True, **kwargs)
+    start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
+    start_line_number = handle_kwargs("start_line_number", default_output = None, is_required = False, **kwargs)
     from vatf.utils import config_handler
     config = config_handler.get_config(**kwargs)
     date_format = config.wait_for_regex.date_format
@@ -229,16 +230,22 @@ def _handle_numered_chunks(directory, filename, regex, callbacks):
             return out
     return out
 
-def _find(filepath, regex, **kwargs):
+def _calculate_start_line(filepath, **kwargs):
     start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
+    start_line = handle_kwargs("start_line", default_output = None, is_required = False, **kwargs)
     if start_timestamp and get_line_number_for_file(filepath) == None:
         match = _find_closest_date_greater_than_start_timestamp(filepath = filepath, **kwargs)
         if match is None:
             return []
         set_line_number_for_file(match.line_number, match.filepath)
         filepath = match.filepath
+    elif start_line:
+        set_line_number_for_file(start_line, filepath)
     if get_line_number_for_file(filepath) is None:
         set_line_number_for_file(1, filepath)
+
+def _find(filepath, regex, **kwargs):
+    _calculate_start_line(filepath, **kwargs)
     callbacks = _get_encapsulate_gerp_callback_kwargs(**kwargs)
     filename = os.path.basename(filepath)
     directory = os.path.dirname(filepath)
@@ -433,6 +440,17 @@ def _wait_loop(regex, timeout, pause, filepath, **kwargs):
         else:
             return _handle_single_regex(regex, filepath, **kwargs)
     return loop.wait_until_true(handle, pause = pause, timeout = timeout)
+
+def _get_start_line(**kwargs):
+    use_line = handle_kwargs("use_line", default_output = False, is_required = False, **kwargs)
+    if use_line:
+        start_line = handle_kwargs("start_line", default_output = None, is_required = True, **kwargs)
+        return start_line
+    else:
+        start_timestamp = _get_start_timestamp(**kwargs)
+    start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
+    start_line = handle_kwargs("start_line", default_output = None, is_required = False, **kwargs)
+    return None
 
 def _get_start_timestamp(date_format_is_required = False, **kwargs):
     config = config_handler.get_config(**kwargs)
