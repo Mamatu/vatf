@@ -527,6 +527,25 @@ def test_wait_for_regex_duplicated_label_exception(time_sleep_mock):
         log_file.close()
 
 @patch("time.sleep")
+def test_wait_for_regex_start_timestamp(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 571000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.568000 line3\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        start_timestamp_1 = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 568900).timestamp()
+        start_timestamp_2 = datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 567900).timestamp()
+        from vatf.utils import wait_conditioner as w_cond
+        assert w_cond.wait_for_regex("line4", config = config, start_timestamp = start_timestamp_1)
+        assert w_cond.wait_for_regex("line3", config = config, start_timestamp = start_timestamp_2)
+        log_file.close()
+
+@patch("time.sleep")
 def test_wait_for_sequence_of_fails(time_sleep_mock):
     text = [
     "2022-01-29 20:54:55.567000 line1\n",

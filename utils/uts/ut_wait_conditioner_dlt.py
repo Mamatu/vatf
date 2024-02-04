@@ -362,7 +362,9 @@ def test_libcmdringbuffer_lines_count_3_chunks_count_3_match_line_5_line_6_start
     wait.start(config = config)
     thread = get_thread_with_stop(writer, generate_line)
     try:
-        assert wait.wait_for_regex(["line_5", "line_6", wt.RegexOperator.IN_ORDER_LINE], timeout = 10, config = config)
+        start_timestamp = 0
+        assert wait.wait_for_regex("line_5", timeout = 10, config = config, start_timestamp = start_timestamp)
+        assert wait.wait_for_regex("line_6", timeout = 10, config = config, start_timestamp = start_timestamp)
     finally:
         thread.stop()
         wait.stop()

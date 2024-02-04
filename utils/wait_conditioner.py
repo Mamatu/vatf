@@ -435,6 +435,9 @@ def _wait_loop(regex, timeout, pause, filepath, **kwargs):
     return loop.wait_until_true(handle, pause = pause, timeout = timeout)
 
 def _get_start_timestamp(date_format_is_required = False, **kwargs):
+    start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
+    if start_timestamp is not None:
+        return start_timestamp
     config = config_handler.get_config(**kwargs)
     date_format = None
     timedelta = None
