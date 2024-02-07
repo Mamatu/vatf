@@ -6,26 +6,7 @@ from dataclasses import dataclass
 
 from numpy.linalg import norm
 
-class AudioData:
-    def __init__(self, path = None, y = None, sr = None, mfcc = None):
-        self.path = path
-        self.y = y
-        self.sr = sr
-        self.mfcc = mfcc
-        self.aligments = {}
-
-def _get_pathes_tuples(audio_data):
-    keys = [(x,y) for x in audio_data.keys() for y in audio_data.keys() if x != y]
-    output = []
-    existed = []
-    for k in keys:
-        if k not in existed:
-            existed.append(k)
-            existed.append((k[1], k[0]))
-            output.append(k)
-    return output
-
-def get_audio_data_from_files(pathes):
+def init_audio_data_from_files(pathes):
     audio_data = {}
     for path in pathes:
         y, sr = librosa.load(file)
@@ -46,7 +27,7 @@ def calculate_aligment(audio_data):
         value1 = audio_data[key[0]]
         value2 = audio_data[key[1]]
         aligment1 = dtw(value1.mfcc.T, value2.mfcc.T, keep_internals=True)
-        aligment2 = dtw(value2.mfcc.T, value1.mfcc.T, keep_internals=True)
+        aligment2 = dtw(value2.mfcc.T, value1.mfcc.T, keep_internals=True) #to optimize, aligment2 can be created from aligment1
         audio_data[key[0]].aligments[key[1]] = aligment1
         audio_data[key[1]].aligments[key[0]] = aligment2
     return audio_data
@@ -59,4 +40,23 @@ def get_distances(audio_data):
         value2 = audio_data[key[1]]
         distance = value1.aligments[key[1]].distance
         output[key] = distance
+    return output
+
+class AudioData:
+    def __init__(self, path = None, y = None, sr = None, mfcc = None):
+        self.path = path
+        self.y = y
+        self.sr = sr
+        self.mfcc = mfcc
+        self.aligments = {}
+
+def _get_pathes_tuples(audio_data):
+    keys = [(x,y) for x in audio_data.keys() for y in audio_data.keys() if x != y]
+    output = []
+    existed = []
+    for k in keys:
+        if k not in existed:
+            existed.append(k)
+            existed.append((k[1], k[0]))
+            output.append(k)
     return output
