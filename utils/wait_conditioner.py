@@ -349,6 +349,7 @@ def _handle_or(regex, filepath, **kwargs):
 
 def _handle_in_order_line(regex, filepath, **kwargs):
     def callback(outputs, regexes):
+        print(f"regexes: {regexes} outputs: {outputs}")
         _used_regexes = []
         _out = []
         for regex in regexes:
@@ -365,6 +366,7 @@ def _handle_in_order_line(regex, filepath, **kwargs):
                     _out.append(o)
                     _used_regexes.append(regex)
                     break
+        print(f"_out: {_out}")
         if len(_out) != len(regexes):
             return False
         if all(_out):
