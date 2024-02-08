@@ -605,3 +605,129 @@ def test_wait_for_regex_in_order_two_the_same_regex(time_sleep_mock):
         from vatf.utils import wait_conditioner as w_cond
         assert w_cond.wait_for_regex(["line1", "line2", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
         log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_not_registered_regex_1(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        #assert not w_cond.wait_for_regex(["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
+        assert not w_cond.wait_for_regex(["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
+        log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_not_registered_regex_2(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        #assert not w_cond.wait_for_regex(["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
+        assert not w_cond.wait_for_regex([["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], "line_10", w_cond.RegexOperator.OR], timeout = 0.1, config = config)
+        log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_not_detected_regex_3(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        assert not w_cond.wait_for_regex([["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], ["line10", "line11", w_cond.RegexOperator.OR], w_cond.RegexOperator.OR], timeout = 0.1, config = config)
+        log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_detected_regex_3(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        label_cond_1 = w_cond.Label("cond_1")
+        label_cond_2 = w_cond.Label("cond_2")
+        label_cond_3 = w_cond.Label("cond_3")
+        labels = {}
+        assert w_cond.wait_for_regex([["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE, label_cond_1], ["line5", "line11", w_cond.RegexOperator.OR, label_cond_2], w_cond.RegexOperator.OR, label_cond_3], timeout = 0.1, config = config, labels = labels)
+        log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_not_registered_regex_3_labels(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        assert not w_cond.wait_for_regex([["line1", "line2", "line3", w_cond.RegexOperator.IN_ORDER_LINE], ["line10", w_cond.RegexOperator.OR], w_cond.RegexOperator.OR], timeout = 0.1, config = config)
+        log_file.close()
+
+@patch("time.sleep")
+def test_wait_for_regex_in_order_line_lack_of_one_regex(time_sleep_mock):
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 55, microsecond = 566000)):
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        date_regex = "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} [0-2][0-4]:[0-6][0-9]:[0-6][0-9].[0-9]\\{3\\}"
+        time_sleep_mock.side_effect = lambda time: logging.debug(f"sleep {time}")
+        text = [
+        "2022-01-29 20:54:55.567000 line1\n",
+        "2022-01-29 20:54:55.567000 line2\n",
+        "2022-01-29 20:54:55.568000 line1\n",
+        "2022-01-29 20:54:55.569000 line4\n",
+        "2022-01-29 20:54:55.570000 line5\n",
+        "2022-01-29 20:54:55.600000 line6\n",
+        ]
+        log_file = os_proxy.create_tmp_file("w", data = "".join(text))
+        config = {"wait_for_regex.date_regex" : date_regex, "wait_for_regex.date_format" : date_format, "wait_for_regex.path" : log_file.name}
+        from vatf.utils import wait_conditioner as w_cond
+        assert not w_cond.wait_for_regex(["line1", "line2", "line11", w_cond.RegexOperator.IN_ORDER_LINE], timeout = 0.1, config = config)
+        log_file.close()
