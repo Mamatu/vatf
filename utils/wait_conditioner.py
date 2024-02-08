@@ -348,24 +348,27 @@ def _handle_or(regex, filepath, **kwargs):
     return _make_outputs(regex, filepath, RegexOperator.OR, callback, **kwargs)
 
 def _handle_in_order_line(regex, filepath, **kwargs):
-    def callback(outputs, regex):
-        outputs = outputs[:len(regex)]
-        if len(outputs) == 0:
-            return False
+    def callback(outputs, regexes):
+        _used_regexes = []
         _out = []
-        regexes_copy = regex.copy()
-        for o in outputs:
-            if isinstance(o, bool):
-                _out.append(o)
-            else:
-                if len(regexes_copy) == 0 and o is not None:
-                    break
-                rec = re.compile(f"\<{regexes_copy[0]}\>")
-                if o.search_in_matched(rec):
+        for regex in regexes:
+            if regex in _used_regexes:
+                continue
+            rec = re.compile(r'({})'.format(regex))
+            for o in outputs:
+                output1 = False
+                if isinstance(o, bool):
+                    output1 = True
+                else:
+                    output1 = o.search_in_matched(rec)
+                if output1:
                     _out.append(o)
-                    regexes_copy.remove(o.matched)
+                    _used_regexes.append(regex)
+                    break
+        if len(_out) != len(regexes):
+            return False
         if all(_out):
-            lines = [o.line_number if o else o for o in outputs]
+            lines = [o.line_number if o else o for o in _out]
             o = (lines == sorted(lines))
             if o:
                 set_line_number(outputs)
