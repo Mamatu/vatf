@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 cmdringbuffer = None
 log_cleanup_thread = None
 from enum import Enum
+import re
 
 def start(**kwargs):
     global cmdringbuffer
@@ -304,7 +305,7 @@ def _make_outputs(regex, filepath, ro, callback, **kwargs):
         labels[llk] = out
     return out
 
-def regsiter_line_number(outputs):
+def set_line_number(outputs):
     for o in outputs:
         if o is not None and not isinstance(o, bool):
             set_line_number_for_file(o.line_number, o.filepath)
@@ -319,7 +320,7 @@ def _handle_exists(regex, filepath, **kwargs):
             return False
         exist = outputs[0] is not None
         if exist:
-            regsiter_line_number(outputs)
+            set_line_number(outputs)
         return exist
     return _make_outputs(regex, filepath, RegexOperator.EXISTS, callback, **kwargs)
 
@@ -330,7 +331,7 @@ def _handle_and(regex, filepath, **kwargs):
         if len(outputs) == len(regex):
             status = all(outputs)
             if status:
-                regsiter_line_number(outputs)
+                set_line_number(outputs)
                 return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.AND, callback, **kwargs)
@@ -341,7 +342,7 @@ def _handle_or(regex, filepath, **kwargs):
             return False
         for o in outputs:
             if o:
-                regsiter_line_number(outputs)
+                set_line_number(outputs)
                 return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.OR, callback, **kwargs)
@@ -352,16 +353,22 @@ def _handle_in_order_line(regex, filepath, **kwargs):
         if len(outputs) == 0:
             return False
         _out = []
+        regexes_copy = regex.copy()
         for o in outputs:
             if isinstance(o, bool):
                 _out.append(o)
             else:
-                _out.append(o is not None)
+                if len(regexes_copy) == 0 and o is not None:
+                    break
+                rec = re.compile(f"\<{regexes_copy[0]}\>")
+                if o.search_in_matched(rec):
+                    _out.append(o)
+                    regexes_copy.remove(o.matched)
         if all(_out):
             lines = [o.line_number if o else o for o in outputs]
             o = (lines == sorted(lines))
             if o:
-                regsiter_line_number(outputs)
+                set_line_number(outputs)
                 return True
         return False
     return _make_outputs(regex, filepath, RegexOperator.IN_ORDER_LINE, callback, **kwargs)
