@@ -349,7 +349,6 @@ def _handle_or(regex, filepath, **kwargs):
 
 def _handle_in_order_line(regex, filepath, **kwargs):
     def callback(outputs, regexes):
-        print(f"outputs: {outputs} regexes: {regexes}")
         def create_regexes_line(outputs, regexes):
             _regexes_dict = {}
             for idx in range(len(regexes)):
