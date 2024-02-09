@@ -349,28 +349,37 @@ def _handle_or(regex, filepath, **kwargs):
 
 def _handle_in_order_line(regex, filepath, **kwargs):
     def callback(outputs, regexes):
-        print(f"regexes: {regexes} outputs: {outputs}")
-        _used_regexes = []
-        _out = []
-        for regex in regexes:
-            if regex in _used_regexes:
-                continue
-            rec = re.compile(r'({})'.format(regex))
-            for o in outputs:
-                output1 = False
-                if isinstance(o, bool):
-                    output1 = True
-                else:
-                    output1 = o.search_in_matched(rec)
-                if output1:
-                    _out.append(o)
-                    _used_regexes.append(regex)
-                    break
-        print(f"_out: {_out}")
-        if len(_out) != len(regexes):
+        print(f"outputs: {outputs} regexes: {regexes}")
+        def create_regexes_line(outputs, regexes):
+            _regexes_dict = {}
+            for idx in range(len(regexes)):
+                regex = regexes[idx]
+                if idx > 0 and regexes[idx - 1] not in _regexes_dict.keys():
+                    return {}
+                rec = re.compile(r'({})'.format(regex))
+                previous_regex_line_number = None
+                if idx > 0:
+                    previous_regex_line_number = _regexes_dict[regexes[idx - 1]]
+                for output in outputs:
+                    if isinstance(output, bool):
+                        if output is True and not False in _regexes_dict.keys():
+                            _regexes_dict[output] = output
+                        else:
+                            _regexes_dict[output] = output
+                    else:
+                        search_result = output.search_in_matched(rec)
+                        if search_result and (previous_regex_line_number == None or output.get_file_line_number() > previous_regex_line_number):
+                            if regex not in _regexes_dict.keys():
+                                _regexes_dict[regex] = output.get_file_line_number()
+                            else:
+                                if output.get_file_line_number() < _regexes_dict[regex]:
+                                    _regexes_dict[regex] = output.get_file_line_number()
+            return _regexes_dict
+        regexes_dict = create_regexes_line(outputs, regexes)
+        if len(regexes_dict) != len(regexes):
             return False
-        if all(_out):
-            lines = [o.line_number if o else o for o in _out]
+        if all(regexes_dict.values()):
+            lines = [item[1] for item in regexes_dict.items()]
             o = (lines == sorted(lines))
             if o:
                 set_line_number(outputs)
