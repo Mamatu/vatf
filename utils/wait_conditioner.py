@@ -355,7 +355,7 @@ def _create_regexes_line_dict(outputs, regexes):
         regex = regexes[idx]
         if idx > 0 and regexes[idx - 1] not in _regexes_dict.keys():
             return {}
-        rec = re.compile(f'{regex}')
+        #rec = re.compile(f'{regex}')
         previous_regex_line_number = None
         if idx > 0:
             previous_regex_line_number = _regexes_dict[regexes[idx - 1]]
@@ -366,8 +366,8 @@ def _create_regexes_line_dict(outputs, regexes):
                 else:
                     _regexes_dict[output] = output
             else:
-                #search_result = output.search_in_matched_by_grep(regex)
-                search_result = output.search_in_matched(rec)
+                search_result = output.search_in_matched_by_grep(regex)
+                #search_result = output.search_in_matched(rec)
                 if search_result and (previous_regex_line_number == None or output.get_file_line_number() > previous_regex_line_number):
                     if regex not in _regexes_dict.keys():
                         _regexes_dict[regex] = output.get_file_line_number()
