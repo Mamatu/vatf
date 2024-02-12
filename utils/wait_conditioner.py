@@ -204,7 +204,7 @@ def _find_closest_date_greater_than_start_timestamp(filepath, **kwargs):
     date_regex = config.wait_for_regex.date_regex
     from vatf.executor import search
     callbacks = _get_encapsulate_gerp_callback_kwargs(**kwargs)
-    out = search.find(filepath = filepath, regex = date_regex, only_match = True, support_directory = True, debug_cat = True, **callbacks)
+    out = search.find(filepath = filepath, regex = date_regex, only_match = True, support_directory = True, **callbacks)
     out = [o for o in out if strp(o.matched) > strp(start_timestamp)]
     if len(out) == 0:
         return None
@@ -216,7 +216,7 @@ def _handle_file(directory, filename, regex, callbacks):
     from_file = get_line_number_for_file(filepath)
     if from_file is None:
         from_file = 1
-    return search.find(filepath = os.path.join(directory, filename), regex = regex, from_line = from_file, support_directory = True, debug_cat = True, **callbacks)
+    return search.find(filepath = os.path.join(directory, filename), regex = regex, from_line = from_file, support_directory = True, **callbacks)
 
 def _handle_numered_chunks(directory, filename, regex, callbacks):
     out = []
