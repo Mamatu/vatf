@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
 from numpy.linalg import norm
+from dtw import dtw, dtwPlot, dtwPlotThreeWay
 
 def init_audio_data_from_files(pathes):
     audio_data = {}
     for path in pathes:
-        y, sr = librosa.load(file)
+        y, sr = librosa.load(path)
         audio_data[path] = AudioData(path = path, y = y, sr = sr)
     return audio_data
 
@@ -19,17 +20,26 @@ def calculate_mfcc(audio_data):
         value.mfcc = mfcc
     return audio_data
 
+def _dtw(audio_data1, audio_data2, keep_internals):
+    try:
+        return dtw(audio_data1.mfcc.T, audio_data2.mfcc.T, keep_internals=True)
+    except Exception as e:
+        print(f"{audio_data1.path} {audio_data1.mfcc.shape} and {audio_data2.path} {audio_data2.mfcc.shape}: {e}", file=sys.stderr)
+        raise e
+
 def calculate_aligment(audio_data):
-    from dtw import dtw, dtwPlot, dtwPlotThreeWay
     keys = _get_pathes_tuples(audio_data)
     idx = 0
     for key in keys:
         value1 = audio_data[key[0]]
         value2 = audio_data[key[1]]
-        aligment1 = dtw(value1.mfcc.T, value2.mfcc.T, keep_internals=True)
-        aligment2 = dtw(value2.mfcc.T, value1.mfcc.T, keep_internals=True) #to optimize, aligment2 can be created from aligment1
-        audio_data[key[0]].aligments[key[1]] = aligment1
-        audio_data[key[1]].aligments[key[0]] = aligment2
+        try:
+            aligment1 = _dtw(value1, value2, keep_internals=True)
+            aligment2 = _dtw(value2, value1, keep_internals=True) #to optimize, aligment2 can be created from aligment1
+            audio_data[key[0]].aligments[key[1]] = aligment1
+            audio_data[key[1]].aligments[key[0]] = aligment2
+        except Exception as e:
+            print(f"Error in {key[0]} and {key[1]}: {e}", file=sys.stderr)
     return audio_data
 
 def get_distances(audio_data):
