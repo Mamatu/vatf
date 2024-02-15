@@ -27,17 +27,17 @@ def _dtw(audio_data1, audio_data2, keep_internals):
         print(f"{audio_data1.path} {audio_data1.mfcc.shape} and {audio_data2.path} {audio_data2.mfcc.shape}: {e}", file=sys.stderr)
         raise e
 
-def calculate_aligment(audio_data):
+def calculate_alignment(audio_data):
     keys = _get_pathes_tuples(audio_data)
     idx = 0
     for key in keys:
         value1 = audio_data[key[0]]
         value2 = audio_data[key[1]]
         try:
-            aligment1 = _dtw(value1, value2, keep_internals=True)
-            aligment2 = _dtw(value2, value1, keep_internals=True) #to optimize, aligment2 can be created from aligment1
-            audio_data[key[0]].aligments[key[1]] = aligment1
-            audio_data[key[1]].aligments[key[0]] = aligment2
+            alignment1 = _dtw(value1, value2, keep_internals=True)
+            alignment2 = _dtw(value2, value1, keep_internals=True) #to optimize, alignment2 can be created from alignment1
+            audio_data[key[0]].alignments[key[1]] = alignment1
+            audio_data[key[1]].alignments[key[0]] = alignment2
         except Exception as e:
             print(f"Error in {key[0]} and {key[1]}: {e}", file=sys.stderr)
     return audio_data
@@ -48,7 +48,7 @@ def get_distances(audio_data):
     for key in keys:
         value1 = audio_data[key[0]]
         value2 = audio_data[key[1]]
-        distance = value1.aligments[key[1]].distance
+        distance = value1.alignments[key[1]].distance
         output[key] = distance
     return output
 
@@ -58,7 +58,7 @@ class AudioData:
         self.y = y
         self.sr = sr
         self.mfcc = mfcc
-        self.aligments = {}
+        self.alignments = {}
 
 def _get_pathes_tuples(audio_data):
     keys = [(x,y) for x in audio_data.keys() for y in audio_data.keys() if x != y]

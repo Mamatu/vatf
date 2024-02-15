@@ -4,6 +4,7 @@ import numpy as np
 import gradio as gr
 
 import os
+import shutil
 
 from vatf.utils import libaudiocompare
 
@@ -25,22 +26,38 @@ class Test:
     def __str__(self):
         return self.name
 
+class _Path:
+    def __init__(self, path, obj = None):
+        self.path = path
+        self.obj = obj
+    def __str__(self):
+        return self.path
+    def __repr__(self):
+        return self.path
+    def __del__(self):
+        if self.obj:
+            del self.obj
+            print("_Path: __del__ {self.path}", file = sys.stderr)
+            #shutil.rmtree(self.path)
+
 def get_path(path):
     if not os.path.exists(path):
         raise ValueError(f"Path {path} does not exist")
     import zipfile
     if zipfile.is_zipfile(path):
+        print(f"File is zipfile {path}", file = sys.stderr)
         import tempfile
         temp_dir = tempfile.TemporaryDirectory()
+        print(f"{temp_dir.name}", file = sys.stderr)
         with zipfile.ZipFile(path, 'r') as zip_ref:
             zip_ref.extractall(temp_dir.name)
-        return temp_dir.name
-    return path
+        return _Path(os.path.join(temp_dir.name, "logs/data"), temp_dir)
+    return _Path(path)
 
 def iterate_dir(path, callback_dir = None, callback_file = None):
     import os
-    for item in os.listdir(path):
-        abs_path = os.path.join(path, item)
+    for item in os.listdir(str(path)):
+        abs_path = os.path.join(str(path), item)
         if os.path.isfile(abs_path):
             if callback_file:
                 callback_file(item, abs_path)
@@ -107,21 +124,11 @@ def compare_samples_in_sessions(test):
     for idx in range(max_len):
         output = libaudiocompare.init_audio_data_from_files(audio_data[idx])
         output = libaudiocompare.calculate_mfcc(output)
-        output = libaudiocompare.calculate_aligment(output)
+        output = libaudiocompare.calculate_alignment(output)
         outputs[idx] = output
     return outputs
 
-def create_matrix(audio_data):
-    matrix = []
-    for idx in audio_data:
-        row = []
-        for idx2 in audio_data:
-            if idx == idx2:
-                row.append(0)
-            else:
-                row.append(audio_data[idx].compare(audio_data[idx2]))
-        matrix.append(row)
-    return matrix
+import matplotlib.pyplot as plt
 
 def create_app(tests):
     app = gr.Blocks()
@@ -129,19 +136,38 @@ def create_app(tests):
         for test in tests:
             with gr.Accordion(test.name, open = False):
                 audio_data = compare_samples_in_sessions(test)
-                #audio_matrix = create_matrix(audio_data)
-                gr.DataFrame(value = [[1, 2, 3], [1, 2, 3], [1, 2, 3]])
                 for session in test.sessions:
                     with gr.Accordion(session.name, open = False):
                         for sample in session.samples:
-                            gr.Audio(sample)
+                            value = None
+                            for key in audio_data.keys():
+                                if sample in audio_data[key]:
+                                    _distances = [alignment.normalizedDistance for key1, alignment in audio_data[key][sample].alignments.items()]
+                                    if len(_distances) > 0:
+                                        value = sum(_distances) / float(len(_distances))
+                            label = str(sample.split("/")[-1])
+                            if value:
+                                label = f"{label}: (mean distance: {value})"
+                            with gr.Accordion(label, open = False):
+                                if not value:
+                                    gr.Audio(sample, label = label)
+                                else:
+                                    gr.Audio(sample, label = label)
+                                    #gr.Label(value = value)
                         for log in session.logs:
                             gr.File(log)
     return app
 
 if __name__ == "__main__":
+    path = None
+    import atexit
+    def exit_handler():
+        if path:
+            shutil.rmtree(str(path))
+    #atexit.register(exit_handler)
     import sys
     path = get_path(sys.argv[1])
+    print(f"Path: {path}")
     tests = load_data(path)
     app = create_app(tests)
     app.launch()
