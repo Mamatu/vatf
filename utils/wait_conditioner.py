@@ -53,7 +53,7 @@ def start(**kwargs):
             lines_count = config.wait_for_regex.lines_count
             cmdringbuffer = libcmdringbuffer.make(command, f"{workspace_path}/fifo", chunks_dir_path, lines_count, chunks_count, timestamp_lock = True)
             cmdringbuffer.start()
-            log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
+            #log_cleanup_thread = createCleanupLogThread(chunks_dir_path, config)
 
 def stop():
     global cmdringbuffer
@@ -522,7 +522,8 @@ def _wait_for_regex_path(regex, timeout = 30, pause = 0.001, **kwargs):
 
 def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.001, **kwargs):
     global log_cleanup_thread
-    log_cleanup_thread.pause()
+    if log_cleanup_thread is not None:
+        log_cleanup_thread.pause()
     try:
         from vatf.utils import config_handler
         start_timestamp = handle_kwargs("start_timestamp", default_output = None, is_required = False, **kwargs)
@@ -537,7 +538,8 @@ def _wait_for_regex_command_file_ring_buffer(regex, timeout = 30, pause = 0.001,
         kwargs["start_timestamp"] = start_timestamp
         return _wait_loop(regex, timeout, pause, chunks_dir_path, _wait_for_regex_command_file_ring_buffer = True, **kwargs)
     finally:
-        log_cleanup_thread.resume()
+        if log_cleanup_thread is not None:
+            log_cleanup_thread.resume()
 
 _lock_files_timestamps = {}
 import fcntl
