@@ -7,11 +7,11 @@ import os
 from vatf.executor import wait
 
 class CmdRingBuffer:
-    def __init__(self, command, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock, redirection_operator = ">"):
+    def __init__(self, command, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock, keep_files = False, redirection_operator = ">"):
         self.command = command
         self.fifo_file = fifo_file
         self.redirection_operator = redirection_operator
-        self.fileringbuffer = libfileringbuffer.make(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock)
+        self.fileringbuffer = libfileringbuffer.make(fifo_file, chunks_dir, chunk_lines, chunks_count, keep_files, timestamp_lock)
         self.bg_process = None
     def start(self):
         if not os.path.exists(self.fifo_file):
@@ -24,5 +24,5 @@ class CmdRingBuffer:
         if os.path.exists(self.fifo_file):
             shell.fg(f"rm {self.fifo_file}")
 
-def make(command, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock):
-    return CmdRingBuffer(command, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock)
+def make(command, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock, keep_files = False):
+    return CmdRingBuffer(command, fifo_file, chunks_dir, chunk_lines, chunks_count, keep_files, timestamp_lock)

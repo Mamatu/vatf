@@ -31,7 +31,7 @@ class FileRingTests : public Test
 class ChunkMock : public Chunk
 {
   public:
-    ChunkMock(const std::string& path, size_t id, size_t linesLimit) : Chunk(id, linesLimit), m_path(path) {}
+    ChunkMock(const std::string& path, size_t id, size_t linesLimit) : Chunk(id, linesLimit, false), m_path(path) {}
 
     Chunk::LenLines getLenToTransfer(const char* bytes, size_t length) const
     {
@@ -72,7 +72,7 @@ class TestFileRing : public FileRing
       FileRing(chunksDirPath, fifoPath, chunksCount, linesLimit, false), m_chunkMocks(chunkMocks)
     {}
 
-    std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id) override
+    std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id, bool) override
     {
       if (m_chunkMocks.size() <= m_chunkIdx)
       {

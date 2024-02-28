@@ -44,7 +44,8 @@ int main(int argc, char* argv[])
   size_t bufferKB = 1024;
   bool timestampLock = false;
   int opt = -1;
-  while ((opt = getopt(argc, argv, "d:f:c:l:t:")) != -1)
+  bool keepFiles = false;
+  while ((opt = getopt(argc, argv, "d:f:c:l:t:k")) != -1)
   {
     switch (opt)
     {
@@ -53,6 +54,7 @@ int main(int argc, char* argv[])
       case 'c': chunksCount = std::stoi(optarg); continue;
       case 'l': chunkLines = std::stoi(optarg); continue;
       case 't': timestampLock = static_cast<bool>(std::stoi(optarg)); continue;
+      case 'k': keepFiles = true; continue;
       break;
     };
   }
@@ -62,7 +64,7 @@ int main(int argc, char* argv[])
   error(chunksCount != 0, "chunksCount cannot be 0"); 
   error(chunkLines != 0, "chunkLines cannot be 0"); 
 
-  auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines, timestampLock);
+  auto fileRing = std::make_shared<FileRing>(chunksDirPath, fifoPath, chunksCount, chunkLines, timestampLock, keepFiles);
   frSignal.m_fileRing = fileRing;
   fileRing->start();
   return 0;
