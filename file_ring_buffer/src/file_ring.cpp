@@ -11,12 +11,13 @@
 #include <list>
 #include <vector>
 
-FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, bool timestampLock) :
+FileRing::FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, bool timestampLock, bool keepFiles) :
         m_chunksDirPath(chunksDirPath),
         m_fifoPath(fifoPath),
         m_chunksCount(chunksCount),
         m_linesLimit(linesLimit),
-        m_timestampLock(timestampLock)
+        m_timestampLock(timestampLock),
+        m_keepFiles(keepFiles)
 {
 }
 
@@ -38,7 +39,9 @@ void FileRing::start()
 
   auto removeOldChunks = [&chunks, this]()
   {
-    FileRing::removeOldChunks(chunks, m_chunksCount);
+    if (!m_keepFiles) {
+        FileRing::removeOldChunks(chunks, m_chunksCount);
+    }
   };
 
   while(!m_isStopped) 
@@ -57,7 +60,7 @@ void FileRing::start()
       if (!chunk)
       {
         const auto& pathId = getPath();
-        chunk = createChunk(pathId.first, pathId.second);
+        chunk = createChunk(pathId.first, pathId.second, m_keepFiles);
         chunks.push_back(chunk);
       }
       len = len + chunk->write(buffer.data() + len, bufferSizeWithData - len);
@@ -97,9 +100,9 @@ size_t FileRing::getLinesLimit() const
   return m_linesLimit;
 }
 
-std::shared_ptr<Chunk> FileRing::createChunk(const std::string& path, size_t id)
+std::shared_ptr<Chunk> FileRing::createChunk(const std::string& path, size_t id, bool keepFiles)
 {
-  return std::make_shared<ChunkFile>(path, id, m_linesLimit, m_timestampLock);
+  return std::make_shared<ChunkFile>(path, id, m_linesLimit, keepFiles, m_timestampLock);
 }
 
 std::unique_ptr<Fifo> FileRing::createFifo(const std::string& path)

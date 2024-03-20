@@ -7,7 +7,7 @@
 class ChunkFile : public Chunk
 {
   public:
-    ChunkFile(const std::string& dirpath, size_t id, size_t linesLimit, bool timestampLock);
+    ChunkFile(const std::string& dirpath, size_t id, size_t linesLimit, bool keepFiles, bool timestampLock);
     virtual ~ChunkFile();
 
     std::string getFilePath() const;

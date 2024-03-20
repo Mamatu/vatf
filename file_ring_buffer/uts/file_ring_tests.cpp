@@ -31,7 +31,7 @@ class FileRingTests : public Test
 class ChunkMock : public Chunk
 {
   public:
-    ChunkMock(const std::string& path, size_t id, size_t linesLimit) : Chunk(id, linesLimit), m_path(path) {}
+    ChunkMock(const std::string& path, size_t id, size_t linesLimit) : Chunk(id, linesLimit, false), m_path(path) {}
 
     Chunk::LenLines getLenToTransfer(const char* bytes, size_t length) const
     {
@@ -72,7 +72,7 @@ class TestFileRing : public FileRing
       FileRing(chunksDirPath, fifoPath, chunksCount, linesLimit, false), m_chunkMocks(chunkMocks)
     {}
 
-    std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id) override
+    std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id, bool) override
     {
       if (m_chunkMocks.size() <= m_chunkIdx)
       {
@@ -214,22 +214,9 @@ TEST_F(FileRingTests, test_1)
   bool opened = false;
  
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-  //  ASSERT_TRUE(fd > 0);
-  //  {
-  //    std::unique_lock ul(mutex);
-  //    opened = true;
-  //  }
-  //  cv.notify_one();
-  //});
 
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
-  thread.detach();
 
-  //{
-  //  std::unique_lock ul(mutex);
-  //  cv.wait(ul, [&opened]() {return opened;});
-  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(300);
 
@@ -243,6 +230,7 @@ TEST_F(FileRingTests, test_1)
   EXPECT_EQ(dataChunk2, cmocks[1]->m_data);
   EXPECT_EQ(dataChunk3, cmocks[2]->m_data);
   testFileRing.stop();
+  thread.join();
 }
 
 TEST_F(FileRingTests, test_2)
@@ -271,26 +259,8 @@ TEST_F(FileRingTests, test_2)
   bool opened = false;
 
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-  //  if (fd <= 0)
-  //  {
-  //    std::stringstream sstream;
-  //    sstream << "File descriptor is invalid. It is " << fd;
-  //    std::runtime_error(sstream.str());
-  //  }
-  //  {
-  //    std::unique_lock ul(mutex);
-  //    opened = true;
-  //  }
-  //  cv.notify_one();
-  //});
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
-  thread.detach();
 
-  //{
-  //  std::unique_lock ul(mutex);
-  //  cv.wait(ul, [&opened]() {return opened;});
-  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(400);
 
@@ -306,6 +276,7 @@ TEST_F(FileRingTests, test_2)
   EXPECT_EQ(dataChunk3, cmocks[2]->m_data);
   EXPECT_EQ(dataChunk4, cmocks[3]->m_data);
   testFileRing.stop();
+  thread.join();
 }
 
 TEST_F(FileRingTests, test_3)
@@ -339,27 +310,8 @@ TEST_F(FileRingTests, test_3)
   bool opened = false;
 
   TestFileRing testFileRing(dir / "chunks", fifoPath, 3, linesLimit, cmocks);
-  //testFileRing.onFifoOpen().add([&cv, &mutex, &opened](int fd){
-  //  if (fd <= 0)
-  //  {
-  //    std::stringstream sstream;
-  //    sstream << "File descriptor is invalid. It is " << fd;
-  //    std::runtime_error(sstream.str());
-  //  }
-  //  {
-  //    std::unique_lock ul(mutex);
-  //    opened = true;
-  //  }
-  //  cv.notify_one();
-  //});
-
   auto thread = std::thread([&testFileRing](){ testFileRing.start(); });
-  thread.detach();
 
-  //{
-  //  std::unique_lock ul(mutex);
-  //  cv.wait(ul, [&opened]() {return opened;});
-  //}
   FifoWriter fifoWriter(fifoPath);
   fifoWriter.writeLines(900);
 
@@ -385,5 +337,6 @@ TEST_F(FileRingTests, test_3)
   EXPECT_EQ(dataChunk8, cmocks[7]->m_data);
   EXPECT_EQ(dataChunk9, cmocks[8]->m_data);
   testFileRing.stop();
+  thread.join();
 }
 }

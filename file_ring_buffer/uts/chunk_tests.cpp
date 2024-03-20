@@ -13,7 +13,7 @@ class ChunkTests : public Test
 class ChunkMock : public Chunk
 {
   public:
-    ChunkMock(size_t id, size_t linesLimit) : Chunk(id, linesLimit) {}
+    ChunkMock(size_t id, size_t linesLimit) : Chunk(id, linesLimit, false) {}
 
     Chunk::LenLines getLenToTransfer(const char* bytes, size_t length) const
     {

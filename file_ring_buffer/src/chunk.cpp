@@ -5,8 +5,11 @@
 #include <stdexcept>
 #include <stdio.h>
 
-Chunk::Chunk(size_t id, size_t linesLimit) : m_id(id), m_linesLimit(linesLimit)
-{}
+Chunk::Chunk(size_t id, size_t linesLimit, bool keepFiles) : m_id(id), m_linesLimit(linesLimit), m_keepFiles(keepFiles)
+{
+  m_opened = false;
+  m_lineIdx = 0;
+}
 
 size_t Chunk::write(const char* bytes, size_t length)
 {
@@ -38,6 +41,11 @@ void Chunk::closeIf(size_t linesToTransfer)
     _close();
     m_opened = false;
   }
+}
+
+bool Chunk::keepFiles() const
+{
+  return m_keepFiles;
 }
 
 Chunk::LenLines Chunk::getLenToTransfer(const char* bytes, size_t length) const

@@ -29,7 +29,7 @@ def test_load_config():
         f.write(config)
     config_handler.init_configs([f"{config_temp_file.name}"])
     libtools.create_tools_dir_form_config()
-    assert ['tools', 'test_1'] == os.listdir(data_temp_dirpath)
+    assert ['tools', 'test_1'] == os.listdir(data_temp_dirpath) or ["test_1", "tools"] == os.listdir(data_temp_dirpath)
     assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "tools"))
     assert ".templates" in os.listdir(os.path.join(data_temp_dirpath, "test_1/tools"))
     assert "template.convert_all_pcm_to_ogg.sh" in os.listdir(os.path.join(data_temp_dirpath, "tools/.templates"))

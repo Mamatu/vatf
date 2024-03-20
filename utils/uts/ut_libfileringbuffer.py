@@ -96,6 +96,25 @@ def test_libcmdringbuffer_2():
             finally:
                 crb.stop()
 
+def test_libcmdringbuffer_2_keep_files():
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
+        from vatf.utils import lib_log_snapshot
+        import tempfile
+        from vatf.utils import os_proxy
+        with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
+            chunks_dir = os.path.join(tempdir, "chunks")
+            fifo_path = os.path.join(tempdir, "fifo")
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3, keep_files = True, timestamp_lock = False)
+            crb.start()
+            generate_and_write_lines(fifo_path, 400)
+            time.sleep(10)
+            chunks_list = os.listdir(chunks_dir)
+            chunks_list.sort()
+            try:
+                assert chunks_list == ["0", "1", "2", "3"]
+            finally:
+                crb.stop()
+
 def test_libcmdringbuffer_3():
     with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
         from vatf.utils import lib_log_snapshot
@@ -111,4 +130,21 @@ def test_libcmdringbuffer_3():
             chunks_list = os.listdir(chunks_dir)
             chunks_list.sort()
             assert chunks_list == ["6", "7", "8"]
+            crb.stop()
+
+def test_libcmdringbuffer_3_keep_files():
+    with mocked_now(datetime.datetime(2022, 1, 29, hour = 20, minute = 54, second = 54, microsecond = 000000)):
+        from vatf.utils import lib_log_snapshot
+        import tempfile
+        from vatf.utils import os_proxy
+        with tempfile.TemporaryDirectory(dir="/tmp") as tempdir:
+            chunks_dir = os.path.join(tempdir, "chunks")
+            fifo_path = os.path.join(tempdir, "fifo")
+            crb = libfileringbuffer.make(fifo_path, chunks_dir, 100, 3, keep_files = True, timestamp_lock = False)
+            crb.start()
+            generate_and_write_lines(fifo_path, 900)
+            time.sleep(2)
+            chunks_list = os.listdir(chunks_dir)
+            chunks_list.sort()
+            assert chunks_list == ["0", "1", "2", "3", "4", "5", "6", "7", "8"]
             crb.stop()

@@ -14,7 +14,7 @@
 class FileRing
 {
   public:
-    FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, bool timestampLock);
+    FileRing(const std::string& chunksDirPath, const std::string& fifoPath, size_t chunksCount, size_t linesLimit, bool timestampLock, bool keepFiles = false);
 
     void start();
     void stop();
@@ -30,7 +30,7 @@ class FileRing
     }
 
   protected:
-    virtual std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id);
+    virtual std::shared_ptr<Chunk> createChunk(const std::string& path, size_t id, bool keepFiles);
     virtual std::unique_ptr<Fifo> createFifo(const std::string& path);
 
     template<typename Chunks>
@@ -65,7 +65,7 @@ class FileRing
     bool m_isStopped = false;
     size_t m_chunksCounter = 0;
     bool m_timestampLock = false;
-
+    bool m_keepFiles = false;
     CallbacksCall<int> m_openCallbacks;
 };
 

@@ -10,11 +10,12 @@ class FileRingBuffer:
     """
     Ringbuffer realized by files in the fs
     """
-    def __init__(self, fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock = True):
+    def __init__(self, fifo_file, chunks_dir, chunk_lines, chunks_count, keep_files = False, timestamp_lock = True):
         self.fifo_file = fifo_file
         self.chunks_dir = chunks_dir
         self.chunk_lines = chunk_lines
         self.chunks_count = chunks_count
+        self.keep_files = keep_files
         self.bg_process = None
         self.timestamp_lock = 1 if timestamp_lock else 0
     def start(self):
@@ -30,11 +31,14 @@ class FileRingBuffer:
         file_ring_buffer_path = os.path.join(vatf_path, "bin/file_ring_buffer")
         if not os.path.exists(file_ring_buffer_path):
             raise Exception(f"{file_ring_buffer_path} doesn't exists")
-        self.bg_process = shell.bg(f"{file_ring_buffer_path} -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines} -t {self.timestamp_lock}")
+        command = f"{file_ring_buffer_path} -d {self.chunks_dir} -f {self.fifo_file} -c {self.chunks_count} -l {self.chunk_lines} -t {self.timestamp_lock}"
+        if self.keep_files:
+            command += " -k"
+        self.bg_process = shell.bg(command)
     def stop(self):
         shell.kill(self.bg_process)
         if os.path.exists(self.fifo_file):
             shell.fg(f"rm {self.fifo_file}")
 
-def make(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock):
-    return FileRingBuffer(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock)
+def make(fifo_file, chunks_dir, chunk_lines, chunks_count, timestamp_lock, keep_files = False):
+    return FileRingBuffer(fifo_file, chunks_dir, chunk_lines, chunks_count, keep_files, timestamp_lock)

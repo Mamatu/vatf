@@ -16,6 +16,7 @@ class StderrException(Exception):
 
 @vatf_api.public_api("shell")
 def fg(command, shell = True, stderr_exception = True):
+    print(f"fb: {command}")
     def read_output(output):
         lines = []
         for line in output:
