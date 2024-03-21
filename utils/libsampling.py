@@ -15,6 +15,8 @@ from vatf.utils import utils
 
 import vatf.utils
 
+log = logging.getLogger(__name__)
+
 def _get_from_kwargs(attr, attr_in_config, **kwargs):
     attr_value = None
     if attr in kwargs:
@@ -48,13 +50,13 @@ def get_creation_date(path, timestamp_format, **kwargs):
     try:
         with open(path, "tr") as f:
             content = f.read().rstrip()
-            logging.info(f"Reading: {content}")
+            log.info(f"Reading: {content}")
             return datetime.datetime.strptime(content, timestamp_format)
     except ValueError as vex:
-        logging.info(f"Exception {str(vex)} during an attempt of reading {path}. Reads date stat")
+        log.info(f"Exception {str(vex)} during an attempt of reading {path}. Reads date stat")
         return read_date_stat()
     except BaseException as ex:
-        logging.info(f"Cannot open {path} due to {ex} in text mode. Reads date stat")
+        log.info(f"Cannot open {path} due to {ex} in text mode. Reads date stat")
         return read_date_stat()
 
 def get_recording_start_date(path_to_recording, path_to_recording_date, timestamp_format):
@@ -64,17 +66,19 @@ def get_recording_start_date(path_to_recording, path_to_recording_date, timestam
         return get_creation_date(path_to_recording, timestamp_format = timestamp_format)
 
 def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_timestamp, audioData, sr, samples_path, sample_format = "ogg"):
-    logging.info(f"{extract_sample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
+    log.info(f"{extract_sample.__name__} sample : {start_regex_timestamp} {end_regex_timestamp} recordin start : {recording_start_timestamp}")
+    if end_regex_timestamp is None:
+        return None
     if end_regex_timestamp is not None and recording_start_timestamp > end_regex_timestamp:
         return None
     start_timestamp = start_regex_timestamp - recording_start_timestamp
     end_timestamp = None if end_regex_timestamp is None else end_regex_timestamp - recording_start_timestamp
     start_timestamp = start_timestamp.total_seconds()
     end_timestamp = None if end_timestamp is None else end_timestamp.total_seconds()
-    logging.info(f"Exctract time from recording {start_timestamp} {end_timestamp} sampling_rate {sr}")
+    log.info(f"Exctract time from recording {start_timestamp} {end_timestamp} sampling_rate {sr}")
     start_index = start_timestamp * sr
     end_index = None if end_timestamp is None else end_timestamp * sr
-    logging.info(f"Exctract audio data from recording {start_index} {end_index} sampling_rate {sr}")
+    log.info(f"Exctract audio data from recording {start_index} {end_index} sampling_rate {sr}")
     audio_sample = None
     if end_index is None:
         audio_sample = audioData[int(start_index) :]
@@ -85,7 +89,7 @@ def extract_sample(start_regex_timestamp, end_regex_timestamp, recording_start_t
     sample_path = os.path.join(samples_path, f"{sample_name}{sample_counter}.{sample_format}")
     import soundfile as sf
     sf.write(sample_path, audio_sample, sr)
-    logging.info(f"Write sample to {sample_path}")
+    log.info(f"Write sample to {sample_path}")
     return sample_path
 
 def extract_samples(recording_start_timestamp, regexes, recording_path, samples_path, timestamp_format, audioConfig = vatf.utils.ac.AudioConfig(vatf.utils.ac.Format.s16le, channels = 1, framerate = 44100), sample_format = "ogg", **kwargs):
@@ -96,12 +100,12 @@ def extract_samples(recording_start_timestamp, regexes, recording_path, samples_
     try:
         audio, sr = librosa.load(recording_path, sr = None)
     except BaseException as ex:
-        logging.warning(f"Exception {ex}. Try convert to ogg format...")
+        log.warning(f"Exception {ex}. Try convert to ogg format...")
         filepath = _convert_pcm_to_ogg(recording_path, audioConfig)
         audio, sr = librosa.load(filepath, sr = None)
         os.remove(filepath)
     if len(audio) == 0:
-        logging.error(f"Could not load data from {recording_path}")
+        log.error(f"Could not load data from {recording_path}")
         return
     sample_paths = []
     not_matched_samples_count = 0
@@ -115,7 +119,7 @@ def extract_samples(recording_start_timestamp, regexes, recording_path, samples_
             sample_paths.append(sample_path)
         else:
             not_matched_samples_count = not_matched_samples_count + 1
-    logging.info(f"Extracted {len(sample_paths)} samples. {not_matched_samples_count} samples could not extract (not in recording)")
+    log.info(f"Extracted {len(sample_paths)} samples. {not_matched_samples_count} samples could not extract (not in recording)")
     return sample_paths
 
 def find_start_end_regexes(path_to_log, start_regex, end_regex, from_line, max_count, timestamp_regex, **kwargs):
@@ -157,7 +161,7 @@ def process(args):
     #    args.start_regex = regexes[0][0]
     #    args.end_regex = regexes[0][1]
     #    if len(regexes) > 1:
-    #        logging.error("Number of regexes > 1 is not supported. Only the first one will be used")
+    #        log.error("Number of regexes > 1 is not supported. Only the first one will be used")
     if not (args.regexes.begin and args.regexes.end):
         raise Exception("Inproper pair of start and end regex. Please provide both as arguments in config")
     maxCount = -1
@@ -174,4 +178,4 @@ def process(args):
     #            array.append(start_end[1].line_number)
     #        f.write("\n".join(array))
     sample_pathes = extract_samples(start_date, regexes, args.path_to_recording, args.path_to_samples, args.timestamp_format)
-    logging.info(f"Created: {sample_pathes}")
+    log.info(f"Created: {sample_pathes}")

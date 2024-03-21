@@ -11,9 +11,7 @@ import subprocess
 import sys
 from vatf.utils import ac
 
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
-
-pulsesrc_source = [["date '+%Y-%m-%d %H:%M:%S.%6N' > {sink}.date && gst-launch-1.0 -e", "pulsesrc device = {source}"], "queue", "audioresample", "audioconvert", "{audio_config}"]
+pulsesrc_source = [["date '{date_linux_date_format}' > {sink}.date && gst-launch-1.0 -e", "pulsesrc device = {source}"], "queue", "audioresample", "audioconvert", "{audio_config}"]
 
 mp3_sink = ["lamemp3enc name=enc target=0 qauality=2", "xingmux", "id3mux", "filesink location={sink} append=false"]
 wave_sink = ["wavenc", "filesink location={sink} append=false"]
@@ -51,13 +49,12 @@ def merge_pipelines(source, sink):
 def parseAudioConfig(ac):
     return "audio/x-raw,rate={},channels={}".format(ac.getFramerate(), ac.getChannels())
 
-def make_json_info(recording_path, json_file_path, ac, creation_time = None):
+def make_json_info(recording_path, json_file_path, ac, date_format, creation_time = None):
     import datetime
-    global DATE_FORMAT
     if creation_time == None:
-        creation_time = datetime.datetime.now().strftime(DATE_FORMAT)
+        creation_time = datetime.datetime.now().strftime(date_format)
     else:
-        creation_time = creation_time.strftime(DATE_FORMAT)
+        creation_time = creation_time.strftime(date_format)
     json = {}
     json['info'] = []
     info = {"recording_path": recording_path, "creation_time" : creation_time, "samples_rate" : ac.getFramerate(), "format": ac.getFormat(), "channels" : ac.getChannels()}
@@ -67,16 +64,18 @@ def make_json_info(recording_path, json_file_path, ac, creation_time = None):
         j.dump(json, f)
 
 class GstRec:
-    def __init__(self, source, sink, output_type, audioConfig):
+    def __init__(self, source, sink, output_type, audioConfig, date_format, date_linux_date_format):
         self.process = None
         self.source = source
         self.sink = sink
         self.audioConfig = audioConfig
+        self.date_format = date_format
+        self.date_linux_date_format = date_linux_date_format
         self.command = merge_pipelines(pulsesrc_source, get_sink_pipeline_check(output_type))
-        self.command = self.command.format(source = source, sink = sink, audio_config = parseAudioConfig(audioConfig))
+        self.command = self.command.format(date_linux_date_format = self.date_linux_date_format, source = source, sink = sink, audio_config = parseAudioConfig(audioConfig))
     def start(self):
         print ("os command: {}".format(self.command))
-        make_json_info(self.sink, f"{self.sink}.json", self.audioConfig)
+        make_json_info(self.sink, f"{self.sink}.json", self.audioConfig, self.date_format)
         self.process = subprocess.Popen(self.command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     def stop(self):
         parent = psutil.Process(self.process.pid)
@@ -87,8 +86,8 @@ class GstRec:
     def wait(self):
         self.process.wait()
 
-def create(source, sink, output_type, audio_config):
-    return GstRec(source, sink, output_type, audio_config)
+def create(source, sink, output_type, audio_config, date_format, date_linux_date_format):
+    return GstRec(source, sink, output_type, audio_config, date_format, date_linux_date_format)
 
 def getName():
     return "gst"

@@ -61,6 +61,9 @@ g_audio_output_type = "pcm"
 
 g_stoppable = []
 
+g_date_format = None
+g_date_linux_date_format = None
+
 def get_output_type():
     global g_audio_output_type
     return str(g_audio_output_type.lower())
@@ -78,7 +81,7 @@ def create_recorder(rec_str, source, sink):
         print ("Not supported recorder type: {}".format(rec_str))
     for m in g_modules:
         if rec_str == m.getName():
-            g_recorders.append (m.create(source, sink, g_audio_output_type, g_audio_config))
+            g_recorders.append (m.create(source, sink, g_audio_output_type, g_audio_config, g_date_format, g_date_linux_date_format))
             g_stoppable.append(g_recorders[-1])
             print ("{} -> {}".format(source, sink))
 
@@ -196,8 +199,16 @@ parser.add_argument(WaveformArgs.plot, help = "Plot chart", action="store_true")
 parser.add_argument(AudioConfigArgs.audio_config, help = f"Audio config for instance: {AudioConfigArgs.audio_config} s16le,1,44100 (it means format, channels, framerate)")
 
 parser.add_argument(ThreadArgs.j, help = f"Enable multi threading: --j 4")
+parser.add_argument("--date_linux_date_format", help = f"Date format for date command", type=str)
+parser.add_argument("--date_format", help = f"Date format", type=str)
 
 args = parser.parse_args()
+
+if args.date_format:
+    g_date_format = args.date_format
+
+if args.date_linux_date_format:
+    g_date_linux_date_format = args.date_linux_date_format
 
 if args.rec:
     if args.output_type:
